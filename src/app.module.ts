@@ -1,0 +1,26 @@
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
+import { PrismaModule } from './prisma/prisma.module';
+import { ShopkeeperModule } from './shopkeeper/shopkeeper.module';
+import { ProfessionalModule } from './professional/professional.module';
+
+@Module({
+  imports: [
+    PrismaModule,
+    JwtModule.register({
+      secret: process.env.SECRET_KEY || 'default_secret_key',
+      signOptions: { expiresIn: '1h' },
+    }),
+    ShopkeeperModule,
+    ProfessionalModule,
+    AuthModule,
+    UserModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
