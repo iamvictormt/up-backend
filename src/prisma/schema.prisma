@@ -8,32 +8,38 @@ datasource db {
 }
 
 model User {
-  id             Int           @id @default(autoincrement())
-  email          String        @unique
-  password       String
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  accessPending  Boolean       @default(true)
-  shopkeeperId   Int?          @unique
-  professionalId Int?          @unique
-  shopkeeper     Shopkeeper?   @relation(fields: [shopkeeperId], references: [id])
-  professional   Professional? @relation(fields: [professionalId], references: [id])
-}
-
-model Shopkeeper {
-  id       Int    @id @default(autoincrement())
-  name     String
-  document String
-  phone    String
-  segment  String
-  User     User?
+  id                Int              @id @default(autoincrement())
+  email             String           @unique
+  password          String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  accessPending     Boolean          @default(true)
+  partnerSupplierId Int?             @unique
+  professionalId    Int?             @unique
+  partnerSupplier   PartnerSupplier? @relation(fields: [partnerSupplierId], references: [id])
+  professional      Professional?    @relation(fields: [professionalId], references: [id])
 }
 
 model Professional {
-  id         Int    @id @default(autoincrement())
-  name       String
-  document   String
-  phone      String
-  profession String
-  User       User?
+  id                 Int    @id @default(autoincrement())
+  name               String
+  officeName         String
+  profession         String
+  document           String
+  generalRegister    String
+  registrationAgency String
+  address            String
+  phone              String
+  User               User?
+}
+
+model PartnerSupplier {
+  id                Int    @id @default(autoincrement())
+  tradeName         String
+  companyName       String
+  document          String
+  stateRegistration String
+  address           String
+  contact           String
+  User              User?
 }

@@ -9,7 +9,7 @@ export class UserService {
 
   async createUserWithRelation(
     userDto: CreateUserDto,
-    shopkeeperId?: number,
+    partnerSupplierId?: number,
     professionalId?: number,
   ) {
     const salt = await bcrypt.genSalt(10);
@@ -19,9 +19,9 @@ export class UserService {
       data: {
         email: userDto.email,
         password: hashedPassword,
-        shopkeeperId,
+        partnerSupplierId,
         professionalId,
-        accessPending: true,
+        accessPending: !!partnerSupplierId,
       },
     });
   }
@@ -35,9 +35,9 @@ export class UserService {
         createdAt: true,
         updatedAt: true,
         accessPending: true,
-        shopkeeper: true,
+        partnerSupplier: true,
         professional: true,
-        shopkeeperId: false,
+        partnerSupplierId: false,
         professionalId: false,
       },
     });
@@ -53,9 +53,9 @@ export class UserService {
         createdAt: true,
         updatedAt: true,
         accessPending: true,
-        shopkeeper: true,
+        partnerSupplier: true,
         professional: true,
-        shopkeeperId: false,
+        partnerSupplierId: false,
         professionalId: false,
       },
     });

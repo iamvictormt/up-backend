@@ -7,13 +7,29 @@ export class CreateProfessionalDto {
 
   @IsNotEmpty()
   @IsString()
-  document: string;
-
-  @IsNotEmpty()
-  @IsPhoneNumber()
-  phone: string;
+  officeName: string;
 
   @IsNotEmpty()
   @IsString()
   profession: string;
+
+  @IsNotEmpty()
+  @IsString()
+  document: string;
+
+  @IsNotEmpty()
+  @IsString()
+  generalRegister: string;
+
+  @IsNotEmpty()
+  @IsString()
+  registrationAgency: string;
+
+  @IsNotEmpty()
+  @IsString()
+  address: string;
+
+  @IsNotEmpty()
+  @IsPhoneNumber()
+  phone: string;
 }

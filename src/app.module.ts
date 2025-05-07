@@ -5,7 +5,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from './prisma/prisma.module';
-import { ShopkeeperModule } from './shopkeeper/shopkeeper.module';
+import { PartnerSupplierModule } from './partnerSupplier/partnerSupplier.module';
 import { ProfessionalModule } from './professional/professional.module';
 
 @Module({
@@ -15,7 +15,7 @@ import { ProfessionalModule } from './professional/professional.module';
       secret: process.env.SECRET_KEY || 'default_secret_key',
       signOptions: { expiresIn: '1h' },
     }),
-    ShopkeeperModule,
+    PartnerSupplierModule,
     ProfessionalModule,
     AuthModule,
     UserModule,
