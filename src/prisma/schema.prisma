@@ -8,38 +8,199 @@ datasource db {
 }
 
 model User {
-  id                Int              @id @default(autoincrement())
-  email             String           @unique
-  password          String
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  accessPending     Boolean          @default(true)
-  partnerSupplierId Int?             @unique
-  professionalId    Int?             @unique
-  partnerSupplier   PartnerSupplier? @relation(fields: [partnerSupplierId], references: [id])
-  professional      Professional?    @relation(fields: [professionalId], references: [id])
+  id            String   @id @default(uuid())
+  email         String   @unique
+  password      String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  accessPending Boolean  @default(true)
+
+  professionalId String?       @unique
+  professional   Professional? @relation("UserProfessional", fields: [professionalId], references: [id])
+
+  partnerSupplierId String?          @unique
+  partnerSupplier   PartnerSupplier? @relation("UserPartner", fields: [partnerSupplierId], references: [id])
 }
 
 model Professional {
-  id                 Int    @id @default(autoincrement())
-  name               String
-  officeName         String
-  profession         String
-  document           String
-  generalRegister    String
-  registrationAgency String
-  address            String
-  phone              String
-  User               User?
+  id            String            @id @default(uuid())
+  name          String
+  profession    String
+  description   String?
+  experience    String?
+  verified      Boolean           @default(false)
+  featured      Boolean           @default(false)
+  level         ProfessionalLevel @default(BRONZE)
+  points        Int               @default(0)
+  profileImage  String?
+  email         String
+  phone         String
+  socialMediaId String?           @unique
+  social        SocialMedia?      @relation(fields: [socialMediaId], references: [id])
+  address       Address?          @relation(fields: [addressId], references: [id])
+  addressId     String?
+
+  user               User?               @relation("UserProfessional")
+  workshops          Workshop[]
+  pointHistory       PointHistory[]
+  eventRegistrations EventRegistration[]
+}
+
+model SocialMedia {
+  id        String  @id @default(uuid())
+  linkedin  String?
+  instagram String?
+  whatsapp  String?
+
+  professional Professional?
+}
+
+model Address {
+  id         String  @id @default(uuid())
+  state      String
+  city       String
+  district   String
+  street     String?
+  complement String?
+  number     String?
+  zipCode    String?
+
+  professionals    Professional[]
+  partnerSuppliers PartnerSupplier[]
+  stores           Store[]
+  events           Event[]
 }
 
 model PartnerSupplier {
-  id                Int    @id @default(autoincrement())
+  id                String   @id @default(uuid())
   tradeName         String
   companyName       String
   document          String
-  stateRegistration String
-  address           String
-  contact           String
-  User              User?
+  stateRegistration String?
+  email             String?
+  contact           String?
+  address           Address? @relation(fields: [addressId], references: [id])
+  addressId         String?
+
+  user   User?   @relation("UserPartner")
+  stores Store[]
+}
+
+model Store {
+  id           String          @id @default(uuid())
+  name         String
+  cnpj         String
+  description  String?
+  website      String?
+  rating       Float?          @default(0)
+  openingHours String?
+  address      Address         @relation(fields: [addressId], references: [id])
+  addressId    String
+  partnerId    String
+  partner      PartnerSupplier @relation(fields: [partnerId], references: [id])
+
+  products Product[]
+  events   Event[]
+}
+
+model Product {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  link        String?
+  featured    Boolean @default(false)
+  promotion   Boolean @default(false)
+  storeId     String
+  store       Store   @relation(fields: [storeId], references: [id])
+}
+
+model Event {
+  id           String              @id @default(uuid())
+  name         String
+  description  String
+  date         DateTime
+  type         String
+  points       Int                 @default(0)
+  totalSpots   Int
+  filledSpots  Int                 @default(0)
+  address      Address             @relation(fields: [addressId], references: [id])
+  addressId    String
+  storeId      String
+  store        Store               @relation(fields: [storeId], references: [id])
+  participants EventRegistration[]
+}
+
+model EventRegistration {
+  id             String       @id @default(uuid())
+  professional   Professional @relation(fields: [professionalId], references: [id])
+  professionalId String
+  event          Event        @relation(fields: [eventId], references: [id])
+  eventId        String
+  registeredAt   DateTime     @default(now())
+}
+
+model PointHistory {
+  id             String         @id @default(uuid())
+  operation      PointOperation
+  value          Int
+  source         String
+  professional   Professional   @relation(fields: [professionalId], references: [id])
+  professionalId String
+  createdAt      DateTime       @default(now())
+}
+
+model Workshop {
+  id             String           @id @default(uuid())
+  name           String
+  description    String
+  duration       String
+  points         Int
+  type           WorkshopType
+  professional   Professional     @relation(fields: [professionalId], references: [id])
+  professionalId String
+  modules        WorkshopModule[]
+}
+
+model WorkshopModule {
+  id         String   @id @default(uuid())
+  name       String
+  content    String
+  workshop   Workshop @relation(fields: [workshopId], references: [id])
+  workshopId String
+}
+
+model Coupon {
+  id        String   @id @default(uuid())
+  name      String
+  code      String   @unique
+  quantity  Int
+  createdAt DateTime @default(now())
+}
+
+
+
+/*
+
+ENUMS:
+
+*/
+
+
+enum ProfessionalLevel {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+enum PointOperation {
+  ADD
+  REMOVE
+}
+
+enum WorkshopType {
+  ONLINE
+  PRESENTIAL
+  HYBRID
 }
