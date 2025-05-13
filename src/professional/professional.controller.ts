@@ -9,9 +9,9 @@ export class ProfessionalController {
 
   @Post()
   async registerProfessional(
-    @Body('professional') professional: CreateProfessionalDto,
-    @Body('user') user: CreateUserDto,
+    @Body('professional') dto: CreateProfessionalDto,
+    @Body('user') userDto: CreateUserDto,
   ) {
-    return this.professionalService.createProfessional(professional, user);
+    return this.professionalService.create(dto, userDto);
   }
 }

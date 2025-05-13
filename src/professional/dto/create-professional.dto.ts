@@ -1,35 +1,72 @@
-import { IsNotEmpty, IsString, IsPhoneNumber } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsBoolean,
+  IsEnum,
+  IsUUID,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { ProfessionalLevel } from '@prisma/client';
+import { CreateAddressDto } from '../../address/dto/create-address.dto'; // Enum no Prisma
 
 export class CreateProfessionalDto {
-  @IsNotEmpty()
-  @IsString()
-  name: string;
+  @IsString() name: string;
+  @IsString() profession: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  officeName: string;
+  document?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  profession: string;
+  generalRegister?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  document: string;
+  registrationAgency?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  generalRegister: string;
+  description?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  registrationAgency: string;
+  experience?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  address: string;
+  officeName?: string;
 
-  @IsNotEmpty()
-  @IsPhoneNumber()
+  @IsOptional()
+  @IsBoolean()
+  verified?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  featured?: boolean;
+
+  @IsOptional()
+  @IsEnum(ProfessionalLevel)
+  level?: ProfessionalLevel;
+
+  @IsOptional()
+  @IsString()
+  profileImage?: string;
+
+  @IsString()
   phone: string;
+
+  @IsOptional()
+  @IsString()
+  socialMediaId?: string;
+
+  @ValidateNested()
+  @Type(() => CreateAddressDto)
+  @IsOptional()
+  address?: CreateAddressDto;
+
+  @IsOptional()
+  @IsUUID()
+  userId?: string;
 }

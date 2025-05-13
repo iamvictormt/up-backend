@@ -7,6 +7,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from './prisma/prisma.module';
 import { PartnerSupplierModule } from './partnerSupplier/partnerSupplier.module';
 import { ProfessionalModule } from './professional/professional.module';
+import { StoreModule } from './store/store.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ProfessionalModule } from './professional/professional.module';
     ProfessionalModule,
     AuthModule,
     UserModule,
+    StoreModule
   ],
   controllers: [AppController],
   providers: [AppService],

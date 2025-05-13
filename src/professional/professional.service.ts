@@ -11,7 +11,7 @@ export class ProfessionalService {
     private userService: UserService,
   ) {}
 
-  async createProfessional(professionalDto: CreateProfessionalDto, userDto: CreateUserDto) {
+  async create(dto: CreateProfessionalDto, userDto: CreateUserDto) {
     const emailExists = await this.userService.checkIfEmailExists(
       userDto.email,
     );
@@ -22,13 +22,35 @@ export class ProfessionalService {
 
     const professional = await this.prisma.professional.create({
       data: {
-        name: professionalDto.name,
-        profession: professionalDto.profession,
-        document: professionalDto.document,
-        generalRegister: professionalDto.generalRegister,
-        registrationAgency: professionalDto.registrationAgency,
-        // address: professionalDto.address,
-        phone: professionalDto.phone,
+        name: dto.name,
+        profession: dto.profession,
+        document: dto.document,
+        generalRegister: dto.generalRegister,
+        registrationAgency: dto.registrationAgency,
+        description: dto.description,
+        experience: dto.experience,
+        officeName: dto.officeName,
+        verified: dto.verified ?? false,
+        featured: dto.featured ?? false,
+        level: dto.level ?? 'BRONZE',
+        profileImage: dto.profileImage,
+        phone: dto.phone,
+        address: dto.address
+          ? {
+            create: {
+              state: dto.address.state,
+              city: dto.address.city,
+              district: dto.address.district,
+              street: dto.address.street,
+              complement: dto.address.complement,
+              number: dto.address.number,
+              zipCode: dto.address.zipCode,
+            },
+          }
+          : undefined,
+      },
+      include: {
+        address: true,
       },
     });
 

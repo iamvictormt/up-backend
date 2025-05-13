@@ -4,22 +4,19 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreatePartnerSupplierDto } from './dto/createPartnerSupplier.dto';
+import { CreatePartnerSupplierDto } from './dto/create-partnerSupplier.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
-import { UpdatePartnerSupplierDto } from './dto/updatePartnerSupplier.dto';
+import { UpdatePartnerSupplierDto } from './dto/update-partnerSupplier.dto';
 
 @Injectable()
 export class PartnerSupplierService {
   constructor(
-    private prisma: PrismaService,
+    private readonly prisma: PrismaService,
     private userService: UserService,
   ) {}
 
-  async createPartnerSupplier(
-    partnerSupplierDto: CreatePartnerSupplierDto,
-    userDto: CreateUserDto,
-  ) {
+  async create(dto: CreatePartnerSupplierDto, userDto: CreateUserDto) {
     const emailExists = await this.userService.checkIfEmailExists(
       userDto.email,
     );
@@ -29,12 +26,27 @@ export class PartnerSupplierService {
 
     const partnerSupplier = await this.prisma.partnerSupplier.create({
       data: {
-        tradeName: partnerSupplierDto.tradeName,
-        companyName: partnerSupplierDto.companyName,
-        document: partnerSupplierDto.document,
-        stateRegistration: partnerSupplierDto.stateRegistration,
-        // address: partnerSupplierDto.address,
-        contact: partnerSupplierDto.contact,
+        tradeName: dto.tradeName,
+        companyName: dto.companyName,
+        document: dto.document,
+        stateRegistration: dto.stateRegistration,
+        contact: dto.contact,
+        address: dto.address
+          ? {
+              create: {
+                state: dto.address.state,
+                city: dto.address.city,
+                district: dto.address.district,
+                street: dto.address.street,
+                complement: dto.address.complement,
+                number: dto.address.number,
+                zipCode: dto.address.zipCode,
+              },
+            }
+          : undefined,
+      },
+      include: {
+        address: true,
       },
     });
 

@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { PartnerSupplierService } from './partnerSupplier.service';
-import { CreatePartnerSupplierDto } from './dto/createPartnerSupplier.dto';
+import { CreatePartnerSupplierDto } from './dto/create-partnerSupplier.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
-import { UpdatePartnerSupplierDto } from './dto/updatePartnerSupplier.dto';
+import { UpdatePartnerSupplierDto } from './dto/update-partnerSupplier.dto';
 
 @Controller('partner-supplier')
 export class PartnerSupplierController {
@@ -11,13 +11,10 @@ export class PartnerSupplierController {
   ) {}
 
   @Post() async register(
-    @Body('partnerSupplier') partnerSupplier: CreatePartnerSupplierDto,
-    @Body('user') user: CreateUserDto,
+    @Body('partnerSupplier') dto: CreatePartnerSupplierDto,
+    @Body('user') userDto: CreateUserDto,
   ) {
-    return this.partnerSupplierService.createPartnerSupplier(
-      partnerSupplier,
-      user,
-    );
+    return this.partnerSupplierService.create(dto, userDto);
   }
 
   @Get() async findAll() {
