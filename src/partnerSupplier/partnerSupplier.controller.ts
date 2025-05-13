@@ -32,7 +32,7 @@ export class PartnerSupplierController {
     return this.partnerSupplierService.findOne(id);
   }
 
-  @Put(':id') async updateAccessPending(
+  @Put('pending/:id') async updateAccessPending(
     @Param('id') id: string,
     @Body() updatePartnerSupplierDto: UpdatePartnerSupplierDto,
   ) {
