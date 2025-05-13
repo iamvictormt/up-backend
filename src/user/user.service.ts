@@ -9,8 +9,8 @@ export class UserService {
 
   async createUserWithRelation(
     userDto: CreateUserDto,
-    partnerSupplierId?: number,
-    professionalId?: number,
+    partnerSupplierId?: string,
+    professionalId?: string,
   ) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(userDto.password, salt);
@@ -43,7 +43,7 @@ export class UserService {
     });
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return this.prisma.user.findUnique({
       where: { id },
       select: {
@@ -61,7 +61,7 @@ export class UserService {
     });
   }
 
-  async findOneById(id: number) {
+  async findOneById(id: string) {
     return this.prisma.user.findUnique({ where: { id } });
   }
 
@@ -76,7 +76,7 @@ export class UserService {
     return user !== null;
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return this.prisma.user.delete({ where: { id } });
   }
 }

@@ -23,22 +23,25 @@ model User {
 }
 
 model Professional {
-  id            String            @id @default(uuid())
-  name          String
-  profession    String
-  description   String?
-  experience    String?
-  verified      Boolean           @default(false)
-  featured      Boolean           @default(false)
-  level         ProfessionalLevel @default(BRONZE)
-  points        Int               @default(0)
-  profileImage  String?
-  email         String
-  phone         String
-  socialMediaId String?           @unique
-  social        SocialMedia?      @relation(fields: [socialMediaId], references: [id])
-  address       Address?          @relation(fields: [addressId], references: [id])
-  addressId     String?
+  id                 String            @id @default(uuid())
+  name               String
+  profession         String
+  document           String?
+  generalRegister    String?
+  registrationAgency String?
+  description        String?
+  experience         String?
+  officeName         String?
+  verified           Boolean           @default(false)
+  featured           Boolean           @default(false)
+  level              ProfessionalLevel @default(BRONZE)
+  points             Int               @default(0)
+  profileImage       String?
+  phone              String
+  socialMediaId      String?           @unique
+  social             SocialMedia?      @relation(fields: [socialMediaId], references: [id])
+  address            Address?          @relation(fields: [addressId], references: [id])
+  addressId          String?
 
   user               User?               @relation("UserProfessional")
   workshops          Workshop[]
@@ -77,7 +80,6 @@ model PartnerSupplier {
   companyName       String
   document          String
   stateRegistration String?
-  email             String?
   contact           String?
   address           Address? @relation(fields: [addressId], references: [id])
   addressId         String?
@@ -178,14 +180,9 @@ model Coupon {
   createdAt DateTime @default(now())
 }
 
-
-
-/*
-
-ENUMS:
-
-*/
-
+/**
+ * ENUMS:
+ */
 
 enum ProfessionalLevel {
   BRONZE

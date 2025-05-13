@@ -23,12 +23,11 @@ export class ProfessionalService {
     const professional = await this.prisma.professional.create({
       data: {
         name: professionalDto.name,
-        officeName: professionalDto.officeName,
         profession: professionalDto.profession,
         document: professionalDto.document,
         generalRegister: professionalDto.generalRegister,
         registrationAgency: professionalDto.registrationAgency,
-        address: professionalDto.address,
+        // address: professionalDto.address,
         phone: professionalDto.phone,
       },
     });
