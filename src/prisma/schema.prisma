@@ -49,6 +49,20 @@ model Professional {
   eventRegistrations EventRegistration[]
 }
 
+model PartnerSupplier {
+  id                String   @id @default(uuid())
+  tradeName         String
+  companyName       String
+  document          String
+  stateRegistration String?
+  contact           String?
+  address           Address? @relation(fields: [addressId], references: [id])
+  addressId         String?
+
+  user   User?   @relation("UserPartner")
+  stores Store[]
+}
+
 model SocialMedia {
   id        String  @id @default(uuid())
   linkedin  String?
@@ -72,20 +86,6 @@ model Address {
   partnerSuppliers PartnerSupplier[]
   stores           Store[]
   events           Event[]
-}
-
-model PartnerSupplier {
-  id                String   @id @default(uuid())
-  tradeName         String
-  companyName       String
-  document          String
-  stateRegistration String?
-  contact           String?
-  address           Address? @relation(fields: [addressId], references: [id])
-  addressId         String?
-
-  user   User?   @relation("UserPartner")
-  stores Store[]
 }
 
 model Store {

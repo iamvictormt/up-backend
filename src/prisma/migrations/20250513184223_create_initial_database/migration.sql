@@ -45,6 +45,19 @@ CREATE TABLE "Professional" (
 );
 
 -- CreateTable
+CREATE TABLE "PartnerSupplier" (
+    "id" TEXT NOT NULL,
+    "tradeName" TEXT NOT NULL,
+    "companyName" TEXT NOT NULL,
+    "document" TEXT NOT NULL,
+    "stateRegistration" TEXT,
+    "contact" TEXT,
+    "addressId" TEXT,
+
+    CONSTRAINT "PartnerSupplier_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "SocialMedia" (
     "id" TEXT NOT NULL,
     "linkedin" TEXT,
@@ -66,19 +79,6 @@ CREATE TABLE "Address" (
     "zipCode" TEXT,
 
     CONSTRAINT "Address_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "PartnerSupplier" (
-    "id" TEXT NOT NULL,
-    "tradeName" TEXT NOT NULL,
-    "companyName" TEXT NOT NULL,
-    "document" TEXT NOT NULL,
-    "stateRegistration" TEXT,
-    "contact" TEXT,
-    "addressId" TEXT,
-
-    CONSTRAINT "PartnerSupplier_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
