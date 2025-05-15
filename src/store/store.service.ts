@@ -10,7 +10,6 @@ export class StoreService {
     const store = await this.prisma.store.create({
       data: {
         name: dto.name,
-        cnpj: dto.cnpj,
         description: dto.description,
         website: dto.website,
         openingHours: dto.openingHours,

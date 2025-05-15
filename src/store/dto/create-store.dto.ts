@@ -6,9 +6,6 @@ export class CreateStoreDto {
   @IsString()
   name: string;
 
-  @IsString()
-  cnpj: string;
-
   @IsOptional()
   @IsString()
   description?: string;

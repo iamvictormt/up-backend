@@ -21,6 +21,10 @@ export class CreatePartnerSupplierDto {
   contact?: string;
 
   @IsOptional()
+  @IsString()
+  profileImage?: string;
+
+  @IsOptional()
   @ValidateNested()
   @Type(() => CreateAddressDto)
   address?: CreateAddressDto;

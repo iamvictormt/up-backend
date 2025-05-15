@@ -13,9 +13,9 @@ export class AuthController {
       throw new UnauthorizedException('Usuário não encontrado ou senha inválida');
     }
 
-    if(user.accessPending) {
-      throw new ForbiddenException('Cadastro pendente de aprovação. \nVocê receberá um email assim que o processo for concluído.');
-    }
+    // if(user.accessPending) {
+    //   throw new ForbiddenException('Cadastro pendente de aprovação. \nVocê receberá um email assim que o processo for concluído.');
+    // }
 
     return this.authService.login(user);
   }

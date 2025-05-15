@@ -21,7 +21,6 @@ export class UserService {
         password: hashedPassword,
         partnerSupplierId,
         professionalId,
-        accessPending: !!partnerSupplierId,
       },
     });
   }
@@ -34,7 +33,6 @@ export class UserService {
         password: true,
         createdAt: true,
         updatedAt: true,
-        accessPending: true,
         partnerSupplier: true,
         professional: true,
         partnerSupplierId: false,
@@ -52,7 +50,6 @@ export class UserService {
         password: true,
         createdAt: true,
         updatedAt: true,
-        accessPending: true,
         partnerSupplier: true,
         professional: true,
         partnerSupplierId: false,

@@ -31,22 +31,29 @@ export class PartnerSupplierService {
         document: dto.document,
         stateRegistration: dto.stateRegistration,
         contact: dto.contact,
-        address: dto.address
-          ? {
-              create: {
-                state: dto.address.state,
-                city: dto.address.city,
-                district: dto.address.district,
-                street: dto.address.street,
-                complement: dto.address.complement,
-                number: dto.address.number,
-                zipCode: dto.address.zipCode,
-              },
-            }
-          : undefined,
+        profileImage: dto.profileImage,
+        address: {
+          create: dto.address,
+        },
       },
       include: {
         address: true,
+      },
+    });
+
+    await this.prisma.store.create({
+      data: {
+        name: partnerSupplier.tradeName,
+        address: {
+          connect: {
+            id: partnerSupplier.addressId
+              ? partnerSupplier.addressId
+              : undefined,
+          },
+        },
+        partner: {
+          connect: { id: partnerSupplier.id },
+        },
       },
     });
 
@@ -68,7 +75,7 @@ export class PartnerSupplierService {
       throw new NotFoundException('Fornecedor parceiro não encontrado!');
     }
 
-    return this.prisma.user.update({
+    return this.prisma.partnerSupplier.update({
       where: { id },
       data: {
         accessPending: dto.accessPending,
@@ -77,14 +84,16 @@ export class PartnerSupplierService {
   }
 
   async findAll() {
-    return this.prisma.user.findMany({
+    return this.prisma.partnerSupplier.findMany({
       where: {
-        partnerSupplierId: {
-          not: null,
-        },
+        accessPending: false
       },
       include: {
-        partnerSupplier: true,
+        store: {
+          include: {
+            address: true,
+          },
+        },
       },
     });
   }
@@ -98,10 +107,12 @@ export class PartnerSupplierService {
   async findPending() {
     return this.prisma.user.findMany({
       where: {
-        accessPending: true,
         partnerSupplierId: {
           not: null,
         },
+        partnerSupplier: {
+          accessPending: true,
+        }
       },
       include: {
         partnerSupplier: true,

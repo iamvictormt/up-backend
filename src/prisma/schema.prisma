@@ -8,12 +8,11 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(uuid())
-  email         String   @unique
-  password      String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  accessPending Boolean  @default(true)
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   professionalId String?       @unique
   professional   Professional? @relation("UserProfessional", fields: [professionalId], references: [id])
@@ -50,17 +49,22 @@ model Professional {
 }
 
 model PartnerSupplier {
-  id                String   @id @default(uuid())
+  id                String  @id @default(uuid())
   tradeName         String
   companyName       String
   document          String
   stateRegistration String?
   contact           String?
-  address           Address? @relation(fields: [addressId], references: [id])
-  addressId         String?
+  profileImage      String?
 
-  user   User?   @relation("UserPartner")
-  stores Store[]
+  address   Address? @relation(fields: [addressId], references: [id])
+  addressId String?
+
+  accessPending Boolean @default(true)
+
+  user    User?   @relation("UserPartner")
+  store   Store?
+  storeId String? @unique
 }
 
 model SocialMedia {
@@ -89,17 +93,17 @@ model Address {
 }
 
 model Store {
-  id           String          @id @default(uuid())
+  id           String  @id @default(uuid())
   name         String
-  cnpj         String
   description  String?
   website      String?
-  rating       Float?          @default(0)
+  rating       Float?  @default(0)
   openingHours String?
-  address      Address         @relation(fields: [addressId], references: [id])
+  address      Address @relation(fields: [addressId], references: [id])
   addressId    String
-  partnerId    String
-  partner      PartnerSupplier @relation(fields: [partnerId], references: [id])
+
+  partnerId String          @unique
+  partner   PartnerSupplier @relation(fields: [partnerId], references: [id])
 
   products Product[]
   events   Event[]
