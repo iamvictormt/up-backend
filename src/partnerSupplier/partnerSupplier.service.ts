@@ -8,12 +8,14 @@ import { CreatePartnerSupplierDto } from './dto/create-partnerSupplier.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
 import { UpdatePartnerSupplierDto } from './dto/update-partnerSupplier.dto';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class PartnerSupplierService {
   constructor(
     private readonly prisma: PrismaService,
     private userService: UserService,
+    private mailService: MailService,
   ) {}
 
   async create(dto: CreatePartnerSupplierDto, userDto: CreateUserDto) {
@@ -67,13 +69,21 @@ export class PartnerSupplierService {
   }
 
   async updateAccessPending(id: string, dto: UpdatePartnerSupplierDto) {
-    const partner = await this.prisma.partnerSupplier.findUnique({
-      where: { id },
+    const user = await this.prisma.user.findFirst({
+      where: {
+        partnerSupplierId: id,
+      },
     });
 
-    if (!partner) {
+    if (!user) {
       throw new NotFoundException('Fornecedor parceiro não encontrado!');
     }
+
+    await this.mailService.sendMail(
+      user.email,
+      dto.accessPending ? 'Cadastro reprovado' : 'Cadastro aprovado',
+      dto.accessPending ? 'cadastro-reprovado.html' : 'cadastro-aprovado.html',
+    );
 
     return this.prisma.partnerSupplier.update({
       where: { id },
@@ -86,7 +96,7 @@ export class PartnerSupplierService {
   async findAll() {
     return this.prisma.partnerSupplier.findMany({
       where: {
-        accessPending: false
+        accessPending: false,
       },
       include: {
         store: {
@@ -101,6 +111,13 @@ export class PartnerSupplierService {
   async findOne(id: string) {
     return this.prisma.partnerSupplier.findUnique({
       where: { id },
+      include: {
+        store: {
+          include: {
+            address: true,
+          },
+        },
+      },
     });
   }
 
@@ -112,7 +129,7 @@ export class PartnerSupplierService {
         },
         partnerSupplier: {
           accessPending: true,
-        }
+        },
       },
       include: {
         partnerSupplier: true,

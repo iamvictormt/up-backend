@@ -20,8 +20,7 @@ import { StoreModule } from './store/store.module';
     ProfessionalModule,
     AuthModule,
     UserModule,
-    StoreModule
-  ],
+    StoreModule],
   controllers: [AppController],
   providers: [AppService],
 })

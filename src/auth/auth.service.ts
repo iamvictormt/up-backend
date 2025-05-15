@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
@@ -11,10 +11,17 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, password: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      include: { partnerSupplier: true, professional: true },
+    });
 
     if (!user) {
       return null;
+    }
+
+    if(user.partnerSupplier && user.partnerSupplier.accessPending) {
+      throw new ForbiddenException('Cadastro pendente de aprovação. \nVocê receberá um email assim que o processo for concluído.');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -26,7 +33,7 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = { email: user.email, sub: user.id }; 
+    const payload = { email: user.email, sub: user.id };
     return {
       access_token: this.jwtService.sign(payload, {
         secret: process.env.SECRET_KEY || 'default_secret',
