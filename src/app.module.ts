@@ -8,6 +8,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { PartnerSupplierModule } from './partnerSupplier/partnerSupplier.module';
 import { ProfessionalModule } from './professional/professional.module';
 import { StoreModule } from './store/store.module';
+import { LoveDecorationModule } from './loveDecoration/loveDecoration.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { StoreModule } from './store/store.module';
     AuthModule,
     UserModule,
     StoreModule,
+    LoveDecorationModule
   ],
   controllers: [AppController],
   providers: [AppService],

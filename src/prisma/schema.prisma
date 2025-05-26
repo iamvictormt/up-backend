@@ -20,8 +20,8 @@ model User {
   partnerSupplierId String?          @unique
   partnerSupplier   PartnerSupplier? @relation("UserPartner", fields: [partnerSupplierId], references: [id])
 
-  LoveDecorationId String?          @unique
-  LoveDecoration   LoveDecoration[] @relation("UserLoveDecoration")
+  loveDecorationId String?          @unique
+  loveDecoration   LoveDecoration[] @relation("UserLoveDecoration")
 }
 
 model Professional {
@@ -93,7 +93,7 @@ model Address {
   partnerSuppliers PartnerSupplier[]
   stores           Store[]
   events           Event[]
-  LoveDecoration   LoveDecoration[]
+  loveDecoration   LoveDecoration[]
 }
 
 model Store {
