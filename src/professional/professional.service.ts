@@ -62,4 +62,12 @@ export class ProfessionalService {
     );
     return { professional, user };
   }
+
+  async findAll() {
+    return this.prisma.professional.findMany({
+      include: {
+        user: true,
+      },
+    });
+  }
 }

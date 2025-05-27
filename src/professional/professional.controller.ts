@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get } from '@nestjs/common';
 import { ProfessionalService } from './professional.service';
 import { CreateProfessionalDto } from './dto/create-professional.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
@@ -13,5 +13,9 @@ export class ProfessionalController {
     @Body('user') userDto: CreateUserDto,
   ) {
     return this.professionalService.create(dto, userDto);
+  }
+
+  @Get() async findAll() {
+    return this.professionalService.findAll();
   }
 }
