@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateLoveDecorationDto } from './dto/create-loveDecoration.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
+import { UpdateLoveDecorationDto } from './dto/update-loveDecoration.dto';
 
 @Injectable()
 export class LoveDecorationService {
@@ -43,6 +44,33 @@ export class LoveDecorationService {
     );
 
     return { loveDecoration, user };
+  }
+
+  async update(id: string, data: UpdateLoveDecorationDto) {
+    const { address, ...eventData } = data;
+
+    const prismaUpdateData: any = {
+      ...eventData,
+    };
+
+    if (address) {
+      prismaUpdateData.address = {
+        update: {
+          state: address.state,
+          city: address.city,
+          district: address.district,
+          street: address.street,
+          complement: address.complement,
+          number: address.number,
+          zipCode: address.zipCode,
+        },
+      };
+    }
+
+    return this.prisma.loveDecoration.update({
+      where: { id },
+      data: prismaUpdateData,
+    });
   }
 
   async findAll() {

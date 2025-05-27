@@ -1,4 +1,4 @@
-import { IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateAddressDto } from '../../address/dto/create-address.dto';
 
@@ -23,6 +23,10 @@ export class CreatePartnerSupplierDto {
   @IsOptional()
   @IsString()
   profileImage?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  accessPending?: boolean;
 
   @IsOptional()
   @ValidateNested()

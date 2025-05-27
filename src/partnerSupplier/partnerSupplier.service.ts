@@ -9,6 +9,7 @@ import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
 import { UpdatePartnerSupplierDto } from './dto/update-partnerSupplier.dto';
 import { MailService } from '../mail/mail.service';
+import { UpdateEventDto } from '../event/dto/update-event.dto';
 
 @Injectable()
 export class PartnerSupplierService {
@@ -63,10 +64,37 @@ export class PartnerSupplierService {
       userDto,
       partnerSupplier.id,
       undefined,
-      undefined
+      undefined,
     );
 
     return { partnerSupplier, user };
+  }
+
+  async update(id: string, data: UpdatePartnerSupplierDto) {
+    const { address, ...eventData } = data;
+
+    const prismaUpdateData: any = {
+      ...eventData,
+    };
+
+    if (address) {
+      prismaUpdateData.address = {
+        update: {
+          state: address.state,
+          city: address.city,
+          district: address.district,
+          street: address.street,
+          complement: address.complement,
+          number: address.number,
+          zipCode: address.zipCode,
+        },
+      };
+    }
+
+    return this.prisma.partnerSupplier.update({
+      where: { id },
+      data: prismaUpdateData,
+    });
   }
 
   async updateAccessPending(id: string, dto: UpdatePartnerSupplierDto) {

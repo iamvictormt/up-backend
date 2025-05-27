@@ -1,3 +1,6 @@
-import { IsBoolean } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateLoveDecorationDto } from './create-loveDecoration.dto';
 
-export class UpdateLoveDecorationDto {}
+export class UpdateLoveDecorationDto extends PartialType(
+  CreateLoveDecorationDto,
+) {}
