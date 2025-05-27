@@ -4,10 +4,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreatePartnerSupplierDto } from './dto/create-partnerSupplier.dto';
+import { CreatePartnerSupplierDto } from './dto/create-partner-supplier.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
-import { UpdatePartnerSupplierDto } from './dto/update-partnerSupplier.dto';
+import { UpdatePartnerSupplierDto } from './dto/update-partner-supplier.dto';
 import { MailService } from '../mail/mail.service';
 import { UpdateEventDto } from '../event/dto/update-event.dto';
 

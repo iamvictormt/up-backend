@@ -1,9 +1,9 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateLoveDecorationDto } from './dto/create-loveDecoration.dto';
+import { CreateLoveDecorationDto } from './dto/create-love-decoration.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
-import { UpdateLoveDecorationDto } from './dto/update-loveDecoration.dto';
+import { UpdateLoveDecorationDto } from './dto/update-love-decoration.dto';
 
 @Injectable()
 export class LoveDecorationService {

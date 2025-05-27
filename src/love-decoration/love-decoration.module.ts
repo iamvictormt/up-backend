@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { LoveDecorationService } from './loveDecoration.service';
-import { LoveDecorationController } from './loveDecoration.controller';
+import { LoveDecorationService } from './love-decoration.service';
+import { LoveDecorationController } from './love-decoration.controller';
 import { UserModule } from '../user/user.module';
 import { PrismaModule } from '../prisma/prisma.module';
 

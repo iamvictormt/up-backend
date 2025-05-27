@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, Patch, Post, Put } from '@nestjs/common';
-import { PartnerSupplierService } from './partnerSupplier.service';
-import { CreatePartnerSupplierDto } from './dto/create-partnerSupplier.dto';
+import { PartnerSupplierService } from './partner-supplier.service';
+import { CreatePartnerSupplierDto } from './dto/create-partner-supplier.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
-import { UpdatePartnerSupplierDto } from './dto/update-partnerSupplier.dto';
+import { UpdatePartnerSupplierDto } from './dto/update-partner-supplier.dto';
 
 @Controller('partner-supplier')
 export class PartnerSupplierController {

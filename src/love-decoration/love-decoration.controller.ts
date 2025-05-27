@@ -7,10 +7,10 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { LoveDecorationService } from './loveDecoration.service';
-import { CreateLoveDecorationDto } from './dto/create-loveDecoration.dto';
+import { LoveDecorationService } from './love-decoration.service';
+import { CreateLoveDecorationDto } from './dto/create-love-decoration.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
-import { UpdateLoveDecorationDto } from './dto/update-loveDecoration.dto';
+import { UpdateLoveDecorationDto } from './dto/update-love-decoration.dto';
 
 @Controller('love-decoration')
 export class LoveDecorationController {
