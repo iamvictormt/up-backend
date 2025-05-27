@@ -5,13 +5,13 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from './prisma/prisma.module';
-import { PartnerSupplierModule } from './partnerSupplier/partnerSupplier.module';
+import { PartnerSupplierModule } from './partner-supplier/partner-supplier.module';
 import { ProfessionalModule } from './professional/professional.module';
 import { StoreModule } from './store/store.module';
 import { ListedProfessionalModule } from './listed-professional/listed-professional.module';
-import { LoveDecorationModule } from './loveDecoration/loveDecoration.module';
+import { LoveDecorationModule } from './love-decoration/love-decoration.module';
 import { EventModule } from './event/event.module';
-import { EventRegistrationModule } from './eventRegistration/eventRegistration.module';
+import { EventRegistrationModule } from './event-registration/event-registration.module';
 
 @Module({
   imports: [

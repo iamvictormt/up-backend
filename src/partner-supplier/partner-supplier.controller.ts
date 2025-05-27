@@ -1,19 +1,8 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Put,
-  UseGuards,
-} from '@nestjs/common';
-import { PartnerSupplierService } from './partnerSupplier.service';
-import { CreatePartnerSupplierDto } from './dto/create-partnerSupplier.dto';
+import { Body, Controller, Get, Param, Patch, Post, Put } from '@nestjs/common';
+import { PartnerSupplierService } from './partner-supplier.service';
+import { CreatePartnerSupplierDto } from './dto/create-partner-supplier.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
-import { UpdatePartnerSupplierDto } from './dto/update-partnerSupplier.dto';
-import { AuthGuard } from '@nestjs/passport';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { RolesGuard } from '../auth/guards/roles.guard';
+import { UpdatePartnerSupplierDto } from './dto/update-partner-supplier.dto';
 
 @Controller('partner-supplier')
 export class PartnerSupplierController {
@@ -26,6 +15,11 @@ export class PartnerSupplierController {
     @Body('user') userDto: CreateUserDto,
   ) {
     return this.partnerSupplierService.create(dto, userDto);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() data: UpdatePartnerSupplierDto) {
+    return this.partnerSupplierService.update(id, data);
   }
 
   @Get() async findAll() {

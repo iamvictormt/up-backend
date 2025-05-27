@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProfessionalDto } from './dto/create-professional.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
+import { UpdateProfessionalDto } from './dto/update-professional.dto';
 
 @Injectable()
 export class ProfessionalService {
@@ -37,16 +38,16 @@ export class ProfessionalService {
         phone: dto.phone,
         address: dto.address
           ? {
-            create: {
-              state: dto.address.state,
-              city: dto.address.city,
-              district: dto.address.district,
-              street: dto.address.street,
-              complement: dto.address.complement,
-              number: dto.address.number,
-              zipCode: dto.address.zipCode,
-            },
-          }
+              create: {
+                state: dto.address.state,
+                city: dto.address.city,
+                district: dto.address.district,
+                street: dto.address.street,
+                complement: dto.address.complement,
+                number: dto.address.number,
+                zipCode: dto.address.zipCode,
+              },
+            }
           : undefined,
       },
       include: {
@@ -58,15 +59,52 @@ export class ProfessionalService {
       userDto,
       undefined,
       professional.id,
-      undefined
+      undefined,
     );
     return { professional, user };
+  }
+
+  async update(id: string, data: UpdateProfessionalDto) {
+    const { address, ...eventData } = data;
+
+    const prismaUpdateData: any = {
+      ...eventData,
+    };
+
+    if (address) {
+      prismaUpdateData.address = {
+        update: {
+          state: address.state,
+          city: address.city,
+          district: address.district,
+          street: address.street,
+          complement: address.complement,
+          number: address.number,
+          zipCode: address.zipCode,
+        },
+      };
+    }
+
+    return this.prisma.professional.update({
+      where: { id },
+      data: prismaUpdateData,
+    });
   }
 
   async findAll() {
     return this.prisma.professional.findMany({
       include: {
         user: true,
+        address: true,
+      },
+    });
+  }
+
+  async findOne(id: string) {
+    return this.prisma.professional.findUnique({
+      where: { id },
+      include: {
+        address: true,
       },
     });
   }
