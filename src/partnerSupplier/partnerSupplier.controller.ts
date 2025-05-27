@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { PartnerSupplierService } from './partnerSupplier.service';
 import { CreatePartnerSupplierDto } from './dto/create-partnerSupplier.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
@@ -19,7 +27,7 @@ export class PartnerSupplierController {
   ) {
     return this.partnerSupplierService.create(dto, userDto);
   }
-  
+
   @Get() async findAll() {
     return this.partnerSupplierService.findAll();
   }

@@ -80,11 +80,13 @@ export class PartnerSupplierService {
       throw new NotFoundException('Fornecedor parceiro não encontrado!');
     }
 
+    /*
     await this.mailService.sendMail(
       user.email,
       dto.accessPending ? 'Cadastro reprovado' : 'Cadastro aprovado',
       dto.accessPending ? 'cadastro-reprovado.html' : 'cadastro-aprovado.html',
     );
+    */
 
     return this.prisma.partnerSupplier.update({
       where: { id },
