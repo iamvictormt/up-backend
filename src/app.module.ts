@@ -9,6 +9,9 @@ import { PartnerSupplierModule } from './partnerSupplier/partnerSupplier.module'
 import { ProfessionalModule } from './professional/professional.module';
 import { StoreModule } from './store/store.module';
 import { ListedProfessionalModule } from './listed-professional/listed-professional.module';
+import { LoveDecorationModule } from './loveDecoration/loveDecoration.module';
+import { EventModule } from './event/event.module';
+import { EventRegistrationModule } from './eventRegistration/eventRegistration.module';
 
 @Module({
   imports: [
@@ -23,6 +26,9 @@ import { ListedProfessionalModule } from './listed-professional/listed-professio
     UserModule,
     StoreModule,
     ListedProfessionalModule,
+    LoveDecorationModule,
+    EventModule,
+    EventRegistrationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

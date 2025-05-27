@@ -58,6 +58,7 @@ export class ProfessionalService {
       userDto,
       undefined,
       professional.id,
+      undefined
     );
     return { professional, user };
   }

@@ -11,6 +11,7 @@ export class UserService {
     userDto: CreateUserDto,
     partnerSupplierId?: string,
     professionalId?: string,
+    loveDecorationId?: string
   ) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(userDto.password, salt);
@@ -21,6 +22,7 @@ export class UserService {
         password: hashedPassword,
         partnerSupplierId,
         professionalId,
+        loveDecorationId
       },
     });
   }
@@ -35,8 +37,10 @@ export class UserService {
         updatedAt: true,
         partnerSupplier: true,
         professional: true,
+        loveDecoration: true,
         partnerSupplierId: false,
         professionalId: false,
+        loveDecorationId: false
       },
     });
   }
@@ -52,8 +56,10 @@ export class UserService {
         updatedAt: true,
         partnerSupplier: true,
         professional: true,
+        loveDecoration: true,
         partnerSupplierId: false,
         professionalId: false,
+        loveDecorationId: false
       },
     });
   }
