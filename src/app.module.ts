@@ -8,6 +8,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { PartnerSupplierModule } from './partnerSupplier/partnerSupplier.module';
 import { ProfessionalModule } from './professional/professional.module';
 import { StoreModule } from './store/store.module';
+import { ListedProfessionalModule } from './listed-professional/listed-professional.module';
 
 @Module({
   imports: [
@@ -20,7 +21,9 @@ import { StoreModule } from './store/store.module';
     ProfessionalModule,
     AuthModule,
     UserModule,
-    StoreModule],
+    StoreModule,
+    ListedProfessionalModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

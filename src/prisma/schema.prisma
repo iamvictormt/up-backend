@@ -74,6 +74,7 @@ model SocialMedia {
   whatsapp  String?
 
   professional Professional?
+  listedProfessional ListedProfessional?
 }
 
 model Address {
@@ -184,9 +185,52 @@ model Coupon {
   createdAt DateTime @default(now())
 }
 
+model ListedProfessional {
+  id          String   @id @default(uuid())
+  name        String
+  profession  String
+  description String?
+  phone       String
+  email       String?
+
+  state       String
+  city        String
+  district    String
+  street      String?
+  number      String?
+  complement  String?
+  zipCode     String?
+
+  socialMedia   SocialMedia? @relation(fields: [socialMediaId], references: [id])
+  socialMediaId String?      @unique
+
+  availableDays AvailableDay[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  isActive    Boolean  @default(true)
+}
+
+model AvailableDay {
+  id                   String             @id @default(uuid())
+  dayOfWeek            WeekDay
+  listedProfessional   ListedProfessional @relation(fields: [listedProfessionalId], references: [id])
+  listedProfessionalId String
+}
+
 /**
  * ENUMS:
- */
+*/
+
+ enum WeekDay {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
 
 enum ProfessionalLevel {
   BRONZE
