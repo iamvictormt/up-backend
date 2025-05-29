@@ -105,6 +105,7 @@ export class ProfessionalService {
       where: { id },
       include: {
         address: true,
+        user: true,
       },
     });
   }
