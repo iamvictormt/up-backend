@@ -33,28 +33,16 @@ export class AuthService {
   }
 
   async login(user: any) {
-    let role: 'PARTNER' | 'PROFESSIONAL';
-
-    if (user.partnerSupplierId) {
-      role = 'PARTNER';
-    } else if (user.professionalId) {
-      role = 'PROFESSIONAL';
-    } else {
-      throw new UnauthorizedException('Usuário sem perfil vinculado');
-    }
-
     const payload = {
       email: user.email,
       sub: user.id,
-      role,
     };
 
     return {
       access_token: this.jwtService.sign(payload, {
         secret: process.env.SECRET_KEY || 'default_secret',
-        expiresIn: '1h',
+        expiresIn: '10m',
       }),
-      role: role,
       user: user
     };
   }

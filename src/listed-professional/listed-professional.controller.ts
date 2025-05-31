@@ -1,4 +1,3 @@
-// listed-professional.controller.ts
 import {
   Controller,
   Get,
@@ -6,12 +5,14 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
+  Delete, UseGuards,
 } from '@nestjs/common';
 import { ListedProfessionalService } from './listed-professional.service';
 import { CreateListedProfessionalDto } from './dto/create-listed-professional.dto';
 import { UpdateListedProfessionalDto } from './dto/update-listed-professional.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('listed-professionals')
 export class ListedProfessionalController {
   constructor(private readonly service: ListedProfessionalService) {}

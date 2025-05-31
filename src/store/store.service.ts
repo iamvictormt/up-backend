@@ -68,7 +68,11 @@ export class StoreService {
   }
 
   async findAll() {
-    return this.prisma.store.findMany();
+    return this.prisma.store.findMany({
+      include: {
+        address: true,
+      },
+    });
   }
 
   async findOne(id: string) {
