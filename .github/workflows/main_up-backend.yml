@@ -24,6 +24,9 @@ jobs:
         run: npm ci
 
       - name: Generate Prisma Client
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
         run: npx prisma generate
 
       - name: Build application
@@ -60,9 +63,15 @@ jobs:
         run: npm ci --omit=dev
 
       - name: Generate Prisma Client
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
         run: npx prisma generate
 
       - name: Run Prisma Migrate Deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
         run: npx prisma migrate deploy
 
       - name: Login to Azure
