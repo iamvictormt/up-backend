@@ -75,7 +75,6 @@ export class ProfessionalService {
     return this.prisma.professional.findUnique({
       where: { id },
       include: {
-        address: true,
         user: true,
       },
     });
