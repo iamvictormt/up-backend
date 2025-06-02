@@ -15,8 +15,7 @@ export class CreateUserDto {
   @IsString()
   profileImage: string;
 
-  @IsOptional()
   @ValidateNested()
   @Type(() => CreateAddressDto)
-  address?: CreateAddressDto;
+  address: CreateAddressDto;
 }

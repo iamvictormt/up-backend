@@ -2,12 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
-import { UpdateLoveDecorationDto } from '../love-decoration/dto/update-love-decoration.dto';
+import { AddressService } from '../address/address.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private addressService: AddressService,
+  ) {}
 
   async createUserWithRelation(
     userDto: CreateUserDto,
@@ -17,6 +20,7 @@ export class UserService {
   ) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(userDto.password, salt);
+    const address = await this.addressService.create(userDto.address);
 
     return this.prisma.user.create({
       data: {
@@ -26,6 +30,7 @@ export class UserService {
         partnerSupplierId,
         professionalId,
         loveDecorationId,
+        addressId: address.id,
       },
     });
   }
@@ -63,6 +68,24 @@ export class UserService {
         partnerSupplierId: false,
         professionalId: false,
         loveDecorationId: false,
+      },
+    });
+  }
+
+  async update(id: string, dto: UpdateUserDto) {
+    const { address, ...userData } = dto;
+
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        ...userData,
+        address: address
+          ? {
+              update: {
+                ...address,
+              },
+            }
+          : undefined,
       },
     });
   }

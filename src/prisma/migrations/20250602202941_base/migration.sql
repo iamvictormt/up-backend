@@ -1,4 +1,7 @@
 -- CreateEnum
+CREATE TYPE "WeekDay" AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY');
+
+-- CreateEnum
 CREATE TYPE "ProfessionalLevel" AS ENUM ('BRONZE', 'SILVER', 'GOLD', 'PLATINUM');
 
 -- CreateEnum
@@ -14,9 +17,11 @@ CREATE TABLE "User" (
     "password" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "accessPending" BOOLEAN NOT NULL DEFAULT true,
+    "profileImage" TEXT,
     "professionalId" TEXT,
     "partnerSupplierId" TEXT,
+    "loveDecorationId" TEXT,
+    "addressId" TEXT,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -36,10 +41,8 @@ CREATE TABLE "Professional" (
     "featured" BOOLEAN NOT NULL DEFAULT false,
     "level" "ProfessionalLevel" NOT NULL DEFAULT 'BRONZE',
     "points" INTEGER NOT NULL DEFAULT 0,
-    "profileImage" TEXT,
     "phone" TEXT NOT NULL,
     "socialMediaId" TEXT,
-    "addressId" TEXT,
 
     CONSTRAINT "Professional_pkey" PRIMARY KEY ("id")
 );
@@ -52,7 +55,8 @@ CREATE TABLE "PartnerSupplier" (
     "document" TEXT NOT NULL,
     "stateRegistration" TEXT,
     "contact" TEXT,
-    "addressId" TEXT,
+    "accessPending" BOOLEAN NOT NULL DEFAULT true,
+    "storeId" TEXT,
 
     CONSTRAINT "PartnerSupplier_pkey" PRIMARY KEY ("id")
 );
@@ -85,7 +89,6 @@ CREATE TABLE "Address" (
 CREATE TABLE "Store" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "cnpj" TEXT NOT NULL,
     "description" TEXT,
     "website" TEXT,
     "rating" DOUBLE PRECISION DEFAULT 0,
@@ -182,6 +185,49 @@ CREATE TABLE "Coupon" (
     CONSTRAINT "Coupon_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "RecommendedProfessional" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "profession" TEXT NOT NULL,
+    "description" TEXT,
+    "phone" TEXT NOT NULL,
+    "email" TEXT,
+    "state" TEXT NOT NULL,
+    "city" TEXT NOT NULL,
+    "district" TEXT NOT NULL,
+    "street" TEXT,
+    "number" TEXT,
+    "complement" TEXT,
+    "zipCode" TEXT,
+    "socialMediaId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+
+    CONSTRAINT "RecommendedProfessional_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AvailableDay" (
+    "id" TEXT NOT NULL,
+    "dayOfWeek" "WeekDay" NOT NULL,
+    "recommendedProfessionalId" TEXT NOT NULL,
+
+    CONSTRAINT "AvailableDay_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "LoveDecoration" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "contact" TEXT NOT NULL,
+    "instagram" TEXT NOT NULL,
+    "tiktok" TEXT NOT NULL,
+
+    CONSTRAINT "LoveDecoration_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
@@ -192,10 +238,22 @@ CREATE UNIQUE INDEX "User_professionalId_key" ON "User"("professionalId");
 CREATE UNIQUE INDEX "User_partnerSupplierId_key" ON "User"("partnerSupplierId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "User_loveDecorationId_key" ON "User"("loveDecorationId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Professional_socialMediaId_key" ON "Professional"("socialMediaId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "PartnerSupplier_storeId_key" ON "PartnerSupplier"("storeId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Store_partnerId_key" ON "Store"("partnerId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Coupon_code_key" ON "Coupon"("code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "RecommendedProfessional_socialMediaId_key" ON "RecommendedProfessional"("socialMediaId");
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_professionalId_fkey" FOREIGN KEY ("professionalId") REFERENCES "Professional"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -204,13 +262,13 @@ ALTER TABLE "User" ADD CONSTRAINT "User_professionalId_fkey" FOREIGN KEY ("profe
 ALTER TABLE "User" ADD CONSTRAINT "User_partnerSupplierId_fkey" FOREIGN KEY ("partnerSupplierId") REFERENCES "PartnerSupplier"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_loveDecorationId_fkey" FOREIGN KEY ("loveDecorationId") REFERENCES "LoveDecoration"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_addressId_fkey" FOREIGN KEY ("addressId") REFERENCES "Address"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Professional" ADD CONSTRAINT "Professional_socialMediaId_fkey" FOREIGN KEY ("socialMediaId") REFERENCES "SocialMedia"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Professional" ADD CONSTRAINT "Professional_addressId_fkey" FOREIGN KEY ("addressId") REFERENCES "Address"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "PartnerSupplier" ADD CONSTRAINT "PartnerSupplier_addressId_fkey" FOREIGN KEY ("addressId") REFERENCES "Address"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Store" ADD CONSTRAINT "Store_addressId_fkey" FOREIGN KEY ("addressId") REFERENCES "Address"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -241,3 +299,9 @@ ALTER TABLE "Workshop" ADD CONSTRAINT "Workshop_professionalId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "WorkshopModule" ADD CONSTRAINT "WorkshopModule_workshopId_fkey" FOREIGN KEY ("workshopId") REFERENCES "Workshop"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "RecommendedProfessional" ADD CONSTRAINT "RecommendedProfessional_socialMediaId_fkey" FOREIGN KEY ("socialMediaId") REFERENCES "SocialMedia"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AvailableDay" ADD CONSTRAINT "AvailableDay_recommendedProfessionalId_fkey" FOREIGN KEY ("recommendedProfessionalId") REFERENCES "RecommendedProfessional"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -10,6 +10,7 @@ import { UserService } from 'src/user/user.service';
 import { UpdatePartnerSupplierDto } from './dto/update-partner-supplier.dto';
 import { MailService } from '../mail/mail.service';
 import { UpdateEventDto } from '../event/dto/update-event.dto';
+import { UpdateUserDto } from '../user/dto/update-user.dto';
 
 @Injectable()
 export class PartnerSupplierService {
@@ -57,12 +58,18 @@ export class PartnerSupplierService {
     return { partnerSupplier, user };
   }
 
-  async update(id: string, data: UpdatePartnerSupplierDto) {
-    const { ...eventData } = data;
+  async update(
+    id: string,
+    dto: UpdatePartnerSupplierDto,
+    userDto: UpdateUserDto,
+  ) {
+    const { ...eventData } = dto;
 
     const prismaUpdateData: any = {
       ...eventData,
     };
+
+    await this.userService.update(userDto.id, userDto);
 
     return this.prisma.partnerSupplier.update({
       where: { id },

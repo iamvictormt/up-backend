@@ -3,6 +3,7 @@ import { PartnerSupplierService } from './partner-supplier.service';
 import { CreatePartnerSupplierDto } from './dto/create-partner-supplier.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UpdatePartnerSupplierDto } from './dto/update-partner-supplier.dto';
+import { UpdateUserDto } from '../user/dto/update-user.dto';
 
 @Controller('partner-suppliers')
 export class PartnerSupplierController {
@@ -18,8 +19,12 @@ export class PartnerSupplierController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: UpdatePartnerSupplierDto) {
-    return this.partnerSupplierService.update(id, data);
+  update(
+    @Param('id') id: string,
+    @Body('partnerSupplier') dto: UpdatePartnerSupplierDto,
+    @Body('user') userDto: UpdateUserDto,
+  ) {
+    return this.partnerSupplierService.update(id, dto, userDto);
   }
 
   @Get() async findAll() {

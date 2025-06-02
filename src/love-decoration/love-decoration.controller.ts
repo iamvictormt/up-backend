@@ -1,16 +1,9 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param, Patch,
-  Post,
-  Put,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { LoveDecorationService } from './love-decoration.service';
 import { CreateLoveDecorationDto } from './dto/create-love-decoration.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UpdateLoveDecorationDto } from './dto/update-love-decoration.dto';
+import { UpdateUserDto } from '../user/dto/update-user.dto';
 
 @Controller('love-decorations')
 export class LoveDecorationController {
@@ -24,8 +17,12 @@ export class LoveDecorationController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: UpdateLoveDecorationDto) {
-    return this.loveDecorationService.update(id, data);
+  update(
+    @Param('id') id: string,
+    @Body('loveDecoration') dto: UpdateLoveDecorationDto,
+    @Body('user') userDto: UpdateUserDto,
+  ) {
+    return this.loveDecorationService.update(id, dto, userDto);
   }
 
   @Get() async findAll() {

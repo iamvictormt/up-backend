@@ -3,6 +3,7 @@ import { ProfessionalService } from './professional.service';
 import { CreateProfessionalDto } from './dto/create-professional.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UpdateProfessionalDto } from './dto/update-professional.dto';
+import { UpdateUserDto } from '../user/dto/update-user.dto';
 
 @Controller('professionals')
 export class ProfessionalController {
@@ -17,8 +18,12 @@ export class ProfessionalController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: UpdateProfessionalDto) {
-    return this.professionalService.update(id, data);
+  update(
+    @Param('id') id: string,
+    @Body('professional') dto: UpdateProfessionalDto,
+    @Body('user') userDto: UpdateUserDto,
+  ) {
+    return this.professionalService.update(id, dto, userDto);
   }
 
   @Get() async findAll() {

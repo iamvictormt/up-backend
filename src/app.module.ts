@@ -13,6 +13,7 @@ import { LoveDecorationModule } from './love-decoration/love-decoration.module';
 import { EventModule } from './event/event.module';
 import { EventRegistrationModule } from './event-registration/event-registration.module';
 import { ProductModule } from './product/product.module';
+import { AddressModule } from './address/address.module';
 
 @Module({
   imports: [
@@ -30,7 +31,8 @@ import { ProductModule } from './product/product.module';
     LoveDecorationModule,
     EventModule,
     EventRegistrationModule,
-    ProductModule
+    ProductModule,
+    AddressModule
   ],
   controllers: [AppController],
   providers: [AppService],

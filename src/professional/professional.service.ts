@@ -4,6 +4,7 @@ import { CreateProfessionalDto } from './dto/create-professional.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
 import { UpdateProfessionalDto } from './dto/update-professional.dto';
+import { UpdateUserDto } from '../user/dto/update-user.dto';
 
 @Injectable()
 export class ProfessionalService {
@@ -35,7 +36,7 @@ export class ProfessionalService {
         featured: dto.featured ?? false,
         level: dto.level ?? 'BRONZE',
         phone: dto.phone,
-      }
+      },
     });
 
     const user = await this.userService.createUserWithRelation(
@@ -47,12 +48,14 @@ export class ProfessionalService {
     return { professional, user };
   }
 
-  async update(id: string, data: UpdateProfessionalDto) {
-    const { ...eventData } = data;
+  async update(id: string, dto: UpdateProfessionalDto, userDto: UpdateUserDto) {
+    const { ...eventData } = dto;
 
     const prismaUpdateData: any = {
       ...eventData,
     };
+
+    await this.userService.update(userDto.id, userDto);
 
     return this.prisma.professional.update({
       where: { id },

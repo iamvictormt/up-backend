@@ -4,6 +4,7 @@ import { CreateLoveDecorationDto } from './dto/create-love-decoration.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
 import { UpdateLoveDecorationDto } from './dto/update-love-decoration.dto';
+import { UpdateUserDto } from '../user/dto/update-user.dto';
 
 @Injectable()
 export class LoveDecorationService {
@@ -39,8 +40,13 @@ export class LoveDecorationService {
     return { loveDecoration, user };
   }
 
-  async update(id: string, data: UpdateLoveDecorationDto) {
-    const updateData: any = { ...data };
+  async update(
+    id: string,
+    dto: UpdateLoveDecorationDto,
+    userDto: UpdateUserDto,
+  ) {
+    const updateData: any = { ...dto };
+    await this.userService.update(userDto.id, userDto);
 
     const updatedLoveDecoration = await this.prisma.loveDecoration.update({
       where: { id },
@@ -51,6 +57,7 @@ export class LoveDecorationService {
             id: true,
             profileImage: true,
             loveDecoration: true,
+            address: true
           },
         },
       },

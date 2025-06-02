@@ -24,6 +24,9 @@ model User {
 
   loveDecorationId String?         @unique
   loveDecoration   LoveDecoration? @relation("UserLoveDecoration", fields: [loveDecorationId], references: [id])
+
+  address   Address? @relation(fields: [addressId], references: [id])
+  addressId String?
 }
 
 model Professional {
@@ -43,8 +46,6 @@ model Professional {
   phone              String
   socialMediaId      String?           @unique
   social             SocialMedia?      @relation(fields: [socialMediaId], references: [id])
-  address            Address?          @relation(fields: [addressId], references: [id])
-  addressId          String?
 
   user               User?               @relation("UserProfessional")
   workshops          Workshop[]
@@ -59,9 +60,6 @@ model PartnerSupplier {
   document          String
   stateRegistration String?
   contact           String?
-
-  address   Address? @relation(fields: [addressId], references: [id])
-  addressId String?
 
   accessPending Boolean @default(true)
 
@@ -90,11 +88,9 @@ model Address {
   number     String?
   zipCode    String?
 
-  professionals    Professional[]
-  partnerSuppliers PartnerSupplier[]
-  stores           Store[]
-  events           Event[]
-  loveDecoration   LoveDecoration[]
+  stores Store[]
+  events Event[]
+  users  User[]
 }
 
 model Store {
@@ -228,9 +224,6 @@ model LoveDecoration {
   contact   String
   instagram String
   tiktok    String
-
-  address   Address? @relation(fields: [addressId], references: [id])
-  addressId String?
 
   user User? @relation("UserLoveDecoration")
 }
