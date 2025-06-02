@@ -9,11 +9,12 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(uuid())
+  email        String   @unique
+  password     String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  profileImage String?
 
   professionalId String?       @unique
   professional   Professional? @relation("UserProfessional", fields: [professionalId], references: [id])
@@ -21,8 +22,11 @@ model User {
   partnerSupplierId String?          @unique
   partnerSupplier   PartnerSupplier? @relation("UserPartner", fields: [partnerSupplierId], references: [id])
 
-  loveDecorationId String?          @unique
-  loveDecoration   LoveDecoration[] @relation("UserLoveDecoration")
+  loveDecorationId String?         @unique
+  loveDecoration   LoveDecoration? @relation("UserLoveDecoration", fields: [loveDecorationId], references: [id])
+
+  address   Address? @relation(fields: [addressId], references: [id])
+  addressId String?
 }
 
 model Professional {
@@ -39,12 +43,9 @@ model Professional {
   featured           Boolean           @default(false)
   level              ProfessionalLevel @default(BRONZE)
   points             Int               @default(0)
-  profileImage       String?
   phone              String
   socialMediaId      String?           @unique
   social             SocialMedia?      @relation(fields: [socialMediaId], references: [id])
-  address            Address?          @relation(fields: [addressId], references: [id])
-  addressId          String?
 
   user               User?               @relation("UserProfessional")
   workshops          Workshop[]
@@ -59,10 +60,6 @@ model PartnerSupplier {
   document          String
   stateRegistration String?
   contact           String?
-  profileImage      String?
-
-  address   Address? @relation(fields: [addressId], references: [id])
-  addressId String?
 
   accessPending Boolean @default(true)
 
@@ -77,8 +74,8 @@ model SocialMedia {
   instagram String?
   whatsapp  String?
 
-  professional Professional?
-  listedProfessional ListedProfessional?
+  professional            Professional?
+  RecommendedProfessional RecommendedProfessional?
 }
 
 model Address {
@@ -91,11 +88,9 @@ model Address {
   number     String?
   zipCode    String?
 
-  professionals    Professional[]
-  partnerSuppliers PartnerSupplier[]
-  stores           Store[]
-  events           Event[]
-  loveDecoration   LoveDecoration[]
+  stores Store[]
+  events Event[]
+  users  User[]
 }
 
 model Store {
@@ -190,37 +185,37 @@ model Coupon {
   createdAt DateTime @default(now())
 }
 
-model ListedProfessional {
-  id          String   @id @default(uuid())
+model RecommendedProfessional {
+  id          String  @id @default(uuid())
   name        String
   profession  String
   description String?
   phone       String
   email       String?
 
-  state       String
-  city        String
-  district    String
-  street      String?
-  number      String?
-  complement  String?
-  zipCode     String?
+  state      String
+  city       String
+  district   String
+  street     String?
+  number     String?
+  complement String?
+  zipCode    String?
 
   socialMedia   SocialMedia? @relation(fields: [socialMediaId], references: [id])
   socialMediaId String?      @unique
 
   availableDays AvailableDay[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  isActive    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isActive  Boolean  @default(true)
 }
 
 model AvailableDay {
-  id                   String             @id @default(uuid())
-  dayOfWeek            WeekDay
-  listedProfessional   ListedProfessional @relation(fields: [listedProfessionalId], references: [id])
-  listedProfessionalId String
+  id                        String                  @id @default(uuid())
+  dayOfWeek                 WeekDay
+  RecommendedProfessional   RecommendedProfessional @relation(fields: [recommendedProfessionalId], references: [id])
+  recommendedProfessionalId String
 }
 
 model LoveDecoration {
@@ -230,17 +225,14 @@ model LoveDecoration {
   instagram String
   tiktok    String
 
-  address   Address? @relation(fields: [addressId], references: [id])
-  addressId String?
-
-  user   User?   @relation("UserLoveDecoration", fields: [userId], references: [id])
-  userId String?
+  user User? @relation("UserLoveDecoration")
 }
+
 /**
  * ENUMS:
-*/
+ */
 
- enum WeekDay {
+enum WeekDay {
   MONDAY
   TUESDAY
   WEDNESDAY

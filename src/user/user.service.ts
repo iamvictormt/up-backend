@@ -2,27 +2,35 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
+import { AddressService } from '../address/address.service';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private addressService: AddressService,
+  ) {}
 
   async createUserWithRelation(
     userDto: CreateUserDto,
     partnerSupplierId?: string,
     professionalId?: string,
-    loveDecorationId?: string
+    loveDecorationId?: string,
   ) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(userDto.password, salt);
+    const address = await this.addressService.create(userDto.address);
 
     return this.prisma.user.create({
       data: {
         email: userDto.email,
         password: hashedPassword,
+        profileImage: userDto.profileImage,
         partnerSupplierId,
         professionalId,
-        loveDecorationId
+        loveDecorationId,
+        addressId: address.id,
       },
     });
   }
@@ -40,7 +48,7 @@ export class UserService {
         loveDecoration: true,
         partnerSupplierId: false,
         professionalId: false,
-        loveDecorationId: false
+        loveDecorationId: false,
       },
     });
   }
@@ -59,17 +67,34 @@ export class UserService {
         loveDecoration: true,
         partnerSupplierId: false,
         professionalId: false,
-        loveDecorationId: false
+        loveDecorationId: false,
       },
     });
   }
 
-  async findOneById(id: string) {
-    return this.prisma.user.findUnique({ where: { id } });
+  async update(id: string, dto: UpdateUserDto) {
+    const { address, ...userData } = dto;
+
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        ...userData,
+        address: address
+          ? {
+              update: {
+                ...address,
+              },
+            }
+          : undefined,
+      },
+    });
   }
 
-  async findOneByEmail(email: string) {
-    return this.prisma.user.findUnique({ where: { email } });
+  async updateProfileImage(userId: string, profileImage: string | undefined) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { profileImage },
+    });
   }
 
   async checkIfEmailExists(email: string): Promise<boolean> {

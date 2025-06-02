@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
@@ -13,15 +17,17 @@ export class AuthService {
   async validateUser(email: string, password: string) {
     const user = await this.prisma.user.findUnique({
       where: { email },
-      include: { partnerSupplier: true, professional: true },
+      include: { partnerSupplier: true, professional: true, loveDecoration: true, address: true },
     });
 
     if (!user) {
       return null;
     }
 
-    if(user.partnerSupplier && user.partnerSupplier.accessPending) {
-      throw new ForbiddenException('Cadastro pendente de aprovação. \nVocê receberá um email assim que o processo for concluído.');
+    if (user.partnerSupplier && user.partnerSupplier.accessPending) {
+      throw new ForbiddenException(
+        'Cadastro pendente de aprovação. \nVocê receberá um email assim que o processo for concluído.',
+      );
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -33,29 +39,19 @@ export class AuthService {
   }
 
   async login(user: any) {
-    let role: 'PARTNER' | 'PROFESSIONAL';
-
-    if (user.partnerSupplierId) {
-      role = 'PARTNER';
-    } else if (user.professionalId) {
-      role = 'PROFESSIONAL';
-    } else {
-      throw new UnauthorizedException('Usuário sem perfil vinculado');
-    }
-
     const payload = {
       email: user.email,
       sub: user.id,
-      role,
     };
+
+    const { password, ...safeUser } = user;
 
     return {
       access_token: this.jwtService.sign(payload, {
         secret: process.env.SECRET_KEY || 'default_secret',
-        expiresIn: '1h',
+        expiresIn: '10m',
       }),
-      role: role,
-      user: user
+      user: safeUser,
     };
   }
 }

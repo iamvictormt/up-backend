@@ -1,15 +1,14 @@
-// listed-professional.service.ts
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateListedProfessionalDto } from './dto/create-listed-professional.dto';
-import { UpdateListedProfessionalDto } from './dto/update-listed-professional.dto';
+import { UpdateRecommendedProfessionalDto } from './dto/update-recommended-professional.dto';
+import { CreateRecommendedProfessionalDto } from './dto/create-recommended-professional.dto';
 
 @Injectable()
-export class ListedProfessionalService {
+export class RecommendedProfessionalService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(data: CreateListedProfessionalDto) {
-    return this.prisma.listedProfessional.create({
+  create(data: CreateRecommendedProfessionalDto) {
+    return this.prisma.recommendedProfessional.create({
       data: {
         ...data,
         availableDays: data.availableDays
@@ -31,7 +30,7 @@ export class ListedProfessionalService {
   }
 
   findAll() {
-    return this.prisma.listedProfessional.findMany({
+    return this.prisma.recommendedProfessional.findMany({
       include: {
         availableDays: true,
         socialMedia: true,
@@ -40,7 +39,7 @@ export class ListedProfessionalService {
   }
 
   findOne(id: string) {
-    return this.prisma.listedProfessional.findUnique({
+    return this.prisma.recommendedProfessional.findUnique({
       where: { id },
       include: {
         availableDays: true,
@@ -49,10 +48,10 @@ export class ListedProfessionalService {
     });
   }
 
-  async update(id: string, data: UpdateListedProfessionalDto) {
+  async update(id: string, data: UpdateRecommendedProfessionalDto) {
     const { socialMedia, availableDays, ...rest } = data;
 
-    return this.prisma.listedProfessional.update({
+    return this.prisma.recommendedProfessional.update({
       where: { id },
       data: {
         ...rest,
@@ -68,7 +67,7 @@ export class ListedProfessionalService {
 
         availableDays: availableDays
           ? {
-              deleteMany: {}, // Apaga os dias existentes
+              deleteMany: {},
               createMany: {
                 data: availableDays.map((dayOfWeek) => ({ dayOfWeek })),
               },
@@ -94,7 +93,7 @@ export class ListedProfessionalService {
   }
 
   remove(id: string) {
-    return this.prisma.listedProfessional.delete({
+    return this.prisma.recommendedProfessional.delete({
       where: { id },
     });
   }

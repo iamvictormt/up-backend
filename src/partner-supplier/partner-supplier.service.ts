@@ -10,6 +10,7 @@ import { UserService } from 'src/user/user.service';
 import { UpdatePartnerSupplierDto } from './dto/update-partner-supplier.dto';
 import { MailService } from '../mail/mail.service';
 import { UpdateEventDto } from '../event/dto/update-event.dto';
+import { UpdateUserDto } from '../user/dto/update-user.dto';
 
 @Injectable()
 export class PartnerSupplierService {
@@ -34,26 +35,13 @@ export class PartnerSupplierService {
         document: dto.document,
         stateRegistration: dto.stateRegistration,
         contact: dto.contact,
-        profileImage: dto.profileImage,
-        address: {
-          create: dto.address,
-        },
-      },
-      include: {
-        address: true,
       },
     });
 
     await this.prisma.store.create({
       data: {
         name: partnerSupplier.tradeName,
-        address: {
-          connect: {
-            id: partnerSupplier.addressId
-              ? partnerSupplier.addressId
-              : undefined,
-          },
-        },
+        address: {},
         partner: {
           connect: { id: partnerSupplier.id },
         },
@@ -70,26 +58,18 @@ export class PartnerSupplierService {
     return { partnerSupplier, user };
   }
 
-  async update(id: string, data: UpdatePartnerSupplierDto) {
-    const { address, ...eventData } = data;
+  async update(
+    id: string,
+    dto: UpdatePartnerSupplierDto,
+    userDto: UpdateUserDto,
+  ) {
+    const { ...eventData } = dto;
 
     const prismaUpdateData: any = {
       ...eventData,
     };
 
-    if (address) {
-      prismaUpdateData.address = {
-        update: {
-          state: address.state,
-          city: address.city,
-          district: address.district,
-          street: address.street,
-          complement: address.complement,
-          number: address.number,
-          zipCode: address.zipCode,
-        },
-      };
-    }
+    await this.userService.update(userDto.id, userDto);
 
     return this.prisma.partnerSupplier.update({
       where: { id },

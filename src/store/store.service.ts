@@ -68,12 +68,21 @@ export class StoreService {
   }
 
   async findAll() {
-    return this.prisma.store.findMany();
+    return this.prisma.store.findMany({
+      include: {
+        address: true,
+        products: true,
+      },
+    });
   }
 
   async findOne(id: string) {
     return this.prisma.store.findUnique({
       where: { id },
+      include: {
+        address: true,
+        products: true,
+      },
     });
   }
 }

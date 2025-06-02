@@ -61,11 +61,6 @@ export class CreateProfessionalDto {
   @IsString()
   socialMediaId?: string;
 
-  @ValidateNested()
-  @Type(() => CreateAddressDto)
-  @IsOptional()
-  address?: CreateAddressDto;
-
   @IsOptional()
   @IsUUID()
   userId?: string;

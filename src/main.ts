@@ -9,7 +9,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.enableCors({
     origin: [
-      'https://up-landing-page.vercel.app',
+      'https://up-dashboard-two.vercel.app',
       'http://localhost:3000',
       'http://localhost:3001',
     ],

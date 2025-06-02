@@ -4,6 +4,7 @@ import { CreateProfessionalDto } from './dto/create-professional.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
 import { UpdateProfessionalDto } from './dto/update-professional.dto';
+import { UpdateUserDto } from '../user/dto/update-user.dto';
 
 @Injectable()
 export class ProfessionalService {
@@ -34,24 +35,7 @@ export class ProfessionalService {
         verified: dto.verified ?? false,
         featured: dto.featured ?? false,
         level: dto.level ?? 'BRONZE',
-        profileImage: dto.profileImage,
         phone: dto.phone,
-        address: dto.address
-          ? {
-              create: {
-                state: dto.address.state,
-                city: dto.address.city,
-                district: dto.address.district,
-                street: dto.address.street,
-                complement: dto.address.complement,
-                number: dto.address.number,
-                zipCode: dto.address.zipCode,
-              },
-            }
-          : undefined,
-      },
-      include: {
-        address: true,
       },
     });
 
@@ -64,26 +48,14 @@ export class ProfessionalService {
     return { professional, user };
   }
 
-  async update(id: string, data: UpdateProfessionalDto) {
-    const { address, ...eventData } = data;
+  async update(id: string, dto: UpdateProfessionalDto, userDto: UpdateUserDto) {
+    const { ...eventData } = dto;
 
     const prismaUpdateData: any = {
       ...eventData,
     };
 
-    if (address) {
-      prismaUpdateData.address = {
-        update: {
-          state: address.state,
-          city: address.city,
-          district: address.district,
-          street: address.street,
-          complement: address.complement,
-          number: address.number,
-          zipCode: address.zipCode,
-        },
-      };
-    }
+    await this.userService.update(userDto.id, userDto);
 
     return this.prisma.professional.update({
       where: { id },
@@ -95,7 +67,6 @@ export class ProfessionalService {
     return this.prisma.professional.findMany({
       include: {
         user: true,
-        address: true,
       },
     });
   }
