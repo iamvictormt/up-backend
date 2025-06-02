@@ -1,4 +1,6 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, IsPhoneNumber } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, IsPhoneNumber, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { CreateAddressDto } from '../../address/dto/create-address.dto';
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -8,4 +10,13 @@ export class CreateUserDto {
   @IsNotEmpty()
   @IsString()
   password: string;
+
+  @IsOptional()
+  @IsString()
+  profileImage: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CreateAddressDto)
+  address?: CreateAddressDto;
 }

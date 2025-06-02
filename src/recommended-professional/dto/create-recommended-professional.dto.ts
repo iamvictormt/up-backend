@@ -1,7 +1,6 @@
-// dto/create-listed-professional.dto.ts
 import { WeekDay } from '@prisma/client';
 
-export class CreateListedProfessionalDto {
+export class CreateRecommendedProfessionalDto {
   name: string;
   profession: string;
   description?: string;

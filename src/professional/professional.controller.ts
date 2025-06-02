@@ -4,7 +4,7 @@ import { CreateProfessionalDto } from './dto/create-professional.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UpdateProfessionalDto } from './dto/update-professional.dto';
 
-@Controller('professional')
+@Controller('professionals')
 export class ProfessionalController {
   constructor(private readonly professionalService: ProfessionalService) {}
 

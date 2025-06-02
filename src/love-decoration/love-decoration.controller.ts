@@ -12,7 +12,7 @@ import { CreateLoveDecorationDto } from './dto/create-love-decoration.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UpdateLoveDecorationDto } from './dto/update-love-decoration.dto';
 
-@Controller('love-decoration')
+@Controller('love-decorations')
 export class LoveDecorationController {
   constructor(private readonly loveDecorationService: LoveDecorationService) {}
 

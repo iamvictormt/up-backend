@@ -15,9 +15,4 @@ export class CreateLoveDecorationDto {
 
   @IsString()
   tiktok?: string;
-
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => CreateAddressDto)
-  address?: CreateAddressDto;
 }

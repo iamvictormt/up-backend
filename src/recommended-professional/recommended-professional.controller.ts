@@ -7,18 +7,18 @@ import {
   Param,
   Delete, UseGuards,
 } from '@nestjs/common';
-import { ListedProfessionalService } from './listed-professional.service';
-import { CreateListedProfessionalDto } from './dto/create-listed-professional.dto';
-import { UpdateListedProfessionalDto } from './dto/update-listed-professional.dto';
+import { RecommendedProfessionalService } from './recommended-professional.service';
+import { UpdateRecommendedProfessionalDto } from './dto/update-recommended-professional.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CreateRecommendedProfessionalDto } from './dto/create-recommended-professional.dto';
 
 @UseGuards(JwtAuthGuard)
-@Controller('listed-professionals')
-export class ListedProfessionalController {
-  constructor(private readonly service: ListedProfessionalService) {}
+@Controller('recommended-professionals')
+export class RecommendedProfessionalController {
+  constructor(private readonly service: RecommendedProfessionalService) {}
 
   @Post()
-  create(@Body() createDto: CreateListedProfessionalDto) {
+  create(@Body() createDto: CreateRecommendedProfessionalDto) {
     return this.service.create(createDto);
   }
 
@@ -35,7 +35,7 @@ export class ListedProfessionalController {
   @Patch(':id')
   update(
     @Param('id') id: string,
-    @Body() updateDto: UpdateListedProfessionalDto,
+    @Body() updateDto: UpdateRecommendedProfessionalDto,
   ) {
     return this.service.update(id, updateDto);
   }

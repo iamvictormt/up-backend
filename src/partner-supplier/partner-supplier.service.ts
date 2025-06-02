@@ -34,26 +34,13 @@ export class PartnerSupplierService {
         document: dto.document,
         stateRegistration: dto.stateRegistration,
         contact: dto.contact,
-        profileImage: dto.profileImage,
-        address: {
-          create: dto.address,
-        },
-      },
-      include: {
-        address: true,
       },
     });
 
     await this.prisma.store.create({
       data: {
         name: partnerSupplier.tradeName,
-        address: {
-          connect: {
-            id: partnerSupplier.addressId
-              ? partnerSupplier.addressId
-              : undefined,
-          },
-        },
+        address: {},
         partner: {
           connect: { id: partnerSupplier.id },
         },
@@ -71,25 +58,11 @@ export class PartnerSupplierService {
   }
 
   async update(id: string, data: UpdatePartnerSupplierDto) {
-    const { address, ...eventData } = data;
+    const { ...eventData } = data;
 
     const prismaUpdateData: any = {
       ...eventData,
     };
-
-    if (address) {
-      prismaUpdateData.address = {
-        update: {
-          state: address.state,
-          city: address.city,
-          district: address.district,
-          street: address.street,
-          complement: address.complement,
-          number: address.number,
-          zipCode: address.zipCode,
-        },
-      };
-    }
 
     return this.prisma.partnerSupplier.update({
       where: { id },

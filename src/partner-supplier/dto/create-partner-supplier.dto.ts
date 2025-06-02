@@ -27,9 +27,4 @@ export class CreatePartnerSupplierDto {
   @IsOptional()
   @IsBoolean()
   accessPending?: boolean;
-
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => CreateAddressDto)
-  address?: CreateAddressDto;
 }

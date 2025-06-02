@@ -4,7 +4,7 @@ import { CreatePartnerSupplierDto } from './dto/create-partner-supplier.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UpdatePartnerSupplierDto } from './dto/update-partner-supplier.dto';
 
-@Controller('partner-supplier')
+@Controller('partner-suppliers')
 export class PartnerSupplierController {
   constructor(
     private readonly partnerSupplierService: PartnerSupplierService,

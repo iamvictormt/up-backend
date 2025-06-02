@@ -26,13 +26,6 @@ export class LoveDecorationService {
         contact: dto.contact,
         instagram: dto.instagram,
         tiktok: dto.tiktok || '',
-
-        address: {
-          create: dto.address,
-        },
-      },
-      include: {
-        address: true,
       },
     });
 
@@ -47,30 +40,23 @@ export class LoveDecorationService {
   }
 
   async update(id: string, data: UpdateLoveDecorationDto) {
-    const { address, ...eventData } = data;
+    const updateData: any = { ...data };
 
-    const prismaUpdateData: any = {
-      ...eventData,
-    };
-
-    if (address) {
-      prismaUpdateData.address = {
-        update: {
-          state: address.state,
-          city: address.city,
-          district: address.district,
-          street: address.street,
-          complement: address.complement,
-          number: address.number,
-          zipCode: address.zipCode,
-        },
-      };
-    }
-
-    return this.prisma.loveDecoration.update({
+    const updatedLoveDecoration = await this.prisma.loveDecoration.update({
       where: { id },
-      data: prismaUpdateData,
+      data: updateData,
+      select: {
+        user: {
+          select: {
+            id: true,
+            profileImage: true,
+            loveDecoration: true,
+          },
+        },
+      },
     });
+
+    return updatedLoveDecoration.user;
   }
 
   async findAll() {

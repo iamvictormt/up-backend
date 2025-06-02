@@ -34,25 +34,8 @@ export class ProfessionalService {
         verified: dto.verified ?? false,
         featured: dto.featured ?? false,
         level: dto.level ?? 'BRONZE',
-        profileImage: dto.profileImage,
         phone: dto.phone,
-        address: dto.address
-          ? {
-              create: {
-                state: dto.address.state,
-                city: dto.address.city,
-                district: dto.address.district,
-                street: dto.address.street,
-                complement: dto.address.complement,
-                number: dto.address.number,
-                zipCode: dto.address.zipCode,
-              },
-            }
-          : undefined,
-      },
-      include: {
-        address: true,
-      },
+      }
     });
 
     const user = await this.userService.createUserWithRelation(
@@ -65,25 +48,11 @@ export class ProfessionalService {
   }
 
   async update(id: string, data: UpdateProfessionalDto) {
-    const { address, ...eventData } = data;
+    const { ...eventData } = data;
 
     const prismaUpdateData: any = {
       ...eventData,
     };
-
-    if (address) {
-      prismaUpdateData.address = {
-        update: {
-          state: address.state,
-          city: address.city,
-          district: address.district,
-          street: address.street,
-          complement: address.complement,
-          number: address.number,
-          zipCode: address.zipCode,
-        },
-      };
-    }
 
     return this.prisma.professional.update({
       where: { id },
@@ -95,7 +64,6 @@ export class ProfessionalService {
     return this.prisma.professional.findMany({
       include: {
         user: true,
-        address: true,
       },
     });
   }
@@ -104,7 +72,6 @@ export class ProfessionalService {
     return this.prisma.professional.findUnique({
       where: { id },
       include: {
-        address: true,
         user: true,
       },
     });
