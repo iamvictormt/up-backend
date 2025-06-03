@@ -14,6 +14,9 @@ import { EventModule } from './event/event.module';
 import { EventRegistrationModule } from './event-registration/event-registration.module';
 import { ProductModule } from './product/product.module';
 import { AddressModule } from './address/address.module';
+import { CommentModule } from './comment/comment.module';
+import { LikeModule } from './like/like.module';
+import { PostModule } from './post/post.module';
 
 @Module({
   imports: [
@@ -32,7 +35,10 @@ import { AddressModule } from './address/address.module';
     EventModule,
     EventRegistrationModule,
     ProductModule,
-    AddressModule
+    AddressModule,
+    CommentModule,
+    LikeModule,
+    PostModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -27,6 +27,10 @@ model User {
 
   address   Address? @relation(fields: [addressId], references: [id])
   addressId String?
+
+  posts    Post[]
+  likes    Like[]
+  comments Comment[]
 }
 
 model Professional {
@@ -226,6 +230,44 @@ model LoveDecoration {
   tiktok    String
 
   user User? @relation("UserLoveDecoration")
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  hashtags  String[] // Prisma suporta arrays com PostgreSQL e MongoDB
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  likes    Like[]
+  comments Comment[]
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
 }
 
 /**
