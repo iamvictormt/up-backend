@@ -238,7 +238,7 @@ model Post {
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  hashtags  String[] // Prisma suporta arrays com PostgreSQL e MongoDB
+  hashtags  String[]
 
   authorId String
   author   User   @relation(fields: [authorId], references: [id])
