@@ -50,6 +50,11 @@ export class AuthService {
     };
 
     const { password, ...safeUser } = user;
+    const role = user.professionalId
+      ? 'professional'
+      : user.partnerSupplierId
+        ? 'partnerSupplier'
+        : 'loveDecoration';
 
     return {
       access_token: this.jwtService.sign(payload, {
@@ -57,6 +62,7 @@ export class AuthService {
         expiresIn: '10m',
       }),
       user: safeUser,
+      role: role,
     };
   }
 }
