@@ -55,7 +55,7 @@ export class ProfessionalService {
       ...eventData,
     };
 
-    await this.userService.update(userDto.id, userDto);
+    await this.userService.update(userDto);
 
     return this.prisma.professional.update({
       where: { id },

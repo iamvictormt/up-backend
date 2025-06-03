@@ -46,7 +46,7 @@ export class LoveDecorationService {
     userDto: UpdateUserDto,
   ) {
     const updateData: any = { ...dto };
-    await this.userService.update(userDto.id, userDto);
+    await this.userService.update(userDto);
 
     const updatedLoveDecoration = await this.prisma.loveDecoration.update({
       where: { id },

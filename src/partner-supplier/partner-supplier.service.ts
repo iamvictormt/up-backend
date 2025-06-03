@@ -69,7 +69,7 @@ export class PartnerSupplierService {
       ...eventData,
     };
 
-    await this.userService.update(userDto.id, userDto);
+    await this.userService.update(userDto);
 
     return this.prisma.partnerSupplier.update({
       where: { id },

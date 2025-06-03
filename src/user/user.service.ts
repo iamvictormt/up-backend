@@ -53,30 +53,11 @@ export class UserService {
     });
   }
 
-  findOne(id: string) {
-    return this.prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        email: true,
-        password: true,
-        createdAt: true,
-        updatedAt: true,
-        partnerSupplier: true,
-        professional: true,
-        loveDecoration: true,
-        partnerSupplierId: false,
-        professionalId: false,
-        loveDecorationId: false,
-      },
-    });
-  }
-
-  async update(id: string, dto: UpdateUserDto) {
+  async update(dto: UpdateUserDto) {
     const { address, ...userData } = dto;
 
     return this.prisma.user.update({
-      where: { id },
+      where: { id: dto.id },
       data: {
         ...userData,
         address: address
@@ -102,6 +83,20 @@ export class UserService {
       where: { email },
     });
     return user !== null;
+  }
+
+  async findOne(id: string) {
+    return this.prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        partnerSupplier: true,
+        professional: true,
+        loveDecoration: true,
+        address: true,
+        profileImage: true
+      },
+    });
   }
 
   remove(id: string) {
