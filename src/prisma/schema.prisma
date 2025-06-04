@@ -190,12 +190,13 @@ model Coupon {
 }
 
 model RecommendedProfessional {
-  id          String  @id @default(uuid())
-  name        String
-  profession  String
-  description String?
-  phone       String
-  email       String?
+  id           String  @id @default(uuid())
+  name         String
+  profession   String
+  description  String?
+  phone        String
+  email        String?
+  profileImage String?
 
   state      String
   city       String
@@ -232,6 +233,15 @@ model LoveDecoration {
   user User? @relation("UserLoveDecoration")
 }
 
+model Community {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  posts       Post[]
+  color       String
+  icon        String
+}
+
 model Post {
   id        String   @id @default(uuid())
   title     String
@@ -242,6 +252,9 @@ model Post {
 
   authorId String
   author   User   @relation(fields: [authorId], references: [id])
+
+  communityId String
+  community   Community @relation(fields: [communityId], references: [id])
 
   likes    Like[]
   comments Comment[]
@@ -262,6 +275,7 @@ model Comment {
   id        String   @id @default(uuid())
   content   String
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   userId String
   user   User   @relation(fields: [userId], references: [id])

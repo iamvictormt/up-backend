@@ -16,6 +16,7 @@ import { ProductModule } from './product/product.module';
 import { AddressModule } from './address/address.module';
 import { CommentModule } from './comment/comment.module';
 import { LikeModule } from './like/like.module';
+import { CommunityModule } from './community/community.module';
 import { PostModule } from './post/post.module';
 
 @Module({
@@ -38,6 +39,7 @@ import { PostModule } from './post/post.module';
     AddressModule,
     CommentModule,
     LikeModule,
+    CommunityModule,
     PostModule
   ],
   controllers: [AppController],

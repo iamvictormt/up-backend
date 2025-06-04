@@ -41,7 +41,11 @@ export class PartnerSupplierService {
     await this.prisma.store.create({
       data: {
         name: partnerSupplier.tradeName,
-        address: {},
+        address: {
+          create: {
+            ...userDto.address,
+          },
+        },
         partner: {
           connect: { id: partnerSupplier.id },
         },

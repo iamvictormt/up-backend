@@ -14,6 +14,9 @@ export class PostService {
 
   async findAll(userId: string) {
     const posts = await this.prisma.post.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
       include: {
         author: {
           select: {
@@ -22,8 +25,73 @@ export class PostService {
             professional: { select: { id: true, name: true } },
           },
         },
+        community: {
+          select: {
+            id: true,
+            name: true,
+            color: true,
+            icon: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
+        },
         likes: {
-          select: { userId: true }, // para verificar se o user curtiu
+          where: {
+            userId: userId,
+          },
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    return posts.map((post) => ({
+      id: post.id,
+      title: post.title,
+      content: post.content,
+      createdAt: post.createdAt,
+      hashtags: post.hashtags,
+      author: {
+        id: post.author.loveDecoration?.id || post.author.professional?.id,
+        name:
+          post.author.loveDecoration?.name || post.author.professional?.name,
+        profileImage: post.author.profileImage,
+      },
+      community: post.community,
+      likes: post._count.likes,
+      comments: post._count.comments,
+      isLiked: post.likes.length > 0,
+    }));
+  }
+
+  async findAllByCommunity(userId: string, communityId: string) {
+    const posts = await this.prisma.post.findMany({
+      where: {
+        communityId,
+      },
+      include: {
+        author: {
+          select: {
+            profileImage: true,
+            loveDecoration: { select: { id: true, name: true } },
+            professional: { select: { id: true, name: true } },
+          },
+        },
+        community: {
+          select: {
+            name: true,
+            description: true,
+            color: true,
+            icon: true,
+          },
+        },
+        likes: {
+          select: { id: true, userId: true },
         },
         _count: {
           select: { likes: true, comments: true },
@@ -36,22 +104,25 @@ export class PostService {
         post.author.loveDecoration?.name || post.author.professional?.name;
       const authorId =
         post.author.loveDecoration?.id || post.author.professional?.id || '';
-      const isLiked = post.likes.some((like) => like.userId === userId);
+      const userLike = post.likes.find((like) => like.userId === userId);
 
       return {
         id: post.id,
         title: post.title,
         content: post.content,
         createdAt: post.createdAt,
-        likes: post._count.likes,
-        comments: post._count.comments,
+        updatedAt: post.updatedAt,
         hashtags: post.hashtags,
-        isLiked,
         author: {
           id: authorId,
           name: authorName,
           profileImage: post.author.profileImage,
         },
+        likes: post._count.likes,
+        comments: post._count.comments,
+        community: post.community,
+        isLiked: !!userLike,
+        likeId: userLike?.id,
       };
     });
   }

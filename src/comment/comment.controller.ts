@@ -5,11 +5,13 @@ import {
   Get,
   Param,
   Delete,
-  Patch,
+  Patch, UseGuards, Req,
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { CreateCommentDTO } from './dto/create-comment.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('comments')
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
@@ -25,8 +27,9 @@ export class CommentController {
   }
 
   @Get('post/:postId')
-  findAllByPostId(@Param('postId') postId: string) {
-    return this.commentService.findAllByPostId(postId);
+  findAllByPostId(@Req() request, @Param('postId') postId: string) {
+    const userId: string = request.user.sub;
+    return this.commentService.findAllByPostId(postId, userId);
   }
 
   @Delete(':id')

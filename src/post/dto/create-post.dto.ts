@@ -10,6 +10,12 @@ export class CreatePostDTO {
   @IsString()
   authorId: string;
 
+  @IsString()
+  image: string;
+
+  @IsString()
+  communityId: string;
+
   @IsOptional()
   @IsArray()
   @ArrayNotEmpty()

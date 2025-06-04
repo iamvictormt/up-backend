@@ -9,12 +9,40 @@ export class CommentService {
   }
 
   async create(data: CreateCommentDTO) {
-    return this.prisma.comment.create({
+    const comment = await this.prisma.comment.create({
       data,
+      include: {
+        user: {
+          select: {
+            id: true,
+            profileImage: true,
+            loveDecoration: { select: { id: true, name: true } },
+            professional: { select: { id: true, name: true } },
+          },
+        },
+      },
     });
+
+    const authorName = comment.user.loveDecoration?.name || comment.user.professional?.name;
+    const authorId = comment.user.loveDecoration?.id || comment.user.professional?.id;
+
+    return {
+      id: comment.id,
+      userId: authorId,
+      postId: comment.postId,
+      content: comment.content,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+      isMine: true,
+      author: {
+        id: authorId,
+        name: authorName,
+        profileImage: comment.user.profileImage,
+      },
+    };
   }
 
-  async findAllByPostId(postId: string) {
+  async findAllByPostId(postId: string, userId: string) {
     const comments = await this.prisma.comment.findMany({
       where: { postId },
       include: {
@@ -33,6 +61,7 @@ export class CommentService {
         comment.user.loveDecoration?.name || comment.user.professional?.name;
       const authorId =
         comment.user.loveDecoration?.id || comment.user.professional?.id || '';
+      const isMine = comment.userId === userId;
 
       return {
         id: comment.id,
@@ -40,7 +69,8 @@ export class CommentService {
         postId: comment.postId,
         content: comment.content,
         createdAt: comment.createdAt,
-        updateAt: "comment.updateAt",
+        updateAt: comment.updatedAt,
+        isMine,
         author: {
           id: authorId,
           name: authorName,

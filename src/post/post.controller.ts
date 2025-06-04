@@ -21,11 +21,18 @@ export class PostController {
     return this.postService.create(data);
   }
 
-  @Get()
   @UseGuards(JwtAuthGuard)
-  async findAll(@Req() request) {
-    const userId = request.user.sub;
+  @Get()
+  async findAll(@Req() req) {
+    const userId = req.user.sub;
     return this.postService.findAll(userId);
+  }
+
+  @Get('community/:communityId')
+  @UseGuards(JwtAuthGuard)
+  async findAllByCommunity(@Req() request, @Param('communityId') communityId: string) {
+    const userId = request.user.sub;
+    return this.postService.findAllByCommunity(userId, communityId);
   }
 
   @Delete(':id')

@@ -14,6 +14,7 @@ export class CreateRecommendedProfessionalDto {
   number?: string;
   complement?: string;
   zipCode?: string;
+  profileImage?: string;
 
   socialMedia?: {
     instagram?: string;
