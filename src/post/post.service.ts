@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePostDTO } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
 
 @Injectable()
 export class PostService {
@@ -105,6 +106,7 @@ export class PostService {
       const authorId =
         post.author.loveDecoration?.id || post.author.professional?.id || '';
       const userLike = post.likes.find((like) => like.userId === userId);
+      const isMine = post.authorId === userId;
 
       return {
         id: post.id,
@@ -123,7 +125,15 @@ export class PostService {
         community: post.community,
         isLiked: !!userLike,
         likeId: userLike?.id,
+        isMine
       };
+    });
+  }
+
+  async update(id: string, dto: UpdatePostDto) {
+    return this.prisma.post.update({
+      where: { id },
+      data: dto,
     });
   }
 
