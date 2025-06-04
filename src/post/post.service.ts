@@ -75,6 +75,9 @@ export class PostService {
       where: {
         communityId,
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
       include: {
         author: {
           select: {
