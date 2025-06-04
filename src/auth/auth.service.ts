@@ -59,7 +59,7 @@ export class AuthService {
     return {
       access_token: this.jwtService.sign(payload, {
         secret: process.env.SECRET_KEY || 'default_secret',
-        expiresIn: '10m',
+        expiresIn: '12h',
       }),
       user: safeUser,
       role: role,

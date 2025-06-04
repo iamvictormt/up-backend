@@ -18,6 +18,7 @@ import { CommentModule } from './comment/comment.module';
 import { LikeModule } from './like/like.module';
 import { CommunityModule } from './community/community.module';
 import { PostModule } from './post/post.module';
+import { HashtagModule } from './hashtag/hashtag.module';
 
 @Module({
   imports: [
@@ -40,7 +41,8 @@ import { PostModule } from './post/post.module';
     CommentModule,
     LikeModule,
     CommunityModule,
-    PostModule
+    PostModule,
+    HashtagModule,
   ],
   controllers: [AppController],
   providers: [AppService],

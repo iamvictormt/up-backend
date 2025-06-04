@@ -248,7 +248,6 @@ model Post {
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  hashtags  String[]
 
   authorId String
   author   User   @relation(fields: [authorId], references: [id])
@@ -258,6 +257,25 @@ model Post {
 
   likes    Like[]
   comments Comment[]
+
+  postHashtags PostHashtag[]
+}
+
+model Hashtag {
+  id   String @id @default(uuid())
+  name String @unique
+
+  postHashtags PostHashtag[]
+}
+
+model PostHashtag {
+  postId    String
+  hashtagId String
+
+  post    Post    @relation(fields: [postId], references: [id])
+  hashtag Hashtag @relation(fields: [hashtagId], references: [id])
+
+  @@id([postId, hashtagId])
 }
 
 model Like {
