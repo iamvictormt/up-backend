@@ -20,6 +20,7 @@ import { CommunityModule } from './community/community.module';
 import { PostModule } from './post/post.module';
 import { HashtagModule } from './hashtag/hashtag.module';
 import { NotificationModule } from './notification/notification.module';
+import { ReportModule } from './report/report.module';
 
 @Module({
   imports: [
@@ -44,7 +45,8 @@ import { NotificationModule } from './notification/notification.module';
     CommunityModule,
     PostModule,
     HashtagModule,
-    NotificationModule
+    NotificationModule,
+    ReportModule
   ],
   controllers: [AppController],
   providers: [AppService],

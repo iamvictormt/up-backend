@@ -11,6 +11,7 @@ import { CreateCommunityDto } from './dto/create-community.dto';
 import { CommunityService } from './community.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('communities')
 export class CommunityController {
   constructor(private readonly communityService: CommunityService) {}
@@ -21,7 +22,6 @@ export class CommunityController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
   async findAll() {
     return this.communityService.findAll();
   }
