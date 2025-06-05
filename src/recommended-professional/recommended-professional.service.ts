@@ -7,33 +7,52 @@ import { CreateRecommendedProfessionalDto } from './dto/create-recommended-profe
 export class RecommendedProfessionalService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(data: CreateRecommendedProfessionalDto) {
+  async create(data: CreateRecommendedProfessionalDto) {
     return this.prisma.recommendedProfessional.create({
       data: {
-        ...data,
+        name: data.name,
+        profession: data.profession,
+        description: data.description,
+        phone: data.phone,
+        email: data.email,
+        profileImage: data.profileImage,
+        isActive: data.isActive ?? true,
+        address: {
+          create: {
+            ...data.address,
+          },
+        },
         availableDays: data.availableDays
           ? {
-              create: data.availableDays.map((day) => ({ dayOfWeek: day })),
+              create: data.availableDays.map((day) => ({
+                dayOfWeek: day,
+              })),
             }
           : undefined,
         socialMedia: data.socialMedia
           ? {
-              create: data.socialMedia,
+              create: {
+                instagram: data.socialMedia.instagram,
+                linkedin: data.socialMedia.linkedin,
+                whatsapp: data.socialMedia.whatsapp,
+              },
             }
           : undefined,
       },
       include: {
         availableDays: true,
         socialMedia: true,
+        address: true,
       },
     });
   }
 
-  findAll() {
+  async findAll() {
     return this.prisma.recommendedProfessional.findMany({
       include: {
-        availableDays: true,
+        address: true,
         socialMedia: true,
+        availableDays: true,
       },
     });
   }
@@ -42,25 +61,48 @@ export class RecommendedProfessionalService {
     return this.prisma.recommendedProfessional.findUnique({
       where: { id },
       include: {
-        availableDays: true,
+        address: true,
         socialMedia: true,
+        availableDays: true,
       },
     });
   }
 
   async update(id: string, data: UpdateRecommendedProfessionalDto) {
-    const { socialMedia, availableDays, ...rest } = data;
+    const { socialMedia, availableDays, address, ...rest } = data;
 
     return this.prisma.recommendedProfessional.update({
       where: { id },
       data: {
         ...rest,
 
+        address: address
+          ? {
+              update: {
+                state: address.state,
+                city: address.city,
+                district: address.district,
+                street: address.street,
+                complement: address.complement,
+                number: address.number,
+                zipCode: address.zipCode,
+              },
+            }
+          : undefined,
+
         socialMedia: socialMedia
           ? {
               upsert: {
-                create: socialMedia,
-                update: socialMedia,
+                create: {
+                  instagram: socialMedia.instagram,
+                  linkedin: socialMedia.linkedin,
+                  whatsapp: socialMedia.whatsapp,
+                },
+                update: {
+                  instagram: socialMedia.instagram,
+                  linkedin: socialMedia.linkedin,
+                  whatsapp: socialMedia.whatsapp,
+                },
               },
             }
           : undefined,
@@ -75,6 +117,7 @@ export class RecommendedProfessionalService {
           : undefined,
       },
       include: {
+        address: true,
         socialMedia: true,
         availableDays: true,
       },

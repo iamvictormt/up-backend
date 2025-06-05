@@ -24,8 +24,4 @@ export class CreateProductDto {
   @IsOptional()
   @IsBoolean()
   promotion?: boolean;
-
-  @IsNotEmpty()
-  @IsString()
-  storeId: string;
 }

@@ -94,9 +94,10 @@ model Address {
   number     String?
   zipCode    String?
 
-  stores Store[]
-  events Event[]
-  users  User[]
+  stores                  Store[]
+  events                  Event[]
+  users                   User[]
+  RecommendedProfessional RecommendedProfessional[]
 }
 
 model Store {
@@ -200,13 +201,8 @@ model RecommendedProfessional {
   email        String?
   profileImage String?
 
-  state      String
-  city       String
-  district   String
-  street     String?
-  number     String?
-  complement String?
-  zipCode    String?
+  address   Address @relation(fields: [addressId], references: [id])
+  addressId String
 
   socialMedia   SocialMedia? @relation(fields: [socialMediaId], references: [id])
   socialMediaId String?      @unique

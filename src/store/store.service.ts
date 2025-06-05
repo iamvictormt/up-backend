@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
@@ -37,9 +37,24 @@ export class StoreService {
     return { store };
   }
 
-  async update(id: string, dto: UpdateStoreDto) {
-    const store = await this.prisma.store.update({
-      where: { id },
+  async update(userId: string, dto: UpdateStoreDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        partnerSupplier: {
+          include: { store: true },
+        },
+      },
+    });
+
+    const store = user?.partnerSupplier?.store;
+
+    if (!store) {
+      throw new NotFoundException('Loja não encontrada para esse usuário!');
+    }
+
+    const storeUpdated = await this.prisma.store.update({
+      where: { id: store.id },
       data: {
         name: dto.name,
         description: dto.description,
@@ -64,7 +79,33 @@ export class StoreService {
       },
     });
 
-    return { store };
+    return { storeUpdated };
+  }
+
+  async findMyStore(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        partnerSupplier: {
+          include: { store: true },
+        },
+      },
+    });
+
+    const store = user?.partnerSupplier?.store;
+
+    if (!store) {
+      throw new NotFoundException('Loja não encontrada para esse usuário!');
+    }
+
+    return this.prisma.store.findUnique({
+      where: { id: store.id },
+      include: {
+        address: true,
+        products: true,
+        events: true,
+      },
+    });
   }
 
   async findAll() {
