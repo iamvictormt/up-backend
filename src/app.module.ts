@@ -19,6 +19,7 @@ import { LikeModule } from './like/like.module';
 import { CommunityModule } from './community/community.module';
 import { PostModule } from './post/post.module';
 import { HashtagModule } from './hashtag/hashtag.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { HashtagModule } from './hashtag/hashtag.module';
     CommunityModule,
     PostModule,
     HashtagModule,
+    NotificationModule
   ],
   controllers: [AppController],
   providers: [AppService],

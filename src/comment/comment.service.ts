@@ -2,7 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCommentDTO } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
-import { Prisma } from '@prisma/client';
+import { NotificationType, Prisma } from '@prisma/client';
+import { getUsername } from '../ultis';
+import { NotificationService } from '../notification/notification.service';
 
 type CommentWithUser = Prisma.CommentGetPayload<{
   include: {
@@ -18,7 +20,7 @@ type CommentWithUser = Prisma.CommentGetPayload<{
 
 @Injectable()
 export class CommentService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private notificationService: NotificationService) {}
 
   async create(data: CreateCommentDTO) {
     const comment = await this.prisma.comment.create({
@@ -30,9 +32,29 @@ export class CommentService {
             profileImage: true,
             loveDecoration: { select: { id: true, name: true } },
             professional: { select: { id: true, name: true } },
+            partnerSupplier: { select: { tradeName: true } }
           },
         },
+        post: {
+          select: {
+            id: true,
+            title: true,
+            author: {
+              select: {
+                id: true
+              }
+            }
+          },
+        }
       },
+    });
+
+    await this.notificationService.create({
+      type: NotificationType.COMMENT,
+      title: 'Nova curtida',
+      message: `${getUsername(comment.user)} comentou seu post ${comment.post.title ? `sobre ${comment.post.title}` : ''}`,
+      userId: comment.post.author.id,
+      postId: comment.post.id,
     });
 
     return this.formatComment(comment);

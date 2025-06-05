@@ -28,9 +28,10 @@ model User {
   address   Address? @relation(fields: [addressId], references: [id])
   addressId String?
 
-  posts    Post[]
-  likes    Like[]
-  comments Comment[]
+  posts        Post[]
+  likes        Like[]
+  comments     Comment[]
+  Notification Notification[]
 }
 
 model Professional {
@@ -259,6 +260,7 @@ model Post {
   comments Comment[]
 
   postHashtags PostHashtag[]
+  Notification Notification[]
 }
 
 model Hashtag {
@@ -302,6 +304,21 @@ model Comment {
   post   Post   @relation(fields: [postId], references: [id])
 }
 
+model Notification {
+  id        String           @id @default(cuid())
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  postId String?
+  post   Post?   @relation(fields: [postId], references: [id])
+}
+
 /**
  * ENUMS:
  */
@@ -332,4 +349,9 @@ enum WorkshopType {
   ONLINE
   PRESENTIAL
   HYBRID
+}
+
+enum NotificationType {
+  LIKE
+  COMMENT
 }

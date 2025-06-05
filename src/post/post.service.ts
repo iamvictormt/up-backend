@@ -24,7 +24,7 @@ export type PostWithUser = Prisma.PostGetPayload<{
       select: { likes: true; comments: true };
     };
     likes: {
-      select: { userId: true };
+      select: { id: true, userId: true };
     };
   };
 }>;
@@ -92,6 +92,8 @@ export class PostService {
 
     const authorId =
       post.author.loveDecoration?.id || post.author.professional?.id;
+    const userLike = post.likes.find((like) => like.userId === currentUserId);
+    const likeId = userLike ? userLike.id : null;
 
     return {
       id: post.id,
@@ -107,7 +109,8 @@ export class PostService {
       community: post.community,
       likes: post._count.likes,
       comments: post._count.comments,
-      isLiked: post.likes.some((like: any) => like.userId === currentUserId),
+      isLiked: !!userLike,
+      likeId: likeId,
       isMine: post.authorId === currentUserId,
     };
   }
