@@ -13,6 +13,7 @@ import { CommentService } from './comment.service';
 import { CreateCommentDTO } from './dto/create-comment.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UpdateCommentDto } from './dto/update-comment.dto';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @UseGuards(JwtAuthGuard)
 @Controller('comments')
@@ -20,8 +21,8 @@ export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
   @Post()
-  register(@Body() data: CreateCommentDTO) {
-    return this.commentService.create(data);
+  register(@Body() data: CreateCommentDTO, @CurrentUser() user) {
+    return this.commentService.create(data, user.sub);
   }
 
   @Patch(':id')
@@ -30,9 +31,8 @@ export class CommentController {
   }
 
   @Get('post/:postId')
-  findAllByPostId(@Req() request, @Param('postId') postId: string) {
-    const userId: string = request.user.sub;
-    return this.commentService.findAllByPostId(postId, userId);
+  findAllByPostId(@Param('postId') postId: string, @CurrentUser() user) {
+    return this.commentService.findAllByPostId(postId, user.sub);
   }
 
   @Delete(':id')

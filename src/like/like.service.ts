@@ -33,13 +33,15 @@ export class LikeService {
       },
     });
 
-    await this.notificationService.create({
-      type: NotificationType.LIKE,
-      title: 'Nova curtida',
-      message: `${getUsername(like.user)} curtiu seu post ${like.post.title ? `sobre ${like.post.title}` : ''}`,
-      userId: userId,
-      postId: like.post.id,
-    });
+    if(like.post.author.id != userId) {
+      await this.notificationService.create({
+        type: NotificationType.LIKE,
+        title: 'Nova curtida',
+        message: `${getUsername(like.user)} curtiu seu post ${like.post.title ? `sobre ${like.post.title}` : ''}`,
+        userId: userId,
+        postId: like.post.id,
+      });
+    }
   }
 
   async findAllByPostId(postId: string) {

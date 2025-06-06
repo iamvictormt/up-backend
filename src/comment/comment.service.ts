@@ -20,9 +20,12 @@ type CommentWithUser = Prisma.CommentGetPayload<{
 
 @Injectable()
 export class CommentService {
-  constructor(private prisma: PrismaService, private notificationService: NotificationService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationService: NotificationService,
+  ) {}
 
-  async create(data: CreateCommentDTO) {
+  async create(data: CreateCommentDTO, userId: string) {
     const comment = await this.prisma.comment.create({
       data,
       include: {
@@ -32,7 +35,7 @@ export class CommentService {
             profileImage: true,
             loveDecoration: { select: { id: true, name: true } },
             professional: { select: { id: true, name: true } },
-            partnerSupplier: { select: { tradeName: true } }
+            partnerSupplier: { select: { tradeName: true } },
           },
         },
         post: {
@@ -41,21 +44,23 @@ export class CommentService {
             title: true,
             author: {
               select: {
-                id: true
-              }
-            }
+                id: true,
+              },
+            },
           },
-        }
+        },
       },
     });
 
-    await this.notificationService.create({
-      type: NotificationType.COMMENT,
-      title: 'Nova curtida',
-      message: `${getUsername(comment.user)} comentou seu post ${comment.post.title ? `sobre ${comment.post.title}` : ''}`,
-      userId: comment.post.author.id,
-      postId: comment.post.id,
-    });
+    if (comment.post.author.id != userId) {
+      await this.notificationService.create({
+        type: NotificationType.COMMENT,
+        title: 'Nova curtida',
+        message: `${getUsername(comment.user)} comentou seu post ${comment.post.title ? `sobre ${comment.post.title}` : ''}`,
+        userId: userId,
+        postId: comment.post.id,
+      });
+    }
 
     return this.formatComment(comment);
   }
