@@ -21,6 +21,7 @@ import { PostModule } from './post/post.module';
 import { HashtagModule } from './hashtag/hashtag.module';
 import { NotificationModule } from './notification/notification.module';
 import { ReportModule } from './report/report.module';
+import { ProfessionModule } from './profession/profession.module';
 
 @Module({
   imports: [
@@ -46,7 +47,8 @@ import { ReportModule } from './report/report.module';
     PostModule,
     HashtagModule,
     NotificationModule,
-    ReportModule
+    ReportModule,
+    ProfessionModule
   ],
   controllers: [AppController],
   providers: [AppService],

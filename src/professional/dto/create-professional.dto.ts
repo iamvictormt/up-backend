@@ -4,15 +4,15 @@ import {
   IsBoolean,
   IsEnum,
   IsUUID,
-  ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 import { ProfessionalLevel } from '@prisma/client';
-import { CreateAddressDto } from '../../address/dto/create-address.dto'; // Enum no Prisma
 
 export class CreateProfessionalDto {
-  @IsString() name: string;
-  @IsString() profession: string;
+  @IsString()
+  name: string;
+
+  @IsString()
+  professionId: string;
 
   @IsOptional()
   @IsString()

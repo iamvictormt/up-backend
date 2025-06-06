@@ -38,7 +38,6 @@ model User {
 model Professional {
   id                 String            @id @default(uuid())
   name               String
-  profession         String
   document           String?
   generalRegister    String?
   registrationAgency String?
@@ -57,6 +56,9 @@ model Professional {
   workshops          Workshop[]
   pointHistory       PointHistory[]
   eventRegistrations EventRegistration[]
+
+  Profession   Profession? @relation(fields: [professionId], references: [id])
+  professionId String?
 }
 
 model PartnerSupplier {
@@ -327,6 +329,14 @@ model Report {
 
   targetId   String
   targetType String
+}
+
+model Profession {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+
+  professionals Professional[]
 }
 
 /**

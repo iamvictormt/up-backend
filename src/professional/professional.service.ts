@@ -25,7 +25,7 @@ export class ProfessionalService {
     const professional = await this.prisma.professional.create({
       data: {
         name: dto.name,
-        profession: dto.profession,
+        professionId: dto.professionId,
         document: dto.document,
         generalRegister: dto.generalRegister,
         registrationAgency: dto.registrationAgency,

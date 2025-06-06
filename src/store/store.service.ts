@@ -103,7 +103,11 @@ export class StoreService {
       include: {
         address: true,
         products: true,
-        events: true,
+        events:  {
+          include: {
+            address: true
+          }
+        },
       },
     });
   }
