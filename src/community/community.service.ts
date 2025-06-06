@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCommunityDto } from './dto/create-community.dto';
+import { PostService } from '../post/post.service';
 
 @Injectable()
 export class CommunityService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private postService: PostService,
+  ) {}
 
   async create(data: CreateCommunityDto) {
     return this.prisma.community.create({
@@ -12,7 +16,7 @@ export class CommunityService {
     });
   }
 
-  async findAll() {
+  async findAll(userId: string) {
     const communities = await this.prisma.community.findMany({
       include: {
         _count: {
@@ -21,14 +25,26 @@ export class CommunityService {
       },
     });
 
-    return communities.map((community) => ({
-      id: community.id,
-      name: community.name,
-      description: community.description,
-      postsCount: community._count.posts,
-      color: community.color,
-      icon: community.icon,
-    }));
+    const defaultCommunity = {
+      id: '',
+      name: 'Meus posts',
+      description: 'Todos os seus posts publicados.',
+      color: '#4B7BEC',
+      icon: 'User',
+      postsCount: await this.postService.findCountAllMyPosts(userId),
+    };
+
+    return [
+      defaultCommunity,
+      ...communities.map((community) => ({
+        id: community.id,
+        name: community.name,
+        description: community.description,
+        postsCount: community._count.posts,
+        color: community.color,
+        icon: community.icon,
+      })),
+    ];
   }
 
   async remove(id: string) {

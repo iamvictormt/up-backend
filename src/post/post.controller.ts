@@ -3,15 +3,16 @@ import {
   Controller,
   Delete,
   Get,
-  Param, Patch,
+  Param,
+  Patch,
   Post,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { CreatePostDTO } from './dto/create-post.dto';
 import { PostService } from './post.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @UseGuards(JwtAuthGuard)
 @Controller('posts')
@@ -24,18 +25,26 @@ export class PostController {
   }
 
   @Get()
-  async findAll(@Req() req) {
-    const userId = req.user.sub;
-    return this.postService.findAll(userId);
+  async findAll(@CurrentUser() user) {
+    return this.postService.findAll(user.sub);
+  }
+
+  @Get('my-posts')
+  async findAllMyPosts(@CurrentUser() user) {
+    return this.postService.findAllMyPosts(user.sub);
+  }
+
+  @Get('my-posts-stats')
+  async findAllMyPostsStats(@CurrentUser() user) {
+    return this.postService.findAllMyPostsStats(user.sub);
   }
 
   @Get('community/:communityId')
   async findAllByCommunity(
-    @Req() request,
+    @CurrentUser() user,
     @Param('communityId') communityId: string,
   ) {
-    const userId = request.user.sub;
-    return this.postService.findAllByCommunity(userId, communityId);
+    return this.postService.findAllByCommunity(user.sub, communityId);
   }
 
   @Patch(':id')

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
-import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { getUsername } from '../ultis';
 
 @Injectable()
@@ -14,7 +13,7 @@ export class NotificationService {
         type: dto.type,
         title: dto.title,
         message: dto.message,
-        isRead: dto.isRead ?? false,
+        isRead: false,
         user: { connect: { id: dto.userId } },
         post: { connect: { id: dto.postId } },
       },
@@ -42,7 +41,11 @@ export class NotificationService {
 
   async findAll(loggedUserId: string) {
     const notifications = await this.prisma.notification.findMany({
-      where: { userId: loggedUserId },
+      where: {
+        post: {
+          authorId: loggedUserId,
+        },
+      },
       orderBy: { createdAt: 'desc' },
       take: 8,
       include: {
@@ -72,7 +75,7 @@ export class NotificationService {
       isRead: notification.isRead,
       createdAt: notification.createdAt.toISOString(),
       user: {
-        id: notification.id,
+        id: notification.user.id,
         name: getUsername(notification.user),
         avatar: notification.user.profileImage,
       },

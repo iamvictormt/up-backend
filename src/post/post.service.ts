@@ -24,7 +24,7 @@ export type PostWithUser = Prisma.PostGetPayload<{
       select: { likes: true; comments: true };
     };
     likes: {
-      select: { id: true, userId: true };
+      select: { id: true; userId: true };
     };
   };
 }>;
@@ -70,6 +70,47 @@ export class PostService {
     });
 
     return posts.map((post) => this.formatPost(post, userId));
+  }
+
+  async findCountAllMyPosts(userId: string) {
+    return this.prisma.post.count({
+      where: { authorId: userId },
+    });
+  }
+
+  async findAllMyPosts(userId: string) {
+    const posts = await this.prisma.post.findMany({
+      where: { authorId: userId },
+      orderBy: { createdAt: 'desc' },
+      include: this.includesDefault(),
+    });
+
+    return posts.map((post) => this.formatPost(post, userId));
+  }
+
+  async findAllMyPostsStats(userId: string) {
+    const posts = await this.prisma.post.findMany({
+      where: { authorId: userId },
+      select: {
+        id: true,
+        _count: {
+          select: {
+            comments: true,
+            likes: true,
+          },
+        },
+      },
+    });
+
+    const postsCount = posts.length;
+    const commentsCount = posts.reduce((sum, post) => sum + post._count.comments, 0);
+    const likesCount = posts.reduce((sum, post) => sum + post._count.likes, 0);
+
+    return {
+      postsCount,
+      commentsCount,
+      likesCount,
+    };
   }
 
   async findAllByCommunity(userId: string, communityId: string) {

@@ -10,6 +10,7 @@ import {
 import { CreateCommunityDto } from './dto/create-community.dto';
 import { CommunityService } from './community.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @UseGuards(JwtAuthGuard)
 @Controller('communities')
@@ -22,8 +23,8 @@ export class CommunityController {
   }
 
   @Get()
-  async findAll() {
-    return this.communityService.findAll();
+  async findAll(@CurrentUser() user) {
+    return this.communityService.findAll(user.sub);
   }
 
   @Delete(':id')

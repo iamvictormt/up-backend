@@ -12,7 +12,7 @@ export class LikeService {
     private notificationService: NotificationService,
   ) {}
 
-  async create(data: CreateLikeDTO) {
+  async create(data: CreateLikeDTO, userId: string) {
     const like = await this.prisma.like.create({
       data,
       include: {
@@ -37,7 +37,7 @@ export class LikeService {
       type: NotificationType.LIKE,
       title: 'Nova curtida',
       message: `${getUsername(like.user)} curtiu seu post ${like.post.title ? `sobre ${like.post.title}` : ''}`,
-      userId: like.post.author.id,
+      userId: userId,
       postId: like.post.id,
     });
   }
