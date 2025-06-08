@@ -57,7 +57,7 @@ model Professional {
   pointHistory       PointHistory[]
   eventRegistrations EventRegistration[]
 
-  Profession   Profession? @relation(fields: [professionId], references: [id])
+  profession   Profession? @relation(fields: [professionId], references: [id])
   professionId String?
 }
 
@@ -83,7 +83,7 @@ model SocialMedia {
   whatsapp  String?
 
   professional            Professional?
-  RecommendedProfessional RecommendedProfessional?
+  recommendedProfessional RecommendedProfessional?
 }
 
 model Address {
@@ -99,7 +99,7 @@ model Address {
   stores                  Store[]
   events                  Event[]
   users                   User[]
-  RecommendedProfessional RecommendedProfessional[]
+  recommendedProfessional RecommendedProfessional[]
 }
 
 model Store {
@@ -219,7 +219,7 @@ model RecommendedProfessional {
 model AvailableDay {
   id                        String                  @id @default(uuid())
   dayOfWeek                 WeekDay
-  RecommendedProfessional   RecommendedProfessional @relation(fields: [recommendedProfessionalId], references: [id])
+  recommendedProfessional   RecommendedProfessional @relation(fields: [recommendedProfessionalId], references: [id])
   recommendedProfessionalId String
 }
 
@@ -259,7 +259,7 @@ model Post {
   comments Comment[]
 
   postHashtags PostHashtag[]
-  Notification Notification[]
+  notification Notification[]
 }
 
 model Hashtag {

@@ -11,6 +11,7 @@ import { UpdatePartnerSupplierDto } from './dto/update-partner-supplier.dto';
 import { MailService } from '../mail/mail.service';
 import { UpdateEventDto } from '../event/dto/update-event.dto';
 import { UpdateUserDto } from '../user/dto/update-user.dto';
+import { UpdateProfessionalDto } from '../professional/dto/update-professional.dto';
 
 @Injectable()
 export class PartnerSupplierService {
@@ -62,22 +63,16 @@ export class PartnerSupplierService {
     return { partnerSupplier, user };
   }
 
-  async update(
-    id: string,
-    dto: UpdatePartnerSupplierDto,
-    userDto: UpdateUserDto,
-  ) {
-    const { ...eventData } = dto;
+  async update(userId: string, dto: UpdatePartnerSupplierDto) {
+    const user = await this.userService.findOne(userId);
 
-    const prismaUpdateData: any = {
-      ...eventData,
-    };
-
-    await this.userService.update(userDto);
+    if (!user || !user.partnerSupplier) {
+      throw new NotFoundException('Fornecedor parceiro não encontrado!');
+    }
 
     return this.prisma.partnerSupplier.update({
-      where: { id },
-      data: prismaUpdateData,
+      where: { id: user.partnerSupplier.id },
+      data: { ...dto },
     });
   }
 

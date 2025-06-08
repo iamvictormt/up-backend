@@ -19,7 +19,9 @@ export class AuthService {
       where: { email },
       include: {
         partnerSupplier: true,
-        professional: true,
+        professional: {
+          include: { profession: true },
+        },
         loveDecoration: true,
         address: true,
       },

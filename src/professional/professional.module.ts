@@ -3,9 +3,10 @@ import { UserModule } from '../user/user.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { ProfessionalController } from './professional.controller';
 import { ProfessionalService } from './professional.service';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [UserModule, PrismaModule],
+  imports: [JwtModule, UserModule, PrismaModule],
   controllers: [ProfessionalController],
   providers: [ProfessionalService],
 })

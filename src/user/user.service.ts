@@ -91,10 +91,14 @@ export class UserService {
       select: {
         id: true,
         partnerSupplier: true,
-        professional: true,
+        professional: {
+          include: {
+            profession: true,
+          },
+        },
         loveDecoration: true,
         address: true,
-        profileImage: true
+        profileImage: true,
       },
     });
   }

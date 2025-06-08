@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProfessionalDto } from './dto/create-professional.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
@@ -48,18 +52,16 @@ export class ProfessionalService {
     return { professional, user };
   }
 
-  async update(id: string, dto: UpdateProfessionalDto, userDto: UpdateUserDto) {
-    const { ...eventData } = dto;
+  async update(userId: string, dto: UpdateProfessionalDto) {
+    const user = await this.userService.findOne(userId);
 
-    const prismaUpdateData: any = {
-      ...eventData,
-    };
-
-    await this.userService.update(userDto);
+    if (!user || !user.professional) {
+      throw new NotFoundException('Profissional não encontrado!');
+    }
 
     return this.prisma.professional.update({
-      where: { id },
-      data: prismaUpdateData,
+      where: { id: user.professional.id },
+      data: { ...dto },
     });
   }
 

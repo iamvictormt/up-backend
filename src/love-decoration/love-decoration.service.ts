@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateLoveDecorationDto } from './dto/create-love-decoration.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
@@ -41,23 +45,25 @@ export class LoveDecorationService {
   }
 
   async update(
-    id: string,
+    userId: string,
     dto: UpdateLoveDecorationDto,
-    userDto: UpdateUserDto,
   ) {
-    const updateData: any = { ...dto };
-    await this.userService.update(userDto);
+    const user = await this.userService.findOne(userId);
+
+    if (!user || !user.loveDecoration) {
+      throw new NotFoundException('Amo decoração não encontrado!');
+    }
 
     const updatedLoveDecoration = await this.prisma.loveDecoration.update({
-      where: { id },
-      data: updateData,
+      where: { id: user.loveDecoration.id },
+      data: { ...dto },
       select: {
         user: {
           select: {
             id: true,
             profileImage: true,
             loveDecoration: true,
-            address: true
+            address: true,
           },
         },
       },

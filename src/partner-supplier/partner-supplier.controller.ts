@@ -1,9 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
 import { PartnerSupplierService } from './partner-supplier.service';
 import { CreatePartnerSupplierDto } from './dto/create-partner-supplier.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UpdatePartnerSupplierDto } from './dto/update-partner-supplier.dto';
 import { UpdateUserDto } from '../user/dto/update-user.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { UpdateLoveDecorationDto } from '../love-decoration/dto/update-love-decoration.dto';
 
 @Controller('partner-suppliers')
 export class PartnerSupplierController {
@@ -18,13 +21,10 @@ export class PartnerSupplierController {
     return this.partnerSupplierService.create(dto, userDto);
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body('partnerSupplier') dto: UpdatePartnerSupplierDto,
-    @Body('user') userDto: UpdateUserDto,
-  ) {
-    return this.partnerSupplierService.update(id, dto, userDto);
+  @Patch()
+  @UseGuards(JwtAuthGuard)
+  update(@CurrentUser() user, @Body() dto: UpdatePartnerSupplierDto) {
+    return this.partnerSupplierService.update(user.sub, dto);
   }
 
   @Get() async findAll() {
