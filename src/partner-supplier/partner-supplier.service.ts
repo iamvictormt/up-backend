@@ -9,9 +9,7 @@ import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
 import { UpdatePartnerSupplierDto } from './dto/update-partner-supplier.dto';
 import { MailService } from '../mail/mail.service';
-import { UpdateEventDto } from '../event/dto/update-event.dto';
-import { UpdateUserDto } from '../user/dto/update-user.dto';
-import { UpdateProfessionalDto } from '../professional/dto/update-professional.dto';
+import { getUsername } from '../ultis';
 
 @Injectable()
 export class PartnerSupplierService {
@@ -81,6 +79,9 @@ export class PartnerSupplierService {
       where: {
         partnerSupplierId: id,
       },
+      include: {
+        partnerSupplier: true
+      }
     });
 
     if (!user) {
@@ -91,6 +92,9 @@ export class PartnerSupplierService {
       user.email,
       dto.accessPending ? 'Cadastro reprovado' : 'Cadastro aprovado',
       dto.accessPending ? 'cadastro-reprovado.html' : 'cadastro-aprovado.html',
+      {
+        username: getUsername(user)
+      }
     );
 
     return this.prisma.partnerSupplier.update({

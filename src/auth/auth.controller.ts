@@ -1,6 +1,9 @@
-import { Controller, Post, Body, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import { Controller, Post, Body, UnauthorizedException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
+import { VerifyResetCodeDto } from './dto/verify-reset-code.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -14,5 +17,26 @@ export class AuthController {
     }
 
     return this.authService.login(user);
+  }
+
+  @Post('forgot-password')
+  requestReset(@Body() dto: RequestPasswordResetDto) {
+    return this.authService.requestReset(dto);
+  }
+
+  @Post('verify-reset-code')
+  verifyCode(@Body() dto: VerifyResetCodeDto) {
+    return this.authService.verifyCode(dto);
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    const success = await this.authService.resetPassword(dto);
+
+    if (!success) {
+      throw new BadRequestException('Código inválido ou expirado');
+    }
+
+    return { message: 'Senha redefinida com sucesso' };
   }
 }

@@ -28,11 +28,12 @@ model User {
   address   Address? @relation(fields: [addressId], references: [id])
   addressId String?
 
-  posts        Post[]
-  likes        Like[]
-  comments     Comment[]
-  Notification Notification[]
-  Report       Report[]
+  posts             Post[]
+  likes             Like[]
+  comments          Comment[]
+  notification      Notification[]
+  report            Report[]
+  passwordResetCode PasswordResetCode[]
 }
 
 model Professional {
@@ -337,6 +338,16 @@ model Profession {
   description String?
 
   professionals Professional[]
+}
+
+model PasswordResetCode {
+  id        String   @id @default(uuid())
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
 }
 
 /**

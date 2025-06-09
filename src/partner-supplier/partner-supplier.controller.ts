@@ -3,10 +3,8 @@ import { PartnerSupplierService } from './partner-supplier.service';
 import { CreatePartnerSupplierDto } from './dto/create-partner-supplier.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UpdatePartnerSupplierDto } from './dto/update-partner-supplier.dto';
-import { UpdateUserDto } from '../user/dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { UpdateLoveDecorationDto } from '../love-decoration/dto/update-love-decoration.dto';
 
 @Controller('partner-suppliers')
 export class PartnerSupplierController {
