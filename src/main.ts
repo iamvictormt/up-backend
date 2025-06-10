@@ -10,6 +10,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'https://up-dashboard-two.vercel.app',
+      'https://up-sistema-admin.vercel.app',
       'http://localhost:3000',
       'http://localhost:3001',
     ],
