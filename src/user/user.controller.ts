@@ -33,7 +33,7 @@ export class UserController {
     return this.userService.update(dto);
   }
 
-  @Patch('profile-image')
+  @Patch(':id/profile-image')
   updateProfileImage(@Param('id') id: string, @Body() data: UpdateUserDto) {
     return this.userService.updateProfileImage(id, data.profileImage);
   }
