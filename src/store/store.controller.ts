@@ -22,7 +22,7 @@ export class StoreController {
     return this.storeService.create(dto);
   }
 
-  @Patch('my-store')
+  @Patch(':id/my-store')
   update(
     @CurrentUser() user,
     @Param('id') id: string,

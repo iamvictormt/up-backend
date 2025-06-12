@@ -2,6 +2,10 @@ import { IsString, IsOptional, IsArray, ArrayNotEmpty } from 'class-validator';
 
 export class CreatePostDTO {
   @IsString()
+  @IsOptional()
+  attachedImage: string;
+
+  @IsString()
   title: string;
 
   @IsString()

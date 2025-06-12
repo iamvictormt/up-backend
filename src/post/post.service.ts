@@ -4,6 +4,7 @@ import { CreatePostDTO } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Prisma } from '@prisma/client';
 import { HashtagService } from '../hashtag/hashtag.service';
+import { getUsername } from '../ultis';
 
 export type PostWithUser = Prisma.PostGetPayload<{
   include: {
@@ -14,9 +15,11 @@ export type PostWithUser = Prisma.PostGetPayload<{
     };
     author: {
       select: {
+        id: true;
         profileImage: true;
         loveDecoration: { select: { id: true; name: true } };
         professional: { select: { id: true; name: true } };
+        partnerSupplier: { select: { id: true; tradeName: true } };
       };
     };
     community: true;
@@ -103,7 +106,10 @@ export class PostService {
     });
 
     const postsCount = posts.length;
-    const commentsCount = posts.reduce((sum, post) => sum + post._count.comments, 0);
+    const commentsCount = posts.reduce(
+      (sum, post) => sum + post._count.comments,
+      0,
+    );
     const likesCount = posts.reduce((sum, post) => sum + post._count.likes, 0);
 
     return {
@@ -128,11 +134,8 @@ export class PostService {
   }
 
   private formatPost(post: PostWithUser, currentUserId?: string) {
-    const authorName =
-      post.author.loveDecoration?.name || post.author.professional?.name;
-
-    const authorId =
-      post.author.loveDecoration?.id || post.author.professional?.id;
+    const authorName = getUsername(post.author);
+    const authorId = post.author.id;
     const userLike = post.likes.find((like) => like.userId === currentUserId);
     const likeId = userLike ? userLike.id : null;
 
@@ -153,6 +156,7 @@ export class PostService {
       isLiked: !!userLike,
       likeId: likeId,
       isMine: post.authorId === currentUserId,
+      attachedImage: post.attachedImage,
     };
   }
 
@@ -195,9 +199,11 @@ export class PostService {
       },
       author: {
         select: {
+          id: true,
           profileImage: true,
           loveDecoration: { select: { id: true, name: true } },
           professional: { select: { id: true, name: true } },
+          partnerSupplier: { select: { id: true, tradeName: true } },
         },
       },
       community: {

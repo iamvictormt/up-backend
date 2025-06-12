@@ -37,20 +37,6 @@ export class PartnerSupplierService {
       },
     });
 
-    await this.prisma.store.create({
-      data: {
-        name: partnerSupplier.tradeName,
-        address: {
-          create: {
-            ...userDto.address,
-          },
-        },
-        partner: {
-          connect: { id: partnerSupplier.id },
-        },
-      },
-    });
-
     const user = await this.userService.createUserWithRelation(
       userDto,
       partnerSupplier.id,
@@ -80,8 +66,8 @@ export class PartnerSupplierService {
         partnerSupplierId: id,
       },
       include: {
-        partnerSupplier: true
-      }
+        partnerSupplier: true,
+      },
     });
 
     if (!user) {
@@ -93,8 +79,8 @@ export class PartnerSupplierService {
       dto.accessPending ? 'Cadastro reprovado' : 'Cadastro aprovado',
       dto.accessPending ? 'cadastro-reprovado.html' : 'cadastro-aprovado.html',
       {
-        username: getUsername(user)
-      }
+        username: getUsername(user),
+      },
     );
 
     return this.prisma.partnerSupplier.update({

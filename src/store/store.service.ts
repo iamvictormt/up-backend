@@ -19,13 +19,7 @@ export class StoreService {
         },
         address: {
           create: {
-            state: dto.address.state,
-            city: dto.address.city,
-            district: dto.address.district,
-            street: dto.address.street,
-            complement: dto.address.complement,
-            number: dto.address.number,
-            zipCode: dto.address.zipCode,
+            ...dto.address,
           },
         },
       },
@@ -53,7 +47,7 @@ export class StoreService {
       throw new NotFoundException('Loja não encontrada para esse usuário!');
     }
 
-    const storeUpdated = await this.prisma.store.update({
+    return this.prisma.store.update({
       where: { id: store.id },
       data: {
         name: dto.name,
@@ -63,23 +57,21 @@ export class StoreService {
         address: dto.address
           ? {
               update: {
-                state: dto.address.state,
-                city: dto.address.city,
-                district: dto.address.district,
-                street: dto.address.street,
-                complement: dto.address.complement,
-                number: dto.address.number,
-                zipCode: dto.address.zipCode,
+                ...dto.address,
               },
             }
           : undefined,
       },
       include: {
         address: true,
+        products: true,
+        events: {
+          include: {
+            address: true,
+          },
+        },
       },
     });
-
-    return { storeUpdated };
   }
 
   async findMyStore(userId: string) {
@@ -95,7 +87,7 @@ export class StoreService {
     const store = user?.partnerSupplier?.store;
 
     if (!store) {
-      throw new NotFoundException('Loja não encontrada para esse usuário!');
+      return null;
     }
 
     return this.prisma.store.findUnique({
@@ -103,10 +95,10 @@ export class StoreService {
       include: {
         address: true,
         products: true,
-        events:  {
+        events: {
           include: {
-            address: true
-          }
+            address: true,
+          },
         },
       },
     });
@@ -117,6 +109,11 @@ export class StoreService {
       include: {
         address: true,
         products: true,
+        events: {
+          include: {
+            address: true,
+          },
+        },
       },
     });
   }
@@ -127,6 +124,11 @@ export class StoreService {
       include: {
         address: true,
         products: true,
+        events: {
+          include: {
+            address: true,
+          },
+        },
       },
     });
   }

@@ -10,6 +10,7 @@ type CommentWithUser = Prisma.CommentGetPayload<{
   include: {
     user: {
       select: {
+        id: true,
         profileImage: true;
         loveDecoration: { select: { id: true; name: true } };
         professional: { select: { id: true; name: true } };
@@ -74,9 +75,11 @@ export class CommentService {
       include: {
         user: {
           select: {
+            id: true,
             profileImage: true,
             loveDecoration: { select: { id: true, name: true } },
             professional: { select: { id: true, name: true } },
+            partnerSupplier: { select: { tradeName: true } },
           },
         },
       },
@@ -92,9 +95,11 @@ export class CommentService {
       include: {
         user: {
           select: {
+            id: true,
             profileImage: true,
             loveDecoration: { select: { id: true, name: true } },
             professional: { select: { id: true, name: true } },
+            partnerSupplier: { select: { tradeName: true } },
           },
         },
       },
@@ -110,10 +115,8 @@ export class CommentService {
   }
 
   private formatComment(comment: CommentWithUser, currentUserId?: string) {
-    const authorName =
-      comment.user.loveDecoration?.name || comment.user.professional?.name;
-    const authorId =
-      comment.user.loveDecoration?.id || comment.user.professional?.id;
+    const authorName = getUsername(comment.user);
+    const authorId = comment.user.id;
 
     return {
       id: comment.id,
