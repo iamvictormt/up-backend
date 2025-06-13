@@ -275,8 +275,8 @@ model PostHashtag {
   postId    String
   hashtagId String
 
-  post    Post    @relation(fields: [postId], references: [id])
-  hashtag Hashtag @relation(fields: [hashtagId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  hashtag   Hashtag  @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
 
   @@id([postId, hashtagId])
 }

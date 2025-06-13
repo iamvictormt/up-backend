@@ -22,7 +22,7 @@ export class HashtagService {
       take: 10,
     });
 
-    return trendingHashtags.map(h => ({
+    return trendingHashtags.map((h) => ({
       id: h.id,
       tag: h.name,
       count: h._count.postHashtags,
@@ -35,14 +35,21 @@ export class HashtagService {
       select: { hashtagId: true },
     });
 
-    const hashtagIds = postHashtags.map(ph => ph.hashtagId);
-
-    await this.prisma.postHashtag.deleteMany({
-      where: { postId },
+    const hashtagIds = postHashtags.map((ph) => ph.hashtagId);
+    const stillUsedHashtags = await this.prisma.postHashtag.findMany({
+      where: {
+        hashtagId: { in: hashtagIds },
+      },
+      select: { hashtagId: true },
     });
 
-    await this.prisma.hashtag.deleteMany({
-      where: { id: { in: hashtagIds } },
-    });
+    const stillUsedIds = new Set(stillUsedHashtags.map((h) => h.hashtagId));
+    const toDelete = hashtagIds.filter((id) => !stillUsedIds.has(id));
+
+    if (toDelete.length > 0) {
+      await this.prisma.hashtag.deleteMany({
+        where: { id: { in: toDelete } },
+      });
+    }
   }
 }

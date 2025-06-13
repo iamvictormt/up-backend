@@ -56,7 +56,7 @@ export class CommentService {
     if (comment.post.author.id != userId) {
       await this.notificationService.create({
         type: NotificationType.COMMENT,
-        title: 'Nova curtida',
+        title: 'Novo comentário',
         message: `${getUsername(comment.user)} comentou seu post ${comment.post.title ? `sobre ${comment.post.title}` : ''}`,
         userId: userId,
         postId: comment.post.id,

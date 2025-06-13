@@ -33,7 +33,7 @@ export class LikeService {
       },
     });
 
-    if(like.post.author.id != userId) {
+    if (like.post.author.id != userId) {
       await this.notificationService.create({
         type: NotificationType.LIKE,
         title: 'Nova curtida',
@@ -51,9 +51,9 @@ export class LikeService {
     });
   }
 
-  async remove(id: string) {
-    return this.prisma.like.delete({
-      where: { id },
+  async remove(postId: string) {
+    return this.prisma.like.deleteMany({
+      where: { postId },
     });
   }
 }

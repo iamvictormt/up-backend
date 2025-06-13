@@ -28,8 +28,8 @@ export class LikeController {
     return this.likeService.findAllByPostId(postId);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.likeService.remove(id);
+  @Delete('post/:postId')
+  remove(@Param('postId') postId: string) {
+    return this.likeService.remove(postId);
   }
 }

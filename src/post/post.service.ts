@@ -166,17 +166,10 @@ export class PostService {
 
     if (hashtags && hashtags.length > 0) {
       for (const tag of hashtags) {
-        const hashtag = await this.prisma.hashtag.upsert({
+        await this.prisma.hashtag.upsert({
           where: { name: tag },
           update: {},
           create: { name: tag },
-        });
-
-        await this.prisma.postHashtag.create({
-          data: {
-            postId: id,
-            hashtagId: hashtag.id,
-          },
         });
       }
     }

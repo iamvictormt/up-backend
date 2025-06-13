@@ -30,7 +30,11 @@ export class NotificationService {
   async updateAllRead(userId: string) {
     return this.prisma.notification.updateMany({
       where: {
-        userId,
+        post: {
+          author: {
+            id: userId,
+          },
+        },
         isRead: false,
       },
       data: {
