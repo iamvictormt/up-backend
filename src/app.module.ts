@@ -22,6 +22,8 @@ import { HashtagModule } from './hashtag/hashtag.module';
 import { NotificationModule } from './notification/notification.module';
 import { ReportModule } from './report/report.module';
 import { ProfessionModule } from './profession/profession.module';
+import { StripeWebhookModule } from './stripe-webhook/stripe-webhook.module';
+import { SubscriptionModule } from './subscription/subscription.module';
 
 @Module({
   imports: [
@@ -48,7 +50,9 @@ import { ProfessionModule } from './profession/profession.module';
     HashtagModule,
     NotificationModule,
     ReportModule,
-    ProfessionModule
+    ProfessionModule,
+    StripeWebhookModule,
+    SubscriptionModule
   ],
   controllers: [AppController],
   providers: [AppService],

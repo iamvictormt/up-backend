@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
+import * as express from 'express';
 dotenv.config();
 
 async function bootstrap() {
@@ -18,6 +19,8 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   });
+
+  app.use('/api/webhook/stripe', express.raw({ type: 'application/json' }));
 
   await app.listen(process.env.PORT ?? 3002);
 }

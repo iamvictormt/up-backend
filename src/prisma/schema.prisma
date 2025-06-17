@@ -72,9 +72,10 @@ model PartnerSupplier {
 
   accessPending Boolean @default(true)
 
-  user    User?   @relation("UserPartner")
-  store   Store?
-  storeId String? @unique
+  user         User?         @relation("UserPartner")
+  store        Store?
+  storeId      String?       @unique
+  Subscription Subscription?
 }
 
 model SocialMedia {
@@ -275,8 +276,8 @@ model PostHashtag {
   postId    String
   hashtagId String
 
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  hashtag   Hashtag  @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+  post    Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  hashtag Hashtag @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
 
   @@id([postId, hashtagId])
 }
@@ -351,6 +352,19 @@ model PasswordResetCode {
   createdAt DateTime @default(now())
 }
 
+model Subscription {
+  id                 String          @id @default(cuid())
+  partnerSupplier    PartnerSupplier @relation(fields: [partnerSupplierId], references: [id])
+  partnerSupplierId  String          @unique
+  stripeCustomerId   String
+  subscriptionId     String          @unique
+  subscriptionStatus SubscriptionStatus
+  planType           String
+  currentPeriodEnd   DateTime
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+}
+
 /**
  * ENUMS:
  */
@@ -386,4 +400,14 @@ enum WorkshopType {
 enum NotificationType {
   LIKE
   COMMENT
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  PAST_DUE
+  TRIALING
+  UNPAID
 }

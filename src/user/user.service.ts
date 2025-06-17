@@ -90,6 +90,7 @@ export class UserService {
       where: { id },
       select: {
         id: true,
+        email: true,
         partnerSupplier: true,
         professional: {
           include: {
