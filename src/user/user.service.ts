@@ -91,7 +91,9 @@ export class UserService {
       select: {
         id: true,
         email: true,
-        partnerSupplier: true,
+        partnerSupplier: {
+          include: { subscription: true },
+        },
         professional: {
           include: {
             profession: true,

@@ -75,7 +75,7 @@ model PartnerSupplier {
   user         User?         @relation("UserPartner")
   store        Store?
   storeId      String?       @unique
-  Subscription Subscription?
+  subscription Subscription?
 }
 
 model SocialMedia {
@@ -361,6 +361,7 @@ model Subscription {
   subscriptionStatus SubscriptionStatus
   planType           String
   currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean         @default(false)
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
 }
