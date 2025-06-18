@@ -1,12 +1,16 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
-import * as express from 'express';
+import { json, urlencoded, raw } from 'express';
+
 dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.use('/api/webhook/stripe', raw({ type: 'application/json' }));
+  app.use(json());
+  app.use(urlencoded({ extended: true }));
   app.setGlobalPrefix('api');
   app.enableCors({
     origin: [
@@ -20,8 +24,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.use('/api/webhook/stripe', express.raw({ type: 'application/json' }));
-
   await app.listen(process.env.PORT ?? 3002);
 }
+
 bootstrap();

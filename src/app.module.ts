@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
@@ -52,7 +52,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
     ReportModule,
     ProfessionModule,
     StripeWebhookModule,
-    SubscriptionModule
+    SubscriptionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

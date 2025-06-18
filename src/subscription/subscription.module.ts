@@ -7,5 +7,6 @@ import { SubscriptionsService } from './subscription.service';
   imports: [JwtModule, PrismaModule],
   controllers: [],
   providers: [SubscriptionsService],
+  exports: [SubscriptionsService]
 })
 export class SubscriptionModule {}
