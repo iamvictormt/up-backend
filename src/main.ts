@@ -14,7 +14,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.enableCors({
     origin: [
-      'https://up-dashboard-two.vercel.app',
+      'https://sistema.upconnection.app',
       'https://up-sistema-admin.vercel.app',
       'http://localhost:3000',
       'http://localhost:3001',
