@@ -229,8 +229,8 @@ model LoveDecoration {
   id        String @id @default(uuid())
   name      String
   contact   String
-  instagram String
-  tiktok    String
+  instagram String?
+  tiktok    String?
 
   user User? @relation("UserLoveDecoration")
 }
