@@ -13,7 +13,11 @@ export class ProfessionService {
   }
 
   async findAll(postId: string) {
-    return this.prisma.profession.findMany();
+    return this.prisma.profession.findMany({
+      orderBy: {
+        name: 'asc',
+      },
+    });
   }
 
   async remove(id: string) {

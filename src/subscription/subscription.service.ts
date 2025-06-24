@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import Stripe from 'stripe';
 import { getPlanType } from '../ultis/subscription.util';
+import { getNextPeriodEnd } from '../ultis/date.util';
 
 @Injectable()
 export class SubscriptionsService {
@@ -17,12 +18,12 @@ export class SubscriptionsService {
       customer: stripeCustomerId,
       id: subscriptionId,
       status,
-      current_period_end,
       cancel_at_period_end,
       plan,
     } = data;
 
     let customerData;
+    const periodEnd = getNextPeriodEnd(new Date());
     try {
       customerData = await this.stripe.customers.retrieve(stripeCustomerId);
     } catch (error) {
@@ -58,7 +59,7 @@ export class SubscriptionsService {
         subscriptionId,
         subscriptionStatus: status.toUpperCase(),
         planType: getPlanType(plan.amount.toString()),
-        currentPeriodEnd: new Date(current_period_end * 1000),
+        currentPeriodEnd: periodEnd,
         cancelAtPeriodEnd: cancel_at_period_end ?? false,
       },
       create: {
@@ -67,7 +68,7 @@ export class SubscriptionsService {
         subscriptionId,
         subscriptionStatus: status.toUpperCase(),
         planType: getPlanType(plan.amount.toString()),
-        currentPeriodEnd: new Date(current_period_end * 1000),
+        currentPeriodEnd: periodEnd,
         cancelAtPeriodEnd: cancel_at_period_end ?? false,
       },
     });

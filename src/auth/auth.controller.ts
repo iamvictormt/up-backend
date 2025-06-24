@@ -1,4 +1,10 @@
-import { Controller, Post, Body, UnauthorizedException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
@@ -13,7 +19,7 @@ export class AuthController {
   async login(@Body() loginDto: LoginDto) {
     const user = await this.authService.validateUser(loginDto.email, loginDto.password);
     if (!user) {
-      throw new UnauthorizedException('Usuário não encontrado ou senha inválida');
+      throw new NotFoundException('Usuário não encontrado ou senha inválida');
     }
 
     return this.authService.login(user);
