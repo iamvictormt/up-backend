@@ -23,7 +23,7 @@ export class ProfessionalController {
     @Body('professional') dto: CreateProfessionalDto,
     @Body('user') userDto: CreateUserDto,
   ) {
-    return this.professionalService.create(dto, userDto);
+    return await this.professionalService.create(dto, userDto);
   }
 
   @Patch()
@@ -44,12 +44,12 @@ export class ProfessionalController {
   @Get()
   @UseGuards(JwtAuthGuard)
   async findAll() {
-    return this.professionalService.findAll();
+    return await this.professionalService.findAll();
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   async findOne(@Param('id') id: string) {
-    return this.professionalService.findOne(id);
+    return await this.professionalService.findOne(id);
   }
 }

@@ -7,7 +7,7 @@ import { AdminGuard } from 'src/auth/admin-auth.guard';
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
-  @Get('partner-supplierS/pending')
+  @Get('partner-suppliers/pending')
   async findOne() {
     return await this.adminService.findAllPartnerSuppliers();
   }
