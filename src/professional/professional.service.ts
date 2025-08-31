@@ -59,8 +59,12 @@ export class ProfessionalService {
       throw new NotFoundException('Profissional não encontrado!');
     }
 
+    return await this.updateProfessional(user.professional.id, dto);
+  }
+
+  async updateProfessional(professionalId: string, dto: UpdateProfessionalDto) {
     return this.prisma.professional.update({
-      where: { id: user.professional.id },
+      where: { id: professionalId },
       data: { ...dto },
     });
   }

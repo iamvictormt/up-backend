@@ -28,8 +28,17 @@ export class ProfessionalController {
 
   @Patch()
   @UseGuards(JwtAuthGuard)
-  update(@CurrentUser() user, @Body() dto: UpdateProfessionalDto) {
-    return this.professionalService.update(user.sub, dto);
+  async update(@CurrentUser() user, @Body() dto: UpdateProfessionalDto) {
+    return await this.professionalService.update(user.sub, dto);
+  }
+
+  @Patch(':professionalId')
+  @UseGuards(JwtAuthGuard)
+  async updateProfessional(
+    @Param('professionalId') professionalId: string,
+    @Body() dto: UpdateProfessionalDto,
+  ) {
+    return await this.professionalService.updateProfessional(professionalId, dto);
   }
 
   @Get()
