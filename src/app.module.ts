@@ -25,6 +25,7 @@ import { ProfessionModule } from './profession/profession.module';
 import { StripeWebhookModule } from './stripe-webhook/stripe-webhook.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { StatisticsModule } from './statistics/statistics.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { StatisticsModule } from './statistics/statistics.module';
     StripeWebhookModule,
     SubscriptionModule,
     StatisticsModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

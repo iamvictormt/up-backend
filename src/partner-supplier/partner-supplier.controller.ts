@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { PartnerSupplierService } from './partner-supplier.service';
 import { CreatePartnerSupplierDto } from './dto/create-partner-supplier.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
@@ -16,32 +25,32 @@ export class PartnerSupplierController {
     @Body('partnerSupplier') dto: CreatePartnerSupplierDto,
     @Body('user') userDto: CreateUserDto,
   ) {
-    return this.partnerSupplierService.create(dto, userDto);
+    return await this.partnerSupplierService.create(dto, userDto);
   }
 
   @Patch()
   @UseGuards(JwtAuthGuard)
-  update(@CurrentUser() user, @Body() dto: UpdatePartnerSupplierDto) {
-    return this.partnerSupplierService.update(user.sub, dto);
+  async update(@CurrentUser() user, @Body() dto: UpdatePartnerSupplierDto) {
+    return await this.partnerSupplierService.update(user.sub, dto);
   }
 
   @Get() async findAll() {
-    return this.partnerSupplierService.findAll();
+    return await this.partnerSupplierService.findAll();
   }
 
   @Get('pending') async findPending() {
-    return this.partnerSupplierService.findPending();
+    return await this.partnerSupplierService.findAll();
   }
 
   @Get(':id') async findOne(@Param('id') id: string) {
-    return this.partnerSupplierService.findOne(id);
+    return await this.partnerSupplierService.findOne(id);
   }
 
   @Put('pending/:id') async updateAccessPending(
     @Param('id') id: string,
     @Body() updatePartnerSupplierDto: UpdatePartnerSupplierDto,
   ) {
-    return this.partnerSupplierService.updateAccessPending(
+    return await this.partnerSupplierService.updateAccessPending(
       id,
       updatePartnerSupplierDto,
     );

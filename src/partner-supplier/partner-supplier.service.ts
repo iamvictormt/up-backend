@@ -120,7 +120,7 @@ export class PartnerSupplierService {
   }
 
   async findPending() {
-    return this.prisma.user.findMany({
+    return await this.prisma.user.findMany({
       where: {
         partnerSupplierId: {
           not: null,
