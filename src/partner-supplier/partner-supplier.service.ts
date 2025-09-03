@@ -60,7 +60,7 @@ export class PartnerSupplierService {
     });
   }
 
-  async updateAccessPending(id: string, dto: UpdatePartnerSupplierDto) {
+  async toggleAccessPending(id: string) {
     const user = await this.prisma.user.findFirst({
       where: {
         partnerSupplierId: id,
@@ -74,10 +74,17 @@ export class PartnerSupplierService {
       throw new NotFoundException('Fornecedor parceiro não encontrado!');
     }
 
+    if (!user.partnerSupplier) {
+      throw new NotFoundException('Fornecedor parceiro não encontrado!');
+    }
+
+    const currentAccessPending = user.partnerSupplier.accessPending;
+    const newAccessPending = !currentAccessPending;
+
     await this.mailService.sendMail(
       user.email,
-      dto.accessPending ? 'Cadastro reprovado' : 'Cadastro aprovado',
-      dto.accessPending ? 'cadastro-reprovado.html' : 'cadastro-aprovado.html',
+      newAccessPending ? 'Cadastro reprovado' : 'Cadastro aprovado',
+      newAccessPending ? 'cadastro-reprovado.html' : 'cadastro-aprovado.html',
       {
         username: getUsername(user),
       },
@@ -86,7 +93,7 @@ export class PartnerSupplierService {
     return this.prisma.partnerSupplier.update({
       where: { id },
       data: {
-        accessPending: dto.accessPending,
+        accessPending: newAccessPending,
       },
     });
   }

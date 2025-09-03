@@ -46,13 +46,7 @@ export class PartnerSupplierController {
     return await this.partnerSupplierService.findOne(id);
   }
 
-  @Put('pending/:id') async updateAccessPending(
-    @Param('id') id: string,
-    @Body() updatePartnerSupplierDto: UpdatePartnerSupplierDto,
-  ) {
-    return await this.partnerSupplierService.updateAccessPending(
-      id,
-      updatePartnerSupplierDto,
-    );
+  @Put('pending/:id') async toggleAccessPending(@Param('id') id: string) {
+    return await this.partnerSupplierService.toggleAccessPending(id);
   }
 }
