@@ -5,10 +5,11 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from 'src/user/user.module';
 import { AuthModule } from 'src/auth/auth.module';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   controllers: [AdminController],
   providers: [AdminService],
-  imports: [PrismaModule, JwtModule, UserModule, AuthModule],
+  imports: [PrismaModule, JwtModule, UserModule, AuthModule, MailModule],
 })
 export class AdminModule {}

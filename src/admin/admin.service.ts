@@ -1,9 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { getUsername } from 'src/ultis';
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mailService: MailService,
+  ) {}
 
   async findAllPartnerSuppliers() {
     return this.prisma.partnerSupplier.findMany({
@@ -49,6 +54,44 @@ export class AdminService {
       return tx.partnerSupplier.delete({
         where: { id },
       });
+    });
+  }
+
+  async toggleAccessPending(id: string) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        partnerSupplierId: id,
+      },
+      include: {
+        partnerSupplier: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Fornecedor parceiro não encontrado!');
+    }
+
+    if (!user.partnerSupplier) {
+      throw new NotFoundException('Fornecedor parceiro não encontrado!');
+    }
+
+    const currentAccessPending = user.partnerSupplier.accessPending;
+    const newAccessPending = !currentAccessPending;
+
+    await this.mailService.sendMail(
+      user.email,
+      newAccessPending ? 'Cadastro reprovado' : 'Cadastro aprovado',
+      newAccessPending ? 'cadastro-reprovado.html' : 'cadastro-aprovado.html',
+      {
+        username: getUsername(user),
+      },
+    );
+
+    return this.prisma.partnerSupplier.update({
+      where: { id },
+      data: {
+        accessPending: newAccessPending,
+      },
     });
   }
 }

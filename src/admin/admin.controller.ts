@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { AdminGuard } from 'src/auth/admin-auth.guard';
 
@@ -10,6 +10,10 @@ export class AdminController {
   @Get('partner-suppliers/pending')
   async findAllPartnerSuppliers() {
     return await this.adminService.findAllPartnerSuppliers();
+  }
+
+  @Put('pending/:id') async toggleAccessPending(@Param('id') id: string) {
+    return await this.adminService.toggleAccessPending(id);
   }
 
   @Delete('partner-suppliers/:id')

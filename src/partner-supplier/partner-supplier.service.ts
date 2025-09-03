@@ -60,44 +60,6 @@ export class PartnerSupplierService {
     });
   }
 
-  async toggleAccessPending(id: string) {
-    const user = await this.prisma.user.findFirst({
-      where: {
-        partnerSupplierId: id,
-      },
-      include: {
-        partnerSupplier: true,
-      },
-    });
-
-    if (!user) {
-      throw new NotFoundException('Fornecedor parceiro não encontrado!');
-    }
-
-    if (!user.partnerSupplier) {
-      throw new NotFoundException('Fornecedor parceiro não encontrado!');
-    }
-
-    const currentAccessPending = user.partnerSupplier.accessPending;
-    const newAccessPending = !currentAccessPending;
-
-    await this.mailService.sendMail(
-      user.email,
-      newAccessPending ? 'Cadastro reprovado' : 'Cadastro aprovado',
-      newAccessPending ? 'cadastro-reprovado.html' : 'cadastro-aprovado.html',
-      {
-        username: getUsername(user),
-      },
-    );
-
-    return this.prisma.partnerSupplier.update({
-      where: { id },
-      data: {
-        accessPending: newAccessPending,
-      },
-    });
-  }
-
   async findAll() {
     return this.prisma.partnerSupplier.findMany({
       where: {
