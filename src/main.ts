@@ -15,7 +15,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'https://sistema.upconnection.app',
-      'https://up-connection-admin.vercel.app/',
+      'https://up-connection-admin.vercel.app',
       //'https://up-sistema-admin.vercel.app',
       'http://localhost:3000',
       'http://localhost:3001',
