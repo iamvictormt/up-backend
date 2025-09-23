@@ -10,6 +10,15 @@ import { MailModule } from 'src/mail/mail.module';
 @Module({
   controllers: [AdminController],
   providers: [AdminService],
-  imports: [PrismaModule, JwtModule, UserModule, AuthModule, MailModule],
+  imports: [
+    PrismaModule,
+    JwtModule.register({
+      secret: process.env.SECRET_KEY || 'default_secret',
+      signOptions: { expiresIn: '100h' },
+    }),
+    UserModule,
+    AuthModule,
+    MailModule,
+  ],
 })
 export class AdminModule {}

@@ -1,7 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
+import { RegisterProfessionalDto } from './dto/register-professional.dto';
 
 @Injectable()
 export class EventService {
@@ -26,9 +31,41 @@ export class EventService {
     });
   }
 
+  async registerProfessional(eventId: string, dto: RegisterProfessionalDto) {
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+    });
+    if (!event) throw new NotFoundException('Evento não encontrado');
+
+    if (event.filledSpots >= event.totalSpots) {
+      throw new BadRequestException('Evento já está lotado');
+    }
+
+    const registration = await this.prisma.eventRegistration.create({
+      data: {
+        professional: { connect: { id: dto.professionalId } },
+        event: { connect: { id: eventId } },
+      },
+    });
+
+    await this.prisma.event.update({
+      where: { id: eventId },
+      data: { filledSpots: { increment: 1 } },
+    });
+
+    return registration;
+  }
+
   findAll() {
     return this.prisma.event.findMany({
-      include: { address: true, store: true, participants: true },
+      where: {
+        isActive: true,
+        date: { gte: new Date() },
+      },
+      include: {
+        address: true,
+        store: true,
+      },
     });
   }
 

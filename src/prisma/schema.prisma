@@ -145,6 +145,7 @@ model Event {
   address      Address             @relation(fields: [addressId], references: [id])
   addressId    String
   storeId      String
+  isActive     Boolean             @default(true)
   store        Store               @relation(fields: [storeId], references: [id])
   participants EventRegistration[]
 }
@@ -156,6 +157,8 @@ model EventRegistration {
   event          Event        @relation(fields: [eventId], references: [id])
   eventId        String
   registeredAt   DateTime     @default(now())
+  checkedIn      Boolean      @default(false)
+  checkedInAt    DateTime?
 }
 
 model PointHistory {

@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { decode } from 'punycode';
+import { ADMIN_EMAIL } from 'src/admin/constant/admin-datas';
 import { UserService } from 'src/user/user.service';
 
 @Injectable()
@@ -32,7 +32,8 @@ export class AdminGuard implements CanActivate {
 
       // console.log('decoded', JSON.stringify(decoded));
 
-      const userId = decoded.sub; 
+      const userId = decoded.sub;
+      const userRole = decoded.role;
 
       if (!userId) {
         throw new UnauthorizedException(
@@ -40,9 +41,19 @@ export class AdminGuard implements CanActivate {
         );
       }
 
-      const user = await this.userService.findOne(userId); 
+      // Verificar se é o admin direto (do login de admin)
+      if (
+        userId === 'admin' &&
+        userRole === 'admin' &&
+        decoded.email === 'admin@upconnection.app'
+      ) {
+        return true;
+      }
 
-      if (!user || user.email !== 'admin@upconnection.app') {
+      // Verificar se é um usuário normal com email de admin
+      const user = await this.userService.findOne(userId);
+
+      if (!user || user.email !== ADMIN_EMAIL) {
         throw new ForbiddenException(
           'Acesso permitido apenas para administradores',
         );
