@@ -296,17 +296,17 @@ export class AdminService {
 
     const activities: RecentActivity[] = [
       ...recentUsers.map((u) => ({
-        type: 'User',
+        type: 'User' as const,
         description: u.email,
         date: u.createdAt,
       })),
       ...recentProfessionals.map((p) => ({
-        type: 'Professional',
+        type: 'Professional' as const,
         description: p.name,
         date: new Date(),
       })),
       ...recentPosts.map((p) => ({
-        type: 'Post',
+        type: 'Post' as const,
         description: p.title,
         date: p.createdAt,
       })),
