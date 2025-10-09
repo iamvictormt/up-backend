@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -14,6 +15,8 @@ import { LoginDto } from 'src/auth/dto/login.dto';
 import { CreateEventDto } from 'src/event/dto/create-event.dto';
 import { DashboardStatistics } from './types/DashboardStatistics';
 import { RecentActivity } from './types/RecentActivity';
+import { CreateRecommendedProfessionalDto } from 'src/recommended-professional/dto/create-recommended-professional.dto';
+import { UpdateRecommendedProfessionalDto } from 'src/recommended-professional/dto/update-recommended-professional.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -40,6 +43,29 @@ export class AdminController {
   @Get('recommended-professionals')
   async findAllRecommendedProfessionals() {
     return await this.adminService.findAllRecommendedProfessionals();
+  }
+
+  @Post('recommended-professionals')
+  async create(@Body() createDto: CreateRecommendedProfessionalDto) {
+    return await this.adminService.createRecommendedProfessional(createDto);
+  }
+
+  @Patch('recommended-professionals/:id')
+  async update(
+    @Param('id') id: string,
+    @Body() updateDto: UpdateRecommendedProfessionalDto,
+  ) {
+    return await this.adminService.updateRecommendedProfessional(id, updateDto);
+  }
+
+  @Patch('recommended-professionals/toggle-status/:id')
+  async inativeProfessional(@Param('id') id: string) {
+    return await this.adminService.toggleStatusRecommendedProfessional(id);
+  }
+
+  @Delete('recommended-professionals/:id')
+  async remove(@Param('id') id: string) {
+    return await this.adminService.removeRecommendedProfessional(id);
   }
 
   @Post('events')

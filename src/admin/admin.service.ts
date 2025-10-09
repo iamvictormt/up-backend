@@ -13,6 +13,8 @@ import { ADMIN_EMAIL, ADMIN_PASSWORD } from './constant/admin-datas';
 import { CreateEventDto } from 'src/event/dto/create-event.dto';
 import { DashboardStatistics } from './types/DashboardStatistics';
 import { RecentActivity } from './types/RecentActivity';
+import { CreateRecommendedProfessionalDto } from 'src/recommended-professional/dto/create-recommended-professional.dto';
+import { UpdateRecommendedProfessionalDto } from 'src/recommended-professional/dto/update-recommended-professional.dto';
 
 @Injectable()
 export class AdminService {
@@ -139,6 +141,137 @@ export class AdminService {
         socialMedia: true,
         availableDays: true,
       },
+    });
+  }
+
+  async createRecommendedProfessional(data: CreateRecommendedProfessionalDto) {
+    return await this.prisma.recommendedProfessional.create({
+      data: {
+        name: data.name,
+        profession: data.profession,
+        description: data.description,
+        phone: data.phone,
+        email: data.email,
+        profileImage: data.profileImage,
+        isActive: data.isActive ?? true,
+        address: {
+          create: {
+            ...data.address,
+          },
+        },
+        availableDays: data.availableDays
+          ? {
+              create: data.availableDays.map((day) => ({
+                dayOfWeek: day,
+              })),
+            }
+          : undefined,
+        socialMedia: data.socialMedia
+          ? {
+              create: {
+                instagram: data.socialMedia.instagram,
+                linkedin: data.socialMedia.linkedin,
+                whatsapp: data.socialMedia.whatsapp,
+              },
+            }
+          : undefined,
+      },
+      include: {
+        availableDays: true,
+        socialMedia: true,
+        address: true,
+      },
+    });
+  }
+
+  async updateRecommendedProfessional(
+    id: string,
+    data: UpdateRecommendedProfessionalDto,
+  ) {
+    const { socialMedia, availableDays, address, ...rest } = data;
+
+    return this.prisma.recommendedProfessional.update({
+      where: { id },
+      data: {
+        ...rest,
+
+        address: address
+          ? {
+              update: {
+                state: address.state,
+                city: address.city,
+                district: address.district,
+                street: address.street,
+                complement: address.complement,
+                number: address.number,
+                zipCode: address.zipCode,
+              },
+            }
+          : undefined,
+
+        socialMedia: socialMedia
+          ? {
+              upsert: {
+                create: {
+                  instagram: socialMedia.instagram,
+                  linkedin: socialMedia.linkedin,
+                  whatsapp: socialMedia.whatsapp,
+                },
+                update: {
+                  instagram: socialMedia.instagram,
+                  linkedin: socialMedia.linkedin,
+                  whatsapp: socialMedia.whatsapp,
+                },
+              },
+            }
+          : undefined,
+
+        availableDays: availableDays
+          ? {
+              deleteMany: {},
+              createMany: {
+                data: availableDays.map((dayOfWeek) => ({ dayOfWeek })),
+              },
+            }
+          : undefined,
+      },
+      include: {
+        address: true,
+        socialMedia: true,
+        availableDays: true,
+      },
+    });
+  }
+
+  async findOneRecommendedProfessional(id: string) {
+    return await this.prisma.recommendedProfessional.findUnique({
+      where: { id },
+      include: {
+        address: true,
+        socialMedia: true,
+        availableDays: true,
+      },
+    });
+  }
+
+  async toggleStatusRecommendedProfessional(id: string) {
+    const professional = await this.findOneRecommendedProfessional(id);
+    if (!professional) {
+      throw new BadRequestException('Profissional não encontrado');
+    }
+
+    return await this.updateRecommendedProfessional(id, {
+      isActive: !professional.isActive,
+    });
+  }
+
+  async removeRecommendedProfessional(id: string) {
+    await this.prisma.availableDay.deleteMany({
+      where: { recommendedProfessionalId: id },
+    });
+
+    return await this.prisma.recommendedProfessional.delete({
+      where: { id },
     });
   }
 
