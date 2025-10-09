@@ -45,7 +45,7 @@ export class AdminGuard implements CanActivate {
       if (
         userId === 'admin' &&
         userRole === 'admin' &&
-        decoded.email === 'admin@upconnection.app'
+        decoded.email === ADMIN_EMAIL
       ) {
         return true;
       }

@@ -11,6 +11,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { getUsername } from 'src/ultis';
 import { ADMIN_EMAIL, ADMIN_PASSWORD } from './constant/admin-datas';
 import { CreateEventDto } from 'src/event/dto/create-event.dto';
+import { DashboardStatistics } from './types/DashboardStatistics';
+import { RecentActivity } from './types/RecentActivity';
 
 @Injectable()
 export class AdminService {
@@ -229,49 +231,93 @@ export class AdminService {
     });
   }
 
-  /*
-  // Métodos para Estatísticas
-  async getStatistics() {
+  async getStatistics(): Promise<DashboardStatistics> {
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
     const [
       totalUsers,
       totalProfessionals,
       totalPartnerSuppliers,
-      totalEvents,
-      totalBenefits,
-      pendingApprovals,
+      totalEventsThisMonth,
+      totalRecommendedProfessionals,
+      totalPosts,
     ] = await Promise.all([
       this.prisma.user.count(),
-      this.prisma.professional.count(),
-      this.prisma.partnerSupplier.count(),
-      this.prisma.event.count(),
-      this.prisma.benefit.count(),
-      this.prisma.partnerSupplier.count({
-        where: { accessPending: true },
+      this.prisma.user.count({
+        where: { professionalId: { not: null } },
       }),
+      this.prisma.user.count({
+        where: { partnerSupplierId: { not: null } },
+      }),
+      this.prisma.event.count({
+        where: {
+          date: {
+            gte: firstDayOfMonth,
+            lte: lastDayOfMonth,
+          },
+        },
+      }),
+      this.prisma.recommendedProfessional.count({
+        where: { isActive: true },
+      }),
+      this.prisma.post.count(),
     ]);
 
-    const usersByMonth = await this.prisma.user.groupBy({
-      by: ['createdAt'],
-      _count: true,
-      where: {
-        createdAt: {
-          gte: new Date(new Date().getFullYear(), 0, 1), // Início do ano atual
-        },
-      },
-    });
-
     return {
-      overview: {
-        totalUsers,
-        totalProfessionals,
-        totalPartnerSuppliers,
-        totalEvents,
-        totalBenefits,
-        pendingApprovals,
-      },
-      userGrowth: usersByMonth,
+      totalUsers,
+      totalProfessionals,
+      totalPartnerSuppliers,
+      totalEventsThisMonth,
+      totalRecommendedProfessionals,
+      totalPosts,
     };
   }
+
+  async getRecentActivities(): Promise<RecentActivity[]> {
+    const recentUsers = await this.prisma.user.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: { id: true, email: true, createdAt: true },
+    });
+
+    const recentProfessionals = await this.prisma.professional.findMany({
+      orderBy: { id: 'desc' },
+      take: 5,
+      select: { id: true, name: true },
+    });
+
+    const recentPosts = await this.prisma.post.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: { id: true, title: true, createdAt: true },
+    });
+
+    const activities: RecentActivity[] = [
+      ...recentUsers.map((u) => ({
+        type: 'User',
+        description: u.email,
+        date: u.createdAt,
+      })),
+      ...recentProfessionals.map((p) => ({
+        type: 'Professional',
+        description: p.name,
+        date: new Date(),
+      })),
+      ...recentPosts.map((p) => ({
+        type: 'Post',
+        description: p.title,
+        date: p.createdAt,
+      })),
+    ];
+
+    activities.sort((a, b) => b.date.getTime() - a.date.getTime());
+
+    return activities.slice(0, 5);
+  }
+
+  /*
 
   // Métodos para Profissionais Recomendados
   async getRecommendedProfessionals() {

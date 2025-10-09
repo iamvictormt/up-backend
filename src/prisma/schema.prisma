@@ -229,7 +229,7 @@ model AvailableDay {
 }
 
 model LoveDecoration {
-  id        String @id @default(uuid())
+  id        String  @id @default(uuid())
   name      String
   contact   String
   instagram String?
@@ -356,17 +356,17 @@ model PasswordResetCode {
 }
 
 model Subscription {
-  id                 String          @id @default(cuid())
-  partnerSupplier    PartnerSupplier @relation(fields: [partnerSupplierId], references: [id])
-  partnerSupplierId  String          @unique
+  id                 String             @id @default(cuid())
+  partnerSupplier    PartnerSupplier    @relation(fields: [partnerSupplierId], references: [id])
+  partnerSupplierId  String             @unique
   stripeCustomerId   String
-  subscriptionId     String          @unique
+  subscriptionId     String             @unique
   subscriptionStatus SubscriptionStatus
   planType           String
   currentPeriodEnd   DateTime
-  cancelAtPeriodEnd  Boolean         @default(false)
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
+  cancelAtPeriodEnd  Boolean            @default(false)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
 }
 
 /**

@@ -12,6 +12,8 @@ import { AdminService } from './admin.service';
 import { AdminGuard } from 'src/auth/admin-auth.guard';
 import { LoginDto } from 'src/auth/dto/login.dto';
 import { CreateEventDto } from 'src/event/dto/create-event.dto';
+import { DashboardStatistics } from './types/DashboardStatistics';
+import { RecentActivity } from './types/RecentActivity';
 
 @Controller('admin')
 export class AdminController {
@@ -73,12 +75,19 @@ export class AdminController {
     return await this.adminService.toggleEvent(eventId);
   }
 
-  /*
   @UseGuards(AdminGuard)
-  @Get('statistics')
-  async getStatistics() {
+  @Get('/dashboard/statistics')
+  async getStatistics(): Promise<DashboardStatistics> {
     return await this.adminService.getStatistics();
   }
+
+  @UseGuards(AdminGuard)
+  @Get('/dashboard/recent-activities')
+  async getRecentActivities(): Promise<RecentActivity[]> {
+    return await this.adminService.getRecentActivities();
+  }
+
+  /*
 
   @UseGuards(AdminGuard)
   @Get('recommended-professionals')
