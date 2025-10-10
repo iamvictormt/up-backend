@@ -20,7 +20,7 @@ export class StripeWebhookController {
     let event: Stripe.Event;
     try {
       event = this.stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
-    } catch (err) {
+    } catch (err: any) {
       this.logger.error(`Webhook Error: ${err.message}`);
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
@@ -29,18 +29,18 @@ export class StripeWebhookController {
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
         await this.subscriptionService.upsertSubscriptionFromStripe(
-          event.data.object,
+          event.data.object as Stripe.Subscription,
         );
         break;
 
       case 'customer.subscription.deleted':
         await this.subscriptionService.upsertSubscriptionFromStripe({
-          ...event.data.object,
+          ...(event.data.object as Stripe.Subscription),
           status: 'canceled',
         });
         break;
     }
 
-    res.status(200).json({ received: true });
+    return res.status(200).json({ received: true });
   }
 }
