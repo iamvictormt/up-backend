@@ -17,6 +17,7 @@ import { DashboardStatistics } from './types/DashboardStatistics';
 import { RecentActivity } from './types/RecentActivity';
 import { CreateRecommendedProfessionalDto } from 'src/recommended-professional/dto/create-recommended-professional.dto';
 import { UpdateRecommendedProfessionalDto } from 'src/recommended-professional/dto/update-recommended-professional.dto';
+import { UpdateEventDto } from 'src/event/dto/update-event.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -88,6 +89,11 @@ export class AdminController {
     return await this.adminService.getEventParticipants(eventId);
   }
 
+  @Patch('events/:id')
+  async updateEvent(@Param('id') id: string, @Body() data: UpdateEventDto) {
+    return await this.adminService.updateEvent(id, data);
+  }
+
   @Post('events/:eventId/checkin/:professionalId')
   async checkIn(
     @Param('eventId') eventId: string,
@@ -115,17 +121,6 @@ export class AdminController {
 
   /*
 
-  @UseGuards(AdminGuard)
-  @Get('recommended-professionals')
-  async getRecommendedProfessionals() {
-    return await this.adminService.getRecommendedProfessionals();
-  }
-
-  @UseGuards(AdminGuard)
-  @Put('recommended-professionals/:id/toggle')
-  async toggleRecommendedProfessional(@Param('id') id: string) {
-    return await this.adminService.toggleRecommendedProfessional(id);
-  }
 
   @UseGuards(AdminGuard)
   @Get('events')

@@ -15,6 +15,7 @@ import { DashboardStatistics } from './types/DashboardStatistics';
 import { RecentActivity } from './types/RecentActivity';
 import { CreateRecommendedProfessionalDto } from 'src/recommended-professional/dto/create-recommended-professional.dto';
 import { UpdateRecommendedProfessionalDto } from 'src/recommended-professional/dto/update-recommended-professional.dto';
+import { UpdateEventDto } from 'src/event/dto/update-event.dto';
 
 @Injectable()
 export class AdminService {
@@ -298,9 +299,41 @@ export class AdminService {
     });
   }
 
+  async updateEvent(id: string, data: UpdateEventDto) {
+    const { address, storeId, ...eventData } = data; // extrai storeId e address
+
+    const prismaUpdateData: any = {
+      ...eventData,
+    };
+
+    if (address) {
+      prismaUpdateData.address = {
+        update: {
+          state: address.state,
+          city: address.city,
+          district: address.district,
+          street: address.street,
+          complement: address.complement,
+          number: address.number,
+          zipCode: address.zipCode,
+        },
+      };
+    }
+
+    if (storeId) {
+      prismaUpdateData.store = {
+        connect: { id: storeId },
+      };
+    }
+
+    return await this.prisma.event.update({
+      where: { id },
+      data: prismaUpdateData,
+    });
+  }
+
   async findEvents() {
     return await this.prisma.event.findMany({
-      where: { isActive: true },
       include: { address: true, store: true, participants: true },
     });
   }
