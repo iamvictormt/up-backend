@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
+import now = jest.now;
 
 @Injectable()
 export class StoreService {
@@ -110,6 +111,13 @@ export class StoreService {
         address: true,
         products: true,
         events: {
+          where: {
+            isActive: true,
+            date: {
+              gte: new Date(Date.now()),
+            }
+          },
+          take: 1,
           include: {
             address: true,
           },
@@ -125,6 +133,12 @@ export class StoreService {
         address: true,
         products: true,
         events: {
+          where: {
+            isActive: true,
+            date: {
+              gte: new Date(Date.now()),
+            }
+          },
           include: {
             address: true,
           },
