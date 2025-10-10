@@ -111,8 +111,10 @@ model Store {
   website      String?
   rating       Float?  @default(0)
   openingHours String?
-  address      Address @relation(fields: [addressId], references: [id])
-  addressId    String
+  logoUrl      String?
+
+  address   Address @relation(fields: [addressId], references: [id])
+  addressId String
 
   partnerId String          @unique
   partner   PartnerSupplier @relation(fields: [partnerId], references: [id])
@@ -129,8 +131,10 @@ model Product {
   link        String?
   featured    Boolean @default(false)
   promotion   Boolean @default(false)
-  storeId     String
-  store       Store   @relation(fields: [storeId], references: [id])
+  photoUrl    String?
+
+  storeId String
+  store   Store  @relation(fields: [storeId], references: [id])
 }
 
 model Event {

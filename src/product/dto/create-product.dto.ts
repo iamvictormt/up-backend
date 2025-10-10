@@ -24,4 +24,8 @@ export class CreateProductDto {
   @IsOptional()
   @IsBoolean()
   promotion?: boolean;
+
+  @IsOptional()
+  @IsString()
+  photoUrl?: string;
 }

@@ -21,6 +21,10 @@ export class CreateStoreDto {
   @IsString()
   partnerId: string;
 
+  @IsOptional()
+  @IsString()
+  logoUrl?: string;
+
   @ValidateNested()
   @Type(() => CreateStoreDto)
   address: CreateAddressDto;

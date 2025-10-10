@@ -15,6 +15,7 @@ export class StoreService {
         description: dto.description,
         website: dto.website,
         openingHours: dto.openingHours,
+        logoUrl: dto.logoUrl,
         partner: {
           connect: { id: dto.partnerId },
         },
