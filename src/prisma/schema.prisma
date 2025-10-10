@@ -135,6 +135,7 @@ model Product {
 
 model Event {
   id           String              @id @default(uuid())
+  // imageUrl     String    
   name         String
   description  String
   date         DateTime
@@ -159,6 +160,8 @@ model EventRegistration {
   registeredAt   DateTime     @default(now())
   checkedIn      Boolean      @default(false)
   checkedInAt    DateTime?
+
+  @@unique([professionalId, eventId])
 }
 
 model PointHistory {

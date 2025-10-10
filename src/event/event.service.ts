@@ -41,19 +41,46 @@ export class EventService {
       throw new BadRequestException('Evento já está lotado');
     }
 
-    const registration = await this.prisma.eventRegistration.create({
-      data: {
-        professional: { connect: { id: dto.professionalId } },
-        event: { connect: { id: eventId } },
+    const existingRegistration = await this.prisma.eventRegistration.findUnique(
+      {
+        where: {
+          professionalId_eventId: {
+            professionalId: dto.professionalId,
+            eventId: eventId,
+          },
+        },
       },
-    });
+    );
 
-    await this.prisma.event.update({
-      where: { id: eventId },
-      data: { filledSpots: { increment: 1 } },
-    });
+    if (existingRegistration) {
+      throw new BadRequestException(
+        'Profissional já está registrado neste evento',
+      );
+    }
 
-    return registration;
+    try {
+      const registration = await this.prisma.eventRegistration.create({
+        data: {
+          professional: { connect: { id: dto.professionalId } },
+          event: { connect: { id: eventId } },
+        },
+      });
+
+      await this.prisma.event.update({
+        where: { id: eventId },
+        data: { filledSpots: { increment: 1 } },
+      });
+
+      return registration;
+    } catch (error: any) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (error.code === 'P2002') {
+        throw new BadRequestException(
+          'Profissional já está registrado neste evento',
+        );
+      }
+      throw error;
+    }
   }
 
   findAll() {
