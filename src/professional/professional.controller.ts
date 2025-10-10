@@ -23,24 +23,33 @@ export class ProfessionalController {
     @Body('professional') dto: CreateProfessionalDto,
     @Body('user') userDto: CreateUserDto,
   ) {
-    return this.professionalService.create(dto, userDto);
+    return await this.professionalService.create(dto, userDto);
   }
 
   @Patch()
   @UseGuards(JwtAuthGuard)
-  update(@CurrentUser() user, @Body() dto: UpdateProfessionalDto) {
-    return this.professionalService.update(user.sub, dto);
+  async update(@CurrentUser() user, @Body() dto: UpdateProfessionalDto) {
+    return await this.professionalService.update(user.sub, dto);
+  }
+
+  @Patch(':professionalId')
+  @UseGuards(JwtAuthGuard)
+  async updateProfessional(
+    @Param('professionalId') professionalId: string,
+    @Body() dto: UpdateProfessionalDto,
+  ) {
+    return await this.professionalService.updateProfessional(professionalId, dto);
   }
 
   @Get()
   @UseGuards(JwtAuthGuard)
   async findAll() {
-    return this.professionalService.findAll();
+    return await this.professionalService.findAll();
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   async findOne(@Param('id') id: string) {
-    return this.professionalService.findOne(id);
+    return await this.professionalService.findOne(id);
   }
 }

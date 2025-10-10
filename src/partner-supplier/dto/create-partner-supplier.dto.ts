@@ -1,6 +1,4 @@
-import { IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
-import { CreateAddressDto } from '../../address/dto/create-address.dto';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class CreatePartnerSupplierDto {
   @IsString()

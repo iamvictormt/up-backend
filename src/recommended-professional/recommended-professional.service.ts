@@ -49,6 +49,9 @@ export class RecommendedProfessionalService {
 
   async findAll() {
     return this.prisma.recommendedProfessional.findMany({
+      where: {
+        isActive: true,
+      },
       include: {
         address: true,
         socialMedia: true,

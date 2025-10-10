@@ -19,7 +19,7 @@ export class HashtagService {
           _count: 'desc',
         },
       },
-      take: 10,
+      take: 5,
     });
 
     return trendingHashtags.map((h) => ({

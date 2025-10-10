@@ -135,6 +135,7 @@ model Product {
 
 model Event {
   id           String              @id @default(uuid())
+  // imageUrl     String    
   name         String
   description  String
   date         DateTime
@@ -145,6 +146,7 @@ model Event {
   address      Address             @relation(fields: [addressId], references: [id])
   addressId    String
   storeId      String
+  isActive     Boolean             @default(true)
   store        Store               @relation(fields: [storeId], references: [id])
   participants EventRegistration[]
 }
@@ -156,6 +158,10 @@ model EventRegistration {
   event          Event        @relation(fields: [eventId], references: [id])
   eventId        String
   registeredAt   DateTime     @default(now())
+  checkedIn      Boolean      @default(false)
+  checkedInAt    DateTime?
+
+  @@unique([professionalId, eventId])
 }
 
 model PointHistory {
@@ -226,7 +232,7 @@ model AvailableDay {
 }
 
 model LoveDecoration {
-  id        String @id @default(uuid())
+  id        String  @id @default(uuid())
   name      String
   contact   String
   instagram String?
@@ -353,17 +359,17 @@ model PasswordResetCode {
 }
 
 model Subscription {
-  id                 String          @id @default(cuid())
-  partnerSupplier    PartnerSupplier @relation(fields: [partnerSupplierId], references: [id])
-  partnerSupplierId  String          @unique
+  id                 String             @id @default(cuid())
+  partnerSupplier    PartnerSupplier    @relation(fields: [partnerSupplierId], references: [id])
+  partnerSupplierId  String             @unique
   stripeCustomerId   String
-  subscriptionId     String          @unique
+  subscriptionId     String             @unique
   subscriptionStatus SubscriptionStatus
   planType           String
   currentPeriodEnd   DateTime
-  cancelAtPeriodEnd  Boolean         @default(false)
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
+  cancelAtPeriodEnd  Boolean            @default(false)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
 }
 
 /**

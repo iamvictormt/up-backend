@@ -1,15 +1,17 @@
-import { Controller, Post, Get, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param } from '@nestjs/common';
 import { EventService } from './event.service';
-import { CreateEventDto } from './dto/create-event.dto';
-import { UpdateEventDto } from './dto/update-event.dto';
+import { RegisterProfessionalDto } from './dto/register-professional.dto';
 
 @Controller('events')
 export class EventController {
   constructor(private readonly eventService: EventService) {}
 
-  @Post()
-  create(@Body() data: CreateEventDto) {
-    return this.eventService.create(data);
+  @Post(':eventId/registrations')
+  async register(
+    @Param('eventId') eventId: string,
+    @Body() data: RegisterProfessionalDto,
+  ) {
+    return await this.eventService.registerProfessional(eventId, data);
   }
 
   @Get()
@@ -22,6 +24,7 @@ export class EventController {
     return this.eventService.findOne(id);
   }
 
+  /*
   @Patch(':id')
   update(@Param('id') id: string, @Body() data: UpdateEventDto) {
     return this.eventService.update(id, data);
@@ -31,4 +34,5 @@ export class EventController {
   remove(@Param('id') id: string) {
     return this.eventService.remove(id);
   }
+  */
 }
