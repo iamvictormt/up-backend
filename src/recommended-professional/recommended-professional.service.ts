@@ -3,6 +3,12 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateRecommendedProfessionalDto } from './dto/update-recommended-professional.dto';
 import { CreateRecommendedProfessionalDto } from './dto/create-recommended-professional.dto';
 
+interface FindAllOptions {
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
 @Injectable()
 export class RecommendedProfessionalService {
   constructor(private readonly prisma: PrismaService) {}
@@ -47,16 +53,29 @@ export class RecommendedProfessionalService {
     });
   }
 
-  async findAll() {
+  async findAll({ search, page = 1, limit = 6 }: FindAllOptions) {
+    const skip = (page - 1) * limit;
+
     return this.prisma.recommendedProfessional.findMany({
       where: {
         isActive: true,
+        ...(search
+          ? {
+              OR: [
+                { name: { contains: search, mode: 'insensitive' } },
+                { profession: { contains: search, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
       },
+      skip,
+      take: limit,
       include: {
         address: true,
         socialMedia: true,
         availableDays: true,
       },
+      orderBy: { name: 'asc' },
     });
   }
 
