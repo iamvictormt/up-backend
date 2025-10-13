@@ -97,10 +97,24 @@ export class StoreService {
       where: { id: store.id },
       include: {
         address: true,
-        products: true,
+        products: {
+          orderBy: [
+            { featured: 'desc' },
+            { name: 'asc' },
+          ],
+        },
         events: {
+          where: {
+            isActive: true,
+            date: {
+              gte: new Date(Date.now()),
+            },
+          },
           include: {
             address: true,
+          },
+          orderBy: {
+            date: 'asc',
           },
         },
       },

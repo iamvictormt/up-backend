@@ -93,6 +93,9 @@ export class EventService {
         address: true,
         store: true,
       },
+      orderBy: {
+        date: 'asc',
+      },
     });
   }
 
