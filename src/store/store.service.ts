@@ -108,10 +108,16 @@ export class StoreService {
   }
 
   async findAll() {
+
     return this.prisma.store.findMany({
       include: {
         address: true,
-        products: true,
+        products: {
+          orderBy: [
+            { featured: 'desc' },
+            { name: 'asc' },
+          ],
+        },
         events: {
           where: {
             isActive: true,
@@ -124,6 +130,9 @@ export class StoreService {
             address: true,
           },
         },
+      },
+      orderBy: {
+        name: 'asc',
       },
     });
   }

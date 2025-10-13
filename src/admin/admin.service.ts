@@ -338,16 +338,24 @@ export class AdminService {
     });
   }
 
-  async findStores() {
+  async findStores(order: 'asc' | 'desc' = 'asc') {
     return this.prisma.store.findMany({
       include: {
         address: true,
-        products: true,
+        products: {
+          orderBy: [
+            { featured: 'desc' },
+            { name: 'asc' },
+          ],
+        },
         events: {
           include: {
             address: true,
           },
         },
+      },
+      orderBy: {
+        name: order,
       },
     });
   }
