@@ -125,9 +125,11 @@ export class StoreService {
               gte: new Date(Date.now()),
             },
           },
-          take: 1,
           include: {
             address: true,
+          },
+          orderBy: {
+            date: 'asc',
           },
         },
       },

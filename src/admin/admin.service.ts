@@ -352,6 +352,9 @@ export class AdminService {
           include: {
             address: true,
           },
+          orderBy: {
+            date: 'asc',
+          },
         },
       },
       orderBy: {
