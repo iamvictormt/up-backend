@@ -142,7 +142,12 @@ export class StoreService {
       where: { id },
       include: {
         address: true,
-        products: true,
+        products: {
+          orderBy: [
+            { featured: 'desc' },
+            { name: 'asc' },
+          ],
+        },
         events: {
           where: {
             isActive: true,
@@ -152,6 +157,9 @@ export class StoreService {
           },
           include: {
             address: true,
+          },
+          orderBy: {
+            date: 'asc', // eventos mais próximos primeiro
           },
         },
       },
