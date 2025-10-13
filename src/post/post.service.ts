@@ -206,6 +206,7 @@ export class PostService {
           description: true,
           color: true,
           icon: true,
+          createdAt: true
         },
       },
       likes: {

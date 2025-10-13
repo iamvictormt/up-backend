@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import now = jest.now;
+import { Prisma, Store } from '@prisma/client';
 
 @Injectable()
 export class StoreService {
@@ -98,10 +99,7 @@ export class StoreService {
       include: {
         address: true,
         products: {
-          orderBy: [
-            { featured: 'desc' },
-            { name: 'asc' },
-          ],
+          orderBy: [{ featured: 'desc' }, { name: 'asc' }],
         },
         events: {
           where: {
@@ -121,35 +119,39 @@ export class StoreService {
     });
   }
 
-  async findAll() {
+  async findAll(search?: string, page = 1, limit = 10) {
+    const where: Prisma.StoreWhereInput = search
+      ? {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            {
+              products: {
+                some: { name: { contains: search, mode: 'insensitive' } },
+              },
+            },
+          ],
+        }
+      : {};
 
     return this.prisma.store.findMany({
+      where,
       include: {
         address: true,
         products: {
-          orderBy: [
-            { featured: 'desc' },
-            { name: 'asc' },
-          ],
+          orderBy: [{ featured: 'desc' }, { name: 'asc' }],
         },
         events: {
           where: {
             isActive: true,
-            date: {
-              gte: new Date(Date.now()),
-            },
+            date: { gte: new Date() },
           },
-          include: {
-            address: true,
-          },
-          orderBy: {
-            date: 'asc',
-          },
+          include: { address: true },
+          orderBy: { date: 'asc' },
         },
       },
-      orderBy: {
-        name: 'asc',
-      },
+      orderBy: { name: 'asc' },
+      skip: (page - 1) * limit,
+      take: limit,
     });
   }
 
@@ -159,10 +161,7 @@ export class StoreService {
       include: {
         address: true,
         products: {
-          orderBy: [
-            { featured: 'desc' },
-            { name: 'asc' },
-          ],
+          orderBy: [{ featured: 'desc' }, { name: 'asc' }],
         },
         events: {
           where: {

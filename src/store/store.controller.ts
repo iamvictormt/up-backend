@@ -4,7 +4,7 @@ import {
   Get,
   Param,
   Patch,
-  Post,
+  Post, Query,
   UseGuards,
 } from '@nestjs/common';
 import { StoreService } from './store.service';
@@ -35,8 +35,16 @@ export class StoreController {
     return this.storeService.findMyStore(user.sub);
   }
 
-  @Get() async findAll() {
-    return this.storeService.findAll();
+  @Get()
+  async findAll(
+    @Query('search') search?: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+  ) {
+    const pageNumber = parseInt(page);
+    const pageSize = parseInt(limit);
+
+    return this.storeService.findAll(search, pageNumber, pageSize);
   }
 
   @Get(':id') async findOne(@Param('id') id: string) {

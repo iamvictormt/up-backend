@@ -23,6 +23,9 @@ export class CommunityService {
           select: { posts: true },
         },
       },
+      orderBy: {
+        createdAt: 'asc',
+      },
     });
 
     const defaultCommunity = {

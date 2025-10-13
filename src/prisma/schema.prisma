@@ -252,6 +252,8 @@ model Community {
   posts       Post[]
   color       String
   icon        String
+
+  createdAt DateTime @default(now())
 }
 
 model Post {
