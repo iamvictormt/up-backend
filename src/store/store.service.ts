@@ -56,6 +56,7 @@ export class StoreService {
         description: dto.description,
         website: dto.website,
         openingHours: dto.openingHours,
+        logoUrl: dto.logoUrl,
         address: dto.address
           ? {
               update: {
@@ -116,7 +117,7 @@ export class StoreService {
             isActive: true,
             date: {
               gte: new Date(Date.now()),
-            }
+            },
           },
           take: 1,
           include: {
@@ -138,7 +139,7 @@ export class StoreService {
             isActive: true,
             date: {
               gte: new Date(Date.now()),
-            }
+            },
           },
           include: {
             address: true,
