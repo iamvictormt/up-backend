@@ -122,36 +122,91 @@ export class StoreService {
   async findAll(search?: string, page = 1, limit = 10) {
     const where: Prisma.StoreWhereInput = search
       ? {
-          OR: [
-            { name: { contains: search, mode: 'insensitive' } },
-            {
-              products: {
-                some: { name: { contains: search, mode: 'insensitive' } },
-              },
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          {
+            products: {
+              some: { name: { contains: search, mode: 'insensitive' } },
             },
-          ],
-        }
+          },
+        ],
+      }
       : {};
 
-    return this.prisma.store.findMany({
-      where,
-      include: {
-        address: true,
-        products: {
-          orderBy: [{ featured: 'desc' }, { name: 'asc' }],
-        },
-        events: {
-          where: {
-            isActive: true,
-            date: { gte: new Date() },
+    return this.prisma.$queryRaw`
+    WITH RankedStores AS (
+      SELECT 
+        s.id,
+        s.name,
+        s.description,
+        s.website,
+        s.rating,
+        s."openingHours",
+        s."logoUrl",
+        s."addressId",
+        s."partnerId",
+        CASE 
+          WHEN sub."planType" = 'PREMIUM' THEN 3
+          WHEN sub."planType" = 'GOLD' THEN 2
+          WHEN sub."planType" = 'SILVER' THEN 1
+          ELSE 0
+        END as plan_priority,
+        ROW_NUMBER() OVER (
+          ORDER BY 
+            CASE 
+              WHEN sub."planType" = 'PREMIUM' THEN 3
+              WHEN sub."planType" = 'GOLD' THEN 2
+              WHEN sub."planType" = 'SILVER' THEN 1
+              ELSE 0
+            END DESC,
+            s.name ASC
+        ) as row_num
+      FROM "Store" s
+      INNER JOIN "PartnerSupplier" ps ON s."partnerId" = ps.id
+      LEFT JOIN "Subscription" sub ON ps.id = sub."partnerSupplierId"
+      WHERE 1=1
+        ${search ? Prisma.sql`AND (
+          s.name ILIKE ${`%${search}%`} 
+          OR EXISTS (
+            SELECT 1 FROM "Product" p 
+            WHERE p."storeId" = s.id 
+            AND p.name ILIKE ${`%${search}%`}
+          )
+        )` : Prisma.empty}
+    )
+    SELECT id FROM RankedStores
+    WHERE row_num > ${(page - 1) * limit} 
+      AND row_num <= ${page * limit}
+    ORDER BY row_num
+  `.then(async (storeIds: any[]) => {
+      const ids = storeIds.map(s => s.id);
+
+      if (ids.length === 0) return [];
+
+      const stores = await this.prisma.store.findMany({
+        where: { id: { in: ids } },
+        include: {
+          address: true,
+          products: {
+            orderBy: [{ featured: 'desc' }, { name: 'asc' }],
           },
-          include: { address: true },
-          orderBy: { date: 'asc' },
+          events: {
+            where: {
+              isActive: true,
+              date: { gte: new Date() },
+            },
+            include: { address: true },
+            orderBy: { date: 'asc' },
+          },
+          partner: {
+            include: {
+              subscription: true,
+            },
+          },
         },
-      },
-      orderBy: { name: 'asc' },
-      skip: (page - 1) * limit,
-      take: limit,
+      });
+
+      return ids.map(id => stores.find(s => s.id === id)).filter(Boolean);
     });
   }
 
@@ -175,6 +230,11 @@ export class StoreService {
           },
           orderBy: {
             date: 'asc', // eventos mais próximos primeiro
+          },
+        },
+        partner: {
+          include: {
+            subscription: true,
           },
         },
       },
