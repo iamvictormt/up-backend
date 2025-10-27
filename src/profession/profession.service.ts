@@ -12,7 +12,7 @@ export class ProfessionService {
     });
   }
 
-  async findAll(postId: string) {
+  async findAll() {
     return this.prisma.profession.findMany({
       orderBy: {
         name: 'asc',

@@ -22,8 +22,8 @@ export class ProfessionController {
   }
 
   @Get()
-  findAllByPostId(@Param('postId') postId: string) {
-    return this.professionService.findAll(postId);
+  findAll() {
+    return this.professionService.findAll();
   }
 
   @Delete(':id')
