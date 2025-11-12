@@ -221,6 +221,9 @@ export class PostService {
   async remove(id: string) {
     await this.hashtagService.remove(id);
 
+    await this.prisma.like.deleteMany({ where: { postId: id } });
+    await this.prisma.comment.deleteMany({ where: { postId: id } });
+
     return this.prisma.post.delete({
       where: { id },
     });
