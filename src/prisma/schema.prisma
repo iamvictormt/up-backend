@@ -57,6 +57,7 @@ model Professional {
   workshops          Workshop[]
   pointHistory       PointHistory[]
   eventRegistrations EventRegistration[]
+  redemptions        BenefitRedemption[]
 
   profession   Profession? @relation(fields: [professionId], references: [id])
   professionId String?
@@ -139,7 +140,6 @@ model Product {
 
 model Event {
   id           String              @id @default(uuid())
-  // imageUrl     String    
   name         String
   description  String
   date         DateTime
@@ -378,6 +378,35 @@ model Subscription {
   updatedAt          DateTime           @updatedAt
 }
 
+model Benefit {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  pointsCost  Int
+  quantity    Int?
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  redemptions BenefitRedemption[]
+}
+
+model BenefitRedemption {
+  id             String           @id @default(uuid())
+  professional   Professional     @relation(fields: [professionalId], references: [id])
+  professionalId String
+  benefit        Benefit          @relation(fields: [benefitId], references: [id])
+  benefitId      String
+  pointsSpent    Int
+  status         RedemptionStatus @default(PENDING)
+  redeemedAt     DateTime         @default(now())
+  usedAt         DateTime?
+  expiresAt      DateTime?
+  code           String?          @unique
+}
+
 /**
  * ENUMS:
  */
@@ -423,4 +452,11 @@ enum SubscriptionStatus {
   PAST_DUE
   TRIALING
   UNPAID
+}
+
+enum RedemptionStatus {
+  PENDING
+  USED
+  EXPIRED
+  CANCELED
 }
