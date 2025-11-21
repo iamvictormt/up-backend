@@ -16,6 +16,7 @@ import { RecentActivity } from './types/RecentActivity';
 import { CreateRecommendedProfessionalDto } from 'src/recommended-professional/dto/create-recommended-professional.dto';
 import { UpdateRecommendedProfessionalDto } from 'src/recommended-professional/dto/update-recommended-professional.dto';
 import { UpdateEventDto } from 'src/event/dto/update-event.dto';
+import { PointsService } from 'src/points/points.service';
 
 @Injectable()
 export class AdminService {
@@ -23,6 +24,7 @@ export class AdminService {
     private readonly prisma: PrismaService,
     private readonly mailService: MailService,
     private readonly jwtService: JwtService,
+    private readonly pointsService: PointsService,
   ) {}
 
   async findAllPartnerSuppliers() {
@@ -343,10 +345,7 @@ export class AdminService {
       include: {
         address: true,
         products: {
-          orderBy: [
-            { featured: 'desc' },
-            { name: 'asc' },
-          ],
+          orderBy: [{ featured: 'desc' }, { name: 'asc' }],
         },
         events: {
           include: {
@@ -378,13 +377,22 @@ export class AdminService {
   async checkInEvente(eventId: string, professionalId: string) {
     const registration = await this.prisma.eventRegistration.findFirst({
       where: { eventId, professionalId },
+      include: {
+        event: true,
+      },
     });
 
     if (!registration) throw new NotFoundException('Inscrição não encontrada');
     if (registration.checkedIn)
-      throw new BadRequestException('Check-in já realizado');
+      throw new BadRequestException('Check-in já realiza``do');
 
-    return this.prisma.eventRegistration.update({
+    await this.pointsService.addPoints(
+      professionalId,
+      registration.event.points,
+      `EVENTO-${eventId}`,
+    );
+
+    return await this.prisma.eventRegistration.update({
       where: { id: registration.id },
       data: {
         checkedIn: true,

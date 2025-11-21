@@ -6,6 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from 'src/user/user.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { MailModule } from 'src/mail/mail.module';
+import { PointsModule } from 'src/points/points.module';
 
 @Module({
   controllers: [AdminController],
@@ -19,6 +20,7 @@ import { MailModule } from 'src/mail/mail.module';
     UserModule,
     AuthModule,
     MailModule,
+    PointsModule,
   ],
 })
 export class AdminModule {}
