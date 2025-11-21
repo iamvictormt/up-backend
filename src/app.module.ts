@@ -26,6 +26,7 @@ import { StripeWebhookModule } from './stripe-webhook/stripe-webhook.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { AdminModule } from './admin/admin.module';
+import { PointsModule } from './points/points.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { AdminModule } from './admin/admin.module';
     SubscriptionModule,
     StatisticsModule,
     AdminModule,
+    PointsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
