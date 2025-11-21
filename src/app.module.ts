@@ -27,6 +27,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { AdminModule } from './admin/admin.module';
 import { PointsModule } from './points/points.module';
+import { BenefitsModule } from './benefits/benefits.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { PointsModule } from './points/points.module';
     StatisticsModule,
     AdminModule,
     PointsModule,
+    BenefitsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
