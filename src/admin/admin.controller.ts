@@ -119,8 +119,6 @@ export class AdminController {
     return await this.adminService.getRecentActivities();
   }
 
-
-  
   /*
   @UseGuards(AdminGuard)
   @Get('events')

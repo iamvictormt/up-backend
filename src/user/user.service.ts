@@ -4,12 +4,14 @@ import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { AddressService } from '../address/address.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { PointsService } from 'src/points/points.service';
 
 @Injectable()
 export class UserService {
   constructor(
     private prisma: PrismaService,
     private addressService: AddressService,
+    private pointsService: PointsService,
   ) {}
 
   async createUserWithRelation(
@@ -21,6 +23,10 @@ export class UserService {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(userDto.password, salt);
     const address = await this.addressService.create(userDto.address);
+
+    if (partnerSupplierId) {
+      await this.pointsService.addPoints(partnerSupplierId, 50, 'LOGIN');
+    }
 
     return this.prisma.user.create({
       data: {
