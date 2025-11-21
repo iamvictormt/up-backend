@@ -99,6 +99,34 @@ export class EventService {
     });
   }
 
+  async findUserEvents(userId: string) {
+    return this.prisma.event.findMany({
+      where: {
+        participants: {
+          some: {
+            professional: {
+              user: {
+                id: userId,
+              }
+            }
+          },
+        },
+      },
+      include: {
+        address: true,
+        store: true,
+        participants: {
+          select: {
+            id: true,
+          },
+        },
+      },
+      orderBy: {
+        date: 'asc',
+      },
+    });
+  }
+
   findOne(id: string) {
     return this.prisma.event.findUnique({
       where: { id },

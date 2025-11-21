@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { UpdateLoveDecorationDto } from '../love-decoration/dto/update-love-decoration.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 

@@ -1,6 +1,7 @@
 import { Controller, Post, Get, Body, Param } from '@nestjs/common';
 import { EventService } from './event.service';
 import { RegisterProfessionalDto } from './dto/register-professional.dto';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 
 @Controller('events')
 export class EventController {
@@ -17,6 +18,11 @@ export class EventController {
   @Get()
   findAll() {
     return this.eventService.findAll();
+  }
+
+  @Get('me')
+  async getCurrentUserEvents(@CurrentUser('sub') userId: string) {
+    return this.eventService.findUserEvents(userId);
   }
 
   @Get(':id')
