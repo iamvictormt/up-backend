@@ -6,7 +6,7 @@ import {
   Param,
   Patch,
   Post,
-  Put,
+  Put, Query,
   UseGuards,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
@@ -18,10 +18,15 @@ import { RecentActivity } from './types/RecentActivity';
 import { CreateRecommendedProfessionalDto } from 'src/recommended-professional/dto/create-recommended-professional.dto';
 import { UpdateRecommendedProfessionalDto } from 'src/recommended-professional/dto/update-recommended-professional.dto';
 import { UpdateEventDto } from 'src/event/dto/update-event.dto';
+import { RedemptionStatus } from '@prisma/client';
+import { UpdateRedemptionStatusDto } from '../benefits/dto/update-redemption-status.dto';
+import { UpdateBenefitDto } from '../benefits/dto/update-benefit.dto';
+import { CreateBenefitDTO } from '../benefits/dto/create-benefit.dto';
+import { AdminBenefitsService } from './admin-benefit.service';
 
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(private readonly adminService: AdminService, private readonly adminBenefitsService: AdminBenefitsService) {}
 
   @Post('login')
   adminLogin(@Body() loginDto: LoginDto) {
@@ -157,4 +162,55 @@ export class AdminController {
     return await this.adminService.deleteBenefit(id);
   }
   */
+
+  @UseGuards(AdminGuard)
+  @Get('benefits')
+  async getAllBenefits() {
+    return this.adminBenefitsService.getAllBenefits();
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('benefits/:id')
+  async getBenefitById(@Param('id') id: string) {
+    return this.adminBenefitsService.getBenefitById(id);
+  }
+
+  @UseGuards(AdminGuard)
+  @Post('benefits')
+  async createBenefit(@Body() dto: CreateBenefitDTO) {
+    return this.adminBenefitsService.createBenefit(dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Put('benefits/:id')
+  async updateBenefit(
+    @Param('id') id: string,
+    @Body() dto: UpdateBenefitDto,
+  ) {
+    return this.adminBenefitsService.updateBenefit(id, dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Delete('benefits/:id')
+  async deleteBenefit(@Param('id') id: string) {
+    return this.adminBenefitsService.deleteBenefit(id);
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('benefits/redemptions/all')
+  async getAllRedemptions(
+    @Query('status') status?: RedemptionStatus,
+    @Query('benefitId') benefitId?: string,
+  ) {
+    return this.adminBenefitsService.getAllRedemptions({ status, benefitId });
+  }
+
+  @UseGuards(AdminGuard)
+  @Put('benefits/redemptions/:id/status')
+  async updateRedemptionStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateRedemptionStatusDto,
+  ) {
+    return this.adminBenefitsService.updateRedemptionStatus(id, dto.status);
+  }
 }

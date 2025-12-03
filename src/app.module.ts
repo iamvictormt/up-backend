@@ -27,7 +27,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { AdminModule } from './admin/admin.module';
 import { PointsModule } from './points/points.module';
-import { BenefitsModule } from './benefits/benefits.module';
+import { BenefitModule } from './benefits/benefit.module';
 
 @Module({
   imports: [
@@ -60,7 +60,7 @@ import { BenefitsModule } from './benefits/benefits.module';
     StatisticsModule,
     AdminModule,
     PointsModule,
-    BenefitsModule,
+    BenefitModule,
   ],
   controllers: [AppController],
   providers: [AppService],

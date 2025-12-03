@@ -7,10 +7,11 @@ import { UserModule } from 'src/user/user.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { MailModule } from 'src/mail/mail.module';
 import { PointsModule } from 'src/points/points.module';
+import { AdminBenefitsService } from './admin-benefit.service';
 
 @Module({
   controllers: [AdminController],
-  providers: [AdminService],
+  providers: [AdminService, AdminBenefitsService],
   imports: [
     PrismaModule,
     JwtModule.register({

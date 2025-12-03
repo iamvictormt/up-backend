@@ -9,5 +9,6 @@ import { JwtModule } from '@nestjs/jwt';
   imports: [JwtModule, UserModule, PrismaModule],
   controllers: [ProfessionalController],
   providers: [ProfessionalService],
+  exports: [ProfessionalService]
 })
 export class ProfessionalModule {}

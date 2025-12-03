@@ -7,7 +7,6 @@ import {
   Delete,
   Patch,
   UseGuards,
-  Req,
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { CreateCommentDTO } from './dto/create-comment.dto';

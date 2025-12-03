@@ -85,4 +85,19 @@ export class ProfessionalService {
       },
     });
   }
+
+  async findProfessionalIdByUserId(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        professional: true,
+      },
+    });
+
+    if (!user || !user.professional) {
+      throw new NotFoundException('Profissional não encontrado para este usuário.');
+    }
+
+    return user.professional.id;
+  }
 }
