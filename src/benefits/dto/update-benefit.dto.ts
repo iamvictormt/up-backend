@@ -1,4 +1,12 @@
-import { IsBoolean, IsDate, IsInt, IsOptional, IsString, IsUrl, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsDate,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUrl,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UpdateBenefitDto {
