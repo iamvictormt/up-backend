@@ -1,15 +1,14 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedeemBenefitDto } from './dto/redeem-benefit.dto';
-import { CreateBenefitDTO } from './dto/create-benefit.dto';
-import { UpdateBenefitDto } from './dto/update-benefit.dto';
-import { RedemptionStatus } from '@prisma/client';
 
 @Injectable()
 export class BenefitService {
   constructor(private prisma: PrismaService) {}
-
-  // ==================== USER ENDPOINTS ====================
 
   /**
    * Lista benefícios disponíveis para resgate
@@ -21,15 +20,9 @@ export class BenefitService {
     return this.prisma.benefit.findMany({
       where: {
         isActive: true,
-        OR: [
-          { expiresAt: null },
-          { expiresAt: { gte: now } },
-        ],
+        OR: [{ expiresAt: null }, { expiresAt: { gte: now } }],
       },
-      orderBy: [
-        { pointsCost: 'asc' },
-        { createdAt: 'desc' },
-      ],
+      orderBy: [{ pointsCost: 'asc' }, { createdAt: 'desc' }],
       select: {
         id: true,
         name: true,
@@ -53,6 +46,9 @@ export class BenefitService {
     });
   }
 
+  /**
+   * Lista benefícios resgatados pelo profissional logado
+   */
   async getMyRedemptions(professionalId: string) {
     return this.prisma.benefitRedemption.findMany({
       where: {
@@ -86,7 +82,7 @@ export class BenefitService {
     });
 
     if (!professional) {
-      throw new NotFoundException('Usuário não encontrado');
+      throw new NotFoundException('Profissional não encontrado');
     }
 
     // Busca o benefício
@@ -154,7 +150,7 @@ export class BenefitService {
         },
       });
 
-      // Deduz os pontos do usuário
+      // Deduz os pontos do profissional
       await tx.professional.update({
         where: { id: professionalId },
         data: {
@@ -174,203 +170,23 @@ export class BenefitService {
         },
       });
 
+      // Decrementa a quantidade do benefício (se tiver quantidade definida)
+      if (benefit.quantity !== null) {
+        await tx.benefit.update({
+          where: { id: benefitId },
+          data: {
+            quantity: {
+              decrement: 1,
+            },
+          },
+        });
+      }
+
       return newRedemption;
     });
 
     return redemption;
   }
-
-  // ==================== ADMIN ENDPOINTS ====================
-
-  /**
-   * Lista todos os benefícios (admin)
-   */
-  async getAllBenefits() {
-    return this.prisma.benefit.findMany({
-      include: {
-        _count: {
-          select: {
-            redemptions: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-  }
-
-  /**
-   * Busca um benefício por ID (admin)
-   */
-  async getBenefitById(id: string) {
-    const benefit = await this.prisma.benefit.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: {
-            redemptions: true,
-          },
-        },
-        redemptions: {
-          take: 10,
-          orderBy: {
-            redeemedAt: 'desc',
-          },
-          include: {
-            professional: {
-              select: {
-                name: true,
-                phone: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!benefit) {
-      throw new NotFoundException('Benefício não encontrado');
-    }
-
-    return benefit;
-  }
-
-  /**
-   * Cria um novo benefício (admin)
-   */
-  async createBenefit(dto: CreateBenefitDTO) {
-    return this.prisma.benefit.create({
-      data: dto,
-    });
-  }
-
-  /**
-   * Atualiza um benefício (admin)
-   */
-  async updateBenefit(id: string, dto: UpdateBenefitDto) {
-    const benefit = await this.prisma.benefit.findUnique({
-      where: { id },
-    });
-
-    if (!benefit) {
-      throw new NotFoundException('Benefício não encontrado');
-    }
-
-    return this.prisma.benefit.update({
-      where: { id },
-      data: dto,
-    });
-  }
-
-  /**
-   * Remove um benefício (admin)
-   * Soft delete: apenas desativa
-   */
-  async deleteBenefit(id: string) {
-    const benefit = await this.prisma.benefit.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: {
-            redemptions: {
-              where: {
-                status: {
-                  in: ['PENDING', 'USED'],
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!benefit) {
-      throw new NotFoundException('Benefício não encontrado');
-    }
-
-    // Se houver resgates ativos, apenas desativa
-    if (benefit._count.redemptions > 0) {
-      return this.prisma.benefit.update({
-        where: { id },
-        data: {
-          isActive: false,
-        },
-      });
-    }
-
-    // Caso contrário, pode deletar
-    return this.prisma.benefit.delete({
-      where: { id },
-    });
-  }
-
-  /**
-   * Lista todos os resgates (admin)
-   */
-  async getAllRedemptions(filters?: {
-    status?: RedemptionStatus;
-    benefitId?: string;
-  }) {
-    return this.prisma.benefitRedemption.findMany({
-      where: {
-        ...(filters?.status && { status: filters.status }),
-        ...(filters?.benefitId && { benefitId: filters.benefitId }),
-      },
-      include: {
-        professional: {
-          select: {
-            name: true,
-            phone: true,
-            user: {
-              select: {
-                email: true,
-              },
-            },
-          },
-        },
-        benefit: {
-          select: {
-            name: true,
-            description: true,
-          },
-        },
-      },
-      orderBy: {
-        redeemedAt: 'desc',
-      },
-    });
-  }
-
-  /**
-   * Atualiza status de um resgate (admin)
-   */
-  async updateRedemptionStatus(
-    redemptionId: string,
-    status: RedemptionStatus,
-  ) {
-    const redemption = await this.prisma.benefitRedemption.findUnique({
-      where: { id: redemptionId },
-    });
-
-    if (!redemption) {
-      throw new NotFoundException('Resgate não encontrado');
-    }
-
-    const updateData: any = { status };
-
-    // Se está marcando como usado, registra a data
-    if (status === 'USED' && !redemption.usedAt) {
-      updateData.usedAt = new Date();
-    }
-
-    return this.prisma.benefitRedemption.update({
-      where: { id: redemptionId },
-      data: updateData,
-    });
-  }
-
-  // ==================== HELPERS ====================
 
   /**
    * Gera código único para resgate

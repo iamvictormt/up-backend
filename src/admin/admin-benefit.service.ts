@@ -39,7 +39,7 @@ export class AdminBenefitsService {
       },
     });
 
-    return benefits.map(benefit => ({
+    return benefits.map((benefit) => ({
       ...benefit,
       activeRedemptions: benefit.redemptions.length,
       redemptions: undefined, // Remove do retorno
@@ -94,7 +94,9 @@ export class AdminBenefitsService {
   async createBenefit(dto: CreateBenefitDTO) {
     // Validações adicionais
     if (dto.expiresAt && dto.expiresAt < new Date()) {
-      throw new BadRequestException('Data de expiração não pode ser no passado');
+      throw new BadRequestException(
+        'Data de expiração não pode ser no passado',
+      );
     }
 
     if (dto.pointsCost <= 0) {
@@ -120,7 +122,9 @@ export class AdminBenefitsService {
 
     // Validações
     if (dto.expiresAt && dto.expiresAt < new Date()) {
-      throw new BadRequestException('Data de expiração não pode ser no passado');
+      throw new BadRequestException(
+        'Data de expiração não pode ser no passado',
+      );
     }
 
     if (dto.pointsCost !== undefined && dto.pointsCost <= 0) {
@@ -308,10 +312,7 @@ export class AdminBenefitsService {
   /**
    * Atualiza status de um resgate
    */
-  async updateRedemptionStatus(
-    redemptionId: string,
-    status: RedemptionStatus,
-  ) {
+  async updateRedemptionStatus(redemptionId: string, status: RedemptionStatus) {
     const redemption = await this.prisma.benefitRedemption.findUnique({
       where: { id: redemptionId },
       include: {
@@ -341,7 +342,7 @@ export class AdminBenefitsService {
       updateData.usedAt = new Date();
     }
 
-    // Se está cancelando, devolve os pontos
+    // Se está cancelando, devolve os pontos e incrementa a quantidade
     if (status === RedemptionStatus.CANCELED) {
       await this.prisma.$transaction(async (tx) => {
         // Atualiza o resgate
@@ -369,6 +370,18 @@ export class AdminBenefitsService {
             source: `Cancelamento do resgate: ${redemption.benefit.name}`,
           },
         });
+
+        // Incrementa a quantidade do benefício de volta (se tiver quantidade definida)
+        if (redemption.benefit.quantity !== null) {
+          await tx.benefit.update({
+            where: { id: redemption.benefitId },
+            data: {
+              quantity: {
+                increment: 1,
+              },
+            },
+          });
+        }
       });
 
       return this.getRedemptionById(redemptionId);
@@ -433,7 +446,7 @@ export class AdminBenefitsService {
       pendingRedemptions,
       usedRedemptions,
       totalPointsSpent: totalPointsSpent._sum.pointsSpent || 0,
-      topBenefits: topBenefits.map(b => ({
+      topBenefits: topBenefits.map((b) => ({
         id: b.id,
         name: b.name,
         redemptionsCount: b._count.redemptions,
@@ -450,13 +463,13 @@ export class AdminBenefitsService {
 
     const expiredRedemptions = await this.prisma.benefitRedemption.updateMany({
       where: {
-        status: 'PENDING',
+        status: RedemptionStatus.PENDING,
         expiresAt: {
           lte: now,
         },
       },
       data: {
-        status: 'EXPIRED',
+        status: RedemptionStatus.EXPIRED,
       },
     });
 
