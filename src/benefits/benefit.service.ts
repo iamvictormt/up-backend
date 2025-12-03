@@ -12,17 +12,30 @@ export class BenefitService {
 
   /**
    * Lista benefícios disponíveis para resgate
-   * Filtra apenas benefícios ativos e não expirados
+   * - Apenas ativos
+   * - Não expirados
+   * - Não esgotados
+   * - Usuário não pode ver benefícios que ele já tem um PENDING
    */
-  async getAvailableBenefits() {
+  async getAvailableBenefits(professionalId: string) {
     const now = new Date();
 
-    return this.prisma.benefit.findMany({
+    const benefits = await this.prisma.benefit.findMany({
       where: {
         isActive: true,
+
+        redemptions: {
+          none: {
+            professionalId,
+            status: 'PENDING',
+          },
+        },
+
         OR: [{ expiresAt: null }, { expiresAt: { gte: now } }],
       },
+
       orderBy: [{ pointsCost: 'asc' }, { createdAt: 'desc' }],
+
       select: {
         id: true,
         name: true,
@@ -31,18 +44,22 @@ export class BenefitService {
         quantity: true,
         imageUrl: true,
         expiresAt: true,
+
         _count: {
           select: {
             redemptions: {
               where: {
-                status: {
-                  in: ['PENDING', 'USED'],
-                },
+                status: { in: ['PENDING', 'USED'] },
               },
             },
           },
         },
       },
+    });
+
+    return benefits.filter((b) => {
+      if (b.quantity === null) return true; // ilimitado
+      return b._count.redemptions < b.quantity;
     });
   }
 
@@ -69,9 +86,6 @@ export class BenefitService {
     });
   }
 
-  /**
-   * Resgata um benefício
-   */
   async redeemBenefit(professionalId: string, dto: RedeemBenefitDto) {
     const { benefitId } = dto;
 
@@ -107,6 +121,21 @@ export class BenefitService {
       throw new NotFoundException('Benefício não encontrado');
     }
 
+    // Verifica se já existe resgate pendente deste benefício
+    const existingPending = await this.prisma.benefitRedemption.findFirst({
+      where: {
+        professionalId,
+        benefitId,
+        status: 'PENDING',
+      },
+    });
+
+    if (existingPending) {
+      throw new BadRequestException(
+        'Você já possui um resgate pendente deste benefício',
+      );
+    }
+
     // Validações
     if (!benefit.isActive) {
       throw new BadRequestException('Benefício não está disponível');
@@ -120,23 +149,19 @@ export class BenefitService {
       throw new BadRequestException('Pontos insuficientes');
     }
 
-    if (benefit.quantity !== null) {
-      const redeemedCount = benefit._count.redemptions;
-      if (redeemedCount >= benefit.quantity) {
-        throw new BadRequestException('Benefício esgotado');
-      }
+    if (benefit.quantity !== null && benefit.quantity == 0) {
+      throw new BadRequestException('Benefício esgotado');
     }
 
     // Gera código único para o resgate
     const code = this.generateRedemptionCode();
 
-    // Define data de expiração do resgate (30 dias por padrão)
+    // Expiração padrão de 30 dias
     const redemptionExpiresAt = new Date();
     redemptionExpiresAt.setDate(redemptionExpiresAt.getDate() + 30);
 
-    // Executa a transação
+    // Transação
     const redemption = await this.prisma.$transaction(async (tx) => {
-      // Cria o resgate
       const newRedemption = await tx.benefitRedemption.create({
         data: {
           professionalId,
@@ -150,17 +175,15 @@ export class BenefitService {
         },
       });
 
-      // Deduz os pontos do profissional
+      // Deduz pontos
       await tx.professional.update({
         where: { id: professionalId },
         data: {
-          points: {
-            decrement: benefit.pointsCost,
-          },
+          points: { decrement: benefit.pointsCost },
         },
       });
 
-      // Registra no histórico de pontos
+      // Registra histórico
       await tx.pointHistory.create({
         data: {
           professionalId,
@@ -170,14 +193,12 @@ export class BenefitService {
         },
       });
 
-      // Decrementa a quantidade do benefício (se tiver quantidade definida)
+      // Decrementa quantidade do benefício
       if (benefit.quantity !== null) {
         await tx.benefit.update({
           where: { id: benefitId },
           data: {
-            quantity: {
-              decrement: 1,
-            },
+            quantity: { decrement: 1 },
           },
         });
       }

@@ -14,8 +14,10 @@ export class BenefitController {
   ) {}
 
   @Get('available')
-  async getAvailableBenefits() {
-    return this.benefitsService.getAvailableBenefits();
+  async getAvailableBenefits(@CurrentUser() user) {
+    const professionalId =
+      await this.professionalService.findProfessionalIdByUserId(user.sub);
+    return this.benefitsService.getAvailableBenefits(professionalId);
   }
 
   @Get('my-redemptions')
