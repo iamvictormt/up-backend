@@ -128,45 +128,6 @@ export class AdminController {
     return await this.adminService.getRecentActivities();
   }
 
-  /*
-  @UseGuards(AdminGuard)
-  @Get('events')
-  async getAllEvents() {
-    return await this.adminService.getAllEvents();
-  }
-
-  @UseGuards(AdminGuard)
-  @Put('events/:id/approve')
-  async approveEvent(@Param('id') id: string) {
-    return await this.adminService.approveEvent(id);
-  }
-
-  @UseGuards(AdminGuard)
-  @Delete('events/:id')
-  async deleteEvent(@Param('id') id: string) {
-    return await this.adminService.deleteEvent(id);
-  }
-
-  /*
-  @UseGuards(AdminGuard)
-  @Get('benefits')
-  async getAllBenefits() {
-    return await this.adminService.getAllBenefits();
-  }
-
-  @UseGuards(AdminGuard)
-  @Put('benefits/:id/toggle')
-  async toggleBenefit(@Param('id') id: string) {
-    return await this.adminService.toggleBenefit(id);
-  }
-
-  @UseGuards(AdminGuard)
-  @Delete('benefits/:id')
-  async deleteBenefit(@Param('id') id: string) {
-    return await this.adminService.deleteBenefit(id);
-  }
-  */
-
   @UseGuards(AdminGuard)
   @Get('benefits')
   async getAllBenefits() {
@@ -213,5 +174,10 @@ export class AdminController {
     @Body() dto: UpdateRedemptionStatusDto,
   ) {
     return this.adminBenefitsService.updateRedemptionStatus(id, dto.status);
+  }
+
+  @Patch('benefits/:id/toggle')
+  async toggleBenefit(@Param('id') benefitId: string) {
+    return await this.adminBenefitsService.toggleBenefitStatus(benefitId);
   }
 }
