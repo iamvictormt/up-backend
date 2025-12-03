@@ -6,7 +6,8 @@ import {
   Param,
   Patch,
   Post,
-  Put, Query,
+  Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
@@ -26,7 +27,10 @@ import { AdminBenefitsService } from './admin-benefit.service';
 
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService, private readonly adminBenefitsService: AdminBenefitsService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly adminBenefitsService: AdminBenefitsService,
+  ) {}
 
   @Post('login')
   adminLogin(@Body() loginDto: LoginDto) {
@@ -183,10 +187,7 @@ export class AdminController {
 
   @UseGuards(AdminGuard)
   @Put('benefits/:id')
-  async updateBenefit(
-    @Param('id') id: string,
-    @Body() dto: UpdateBenefitDto,
-  ) {
+  async updateBenefit(@Param('id') id: string, @Body() dto: UpdateBenefitDto) {
     return this.adminBenefitsService.updateBenefit(id, dto);
   }
 
