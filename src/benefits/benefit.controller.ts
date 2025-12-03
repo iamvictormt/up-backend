@@ -19,19 +19,19 @@ export class BenefitController {
   }
 
   @Get('my-redemptions')
-  async getMyRedemptions(@CurrentUser('sub') userId: string) {
+  async getMyRedemptions(@CurrentUser() user) {
     const professionalId =
-      await this.professionalService.findProfessionalIdByUserId(userId);
+      await this.professionalService.findProfessionalIdByUserId(user.sub);
     return this.benefitsService.getMyRedemptions(professionalId);
   }
 
   @Post('redeem')
   async redeemBenefit(
-    @CurrentUser('sub') userId: string,
+    @CurrentUser() user,
     @Body() dto: RedeemBenefitDto,
   ) {
     const professionalId =
-      await this.professionalService.findProfessionalIdByUserId(userId);
+      await this.professionalService.findProfessionalIdByUserId(user.sub);
     return this.benefitsService.redeemBenefit(professionalId, dto);
   }
 }
