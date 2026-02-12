@@ -27,24 +27,30 @@ export class PartnerSupplierService {
       throw new ConflictException('Email já cadastrado.');
     }
 
-    const partnerSupplier = await this.prisma.partnerSupplier.create({
-      data: {
-        tradeName: dto.tradeName,
-        companyName: dto.companyName,
-        document: dto.document,
-        stateRegistration: dto.stateRegistration,
-        contact: dto.contact,
-      },
+    const hashedPassword = await this.userService.hashPassword(userDto.password);
+
+    return await this.prisma.$transaction(async (tx) => {
+      const partnerSupplier = await tx.partnerSupplier.create({
+        data: {
+          tradeName: dto.tradeName,
+          companyName: dto.companyName,
+          document: dto.document,
+          stateRegistration: dto.stateRegistration,
+          contact: dto.contact,
+        },
+      });
+
+      const user = await this.userService.createUserWithRelation(
+        userDto,
+        partnerSupplier.id,
+        undefined,
+        undefined,
+        tx,
+        hashedPassword,
+      );
+
+      return { partnerSupplier, user };
     });
-
-    const user = await this.userService.createUserWithRelation(
-      userDto,
-      partnerSupplier.id,
-      undefined,
-      undefined,
-    );
-
-    return { partnerSupplier, user };
   }
 
   async update(userId: string, dto: UpdatePartnerSupplierDto) {

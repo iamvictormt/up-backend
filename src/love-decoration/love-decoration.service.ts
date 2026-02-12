@@ -25,23 +25,29 @@ export class LoveDecorationService {
       throw new ConflictException('Email já cadastrado.');
     }
 
-    const loveDecoration = await this.prisma.loveDecoration.create({
-      data: {
-        name: dto.name,
-        contact: dto.contact,
-        instagram: dto.instagram,
-        tiktok: dto.tiktok || '',
-      },
+    const hashedPassword = await this.userService.hashPassword(userDto.password);
+
+    return await this.prisma.$transaction(async (tx) => {
+      const loveDecoration = await tx.loveDecoration.create({
+        data: {
+          name: dto.name,
+          contact: dto.contact,
+          instagram: dto.instagram,
+          tiktok: dto.tiktok || '',
+        },
+      });
+
+      const user = await this.userService.createUserWithRelation(
+        userDto,
+        undefined,
+        undefined,
+        loveDecoration.id,
+        tx,
+        hashedPassword,
+      );
+
+      return { loveDecoration, user };
     });
-
-    const user = await this.userService.createUserWithRelation(
-      userDto,
-      undefined,
-      undefined,
-      loveDecoration.id,
-    );
-
-    return { loveDecoration, user };
   }
 
   async update(

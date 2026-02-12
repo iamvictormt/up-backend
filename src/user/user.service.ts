@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { AddressService } from '../address/address.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PointsService } from 'src/points/points.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -14,21 +15,29 @@ export class UserService {
     private pointsService: PointsService,
   ) {}
 
+  async hashPassword(password: string): Promise<string> {
+    const salt = await bcrypt.genSalt(10);
+    return bcrypt.hash(password, salt);
+  }
+
   async createUserWithRelation(
     userDto: CreateUserDto,
     partnerSupplierId?: string,
     professionalId?: string,
     loveDecorationId?: string,
+    tx?: Prisma.TransactionClient,
+    preHashedPassword?: string,
   ) {
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(userDto.password, salt);
-    const address = await this.addressService.create(userDto.address);
+    const prisma = tx || this.prisma;
+    const hashedPassword =
+      preHashedPassword || (await this.hashPassword(userDto.password));
+    const address = await this.addressService.create(userDto.address, tx);
 
-    if (partnerSupplierId) {
-      await this.pointsService.addPoints(partnerSupplierId, 50, 'LOGIN');
+    if (professionalId) {
+      await this.pointsService.addPoints(professionalId, 50, 'LOGIN', tx);
     }
 
-    return this.prisma.user.create({
+    return prisma.user.create({
       data: {
         email: userDto.email,
         password: hashedPassword,
