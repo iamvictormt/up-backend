@@ -26,30 +26,33 @@ export class ProfessionalService {
       throw new ConflictException('Email já cadastrado.');
     }
 
-    const professional = await this.prisma.professional.create({
-      data: {
-        name: dto.name,
-        professionId: dto.professionId,
-        document: dto.document,
-        generalRegister: dto.generalRegister,
-        registrationAgency: dto.registrationAgency,
-        description: dto.description,
-        experience: dto.experience,
-        officeName: dto.officeName,
-        verified: dto.verified ?? false,
-        featured: dto.featured ?? false,
-        level: dto.level ?? 'BRONZE',
-        phone: dto.phone,
-      },
-    });
+    return await this.prisma.$transaction(async (tx) => {
+      const professional = await tx.professional.create({
+        data: {
+          name: dto.name,
+          professionId: dto.professionId,
+          document: dto.document,
+          generalRegister: dto.generalRegister,
+          registrationAgency: dto.registrationAgency,
+          description: dto.description,
+          experience: dto.experience,
+          officeName: dto.officeName,
+          verified: dto.verified ?? false,
+          featured: dto.featured ?? false,
+          level: dto.level ?? 'BRONZE',
+          phone: dto.phone,
+        },
+      });
 
-    const user = await this.userService.createUserWithRelation(
-      userDto,
-      undefined,
-      professional.id,
-      undefined,
-    );
-    return { professional, user };
+      const user = await this.userService.createUserWithRelation(
+        userDto,
+        undefined,
+        professional.id,
+        undefined,
+        tx,
+      );
+      return { professional, user };
+    });
   }
 
   async update(userId: string, dto: UpdateProfessionalDto) {

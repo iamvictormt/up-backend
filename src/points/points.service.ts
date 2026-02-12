@@ -1,17 +1,23 @@
 import { Injectable } from '@nestjs/common';
-import { PointOperation } from '@prisma/client';
+import { PointOperation, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class PointsService {
   constructor(private prisma: PrismaService) {}
 
-  async addPoints(professionalId: string, value: number, source: string) {
+  async addPoints(
+    professionalId: string,
+    value: number,
+    source: string,
+    tx?: Prisma.TransactionClient,
+  ) {
+    const prisma = tx || this.prisma;
     if (value <= 0) {
       throw new Error('O valor deve ser maior que zero');
     }
 
-    const professional = await this.prisma.professional.findUnique({
+    const professional = await prisma.professional.findUnique({
       where: { id: professionalId },
     });
 
@@ -19,29 +25,32 @@ export class PointsService {
       throw new Error('Profissional não encontrado');
     }
 
-    // Adiciona pontos e registra no histórico em uma transação
-    const result = await this.prisma.$transaction([
-      // Atualiza o saldo
-      this.prisma.professional.update({
+    // Adiciona pontos e registra no histórico
+    const execute = async (client: Prisma.TransactionClient) => {
+      const updatedProfessional = await client.professional.update({
         where: { id: professionalId },
         data: { points: { increment: value } },
-      }),
-      // Registra no histórico
-      this.prisma.pointHistory.create({
+      });
+      const history = await client.pointHistory.create({
         data: {
           professionalId,
           operation: PointOperation.ADD,
           value,
           source,
         },
-      }),
-    ]);
-
-    return {
-      professional: result[0],
-      history: result[1],
-      newBalance: result[0].points,
+      });
+      return {
+        professional: updatedProfessional,
+        history,
+        newBalance: updatedProfessional.points,
+      };
     };
+
+    if (tx) {
+      return execute(tx);
+    }
+
+    return this.prisma.$transaction(execute);
   }
 
   async getBalance(professionalId: string) {
