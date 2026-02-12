@@ -99,7 +99,7 @@ export class AdminService {
     });
   }
 
-  async toggleAccessPending(id: string) {
+  async approvePartnerSupplier(id: string) {
     const user = await this.prisma.user.findFirst({
       where: {
         partnerSupplierId: id,
@@ -109,21 +109,14 @@ export class AdminService {
       },
     });
 
-    if (!user) {
+    if (!user || !user.partnerSupplier) {
       throw new NotFoundException('Fornecedor parceiro não encontrado!');
     }
-
-    if (!user.partnerSupplier) {
-      throw new NotFoundException('Fornecedor parceiro não encontrado!');
-    }
-
-    const currentAccessPending = user.partnerSupplier.accessPending;
-    const newAccessPending = !currentAccessPending;
 
     await this.mailService.sendMail(
       user.email,
-      newAccessPending ? 'Cadastro reprovado' : 'Cadastro aprovado',
-      newAccessPending ? 'cadastro-reprovado.html' : 'cadastro-aprovado.html',
+      'Cadastro aprovado',
+      'cadastro-aprovado.html',
       {
         username: getUsername(user),
       },
@@ -132,7 +125,38 @@ export class AdminService {
     return this.prisma.partnerSupplier.update({
       where: { id },
       data: {
-        accessPending: newAccessPending,
+        status: 'APPROVED',
+      },
+    });
+  }
+
+  async rejectPartnerSupplier(id: string) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        partnerSupplierId: id,
+      },
+      include: {
+        partnerSupplier: true,
+      },
+    });
+
+    if (!user || !user.partnerSupplier) {
+      throw new NotFoundException('Fornecedor parceiro não encontrado!');
+    }
+
+    await this.mailService.sendMail(
+      user.email,
+      'Cadastro reprovado',
+      'cadastro-reprovado.html',
+      {
+        username: getUsername(user),
+      },
+    );
+
+    return this.prisma.partnerSupplier.update({
+      where: { id },
+      data: {
+        status: 'REJECTED',
       },
     });
   }

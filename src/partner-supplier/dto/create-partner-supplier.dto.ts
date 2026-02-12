@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class CreatePartnerSupplierDto {
   @IsString()
@@ -22,7 +22,4 @@ export class CreatePartnerSupplierDto {
   @IsString()
   profileImage?: string;
 
-  @IsOptional()
-  @IsBoolean()
-  accessPending?: boolean;
 }

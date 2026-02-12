@@ -44,9 +44,15 @@ export class AdminController {
   }
 
   @UseGuards(AdminGuard)
-  @Put('pending/:id')
-  async toggleAccessPending(@Param('id') id: string) {
-    return await this.adminService.toggleAccessPending(id);
+  @Patch('approve-partner/:id')
+  async approvePartnerSupplier(@Param('id') id: string) {
+    return await this.adminService.approvePartnerSupplier(id);
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('reject-partner/:id')
+  async rejectPartnerSupplier(@Param('id') id: string) {
+    return await this.adminService.rejectPartnerSupplier(id);
   }
 
   @UseGuards(AdminGuard)

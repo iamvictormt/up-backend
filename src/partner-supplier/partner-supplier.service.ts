@@ -69,7 +69,7 @@ export class PartnerSupplierService {
   async findAll() {
     return this.prisma.partnerSupplier.findMany({
       where: {
-        accessPending: false,
+        status: 'APPROVED',
       },
       include: {
         store: {
@@ -101,7 +101,7 @@ export class PartnerSupplierService {
           not: null,
         },
         partnerSupplier: {
-          accessPending: true,
+          status: 'PENDING',
         },
       },
       include: {

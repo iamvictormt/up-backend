@@ -38,10 +38,18 @@ export class AuthService {
       return null;
     }
 
-    if (user.partnerSupplier && user.partnerSupplier.accessPending) {
-      throw new ForbiddenException(
-        'Cadastro pendente de aprovação. \nVocê receberá um email assim que o processo for concluído.',
-      );
+    if (user.partnerSupplier) {
+      if (user.partnerSupplier.status === 'PENDING') {
+        throw new ForbiddenException(
+          'Cadastro pendente de aprovação. \nVocê receberá um email assim que o processo for concluído.',
+        );
+      }
+
+      if (user.partnerSupplier.status === 'REJECTED') {
+        throw new ForbiddenException(
+          'Seu cadastro foi reprovado. Entre em contato com o suporte para mais informações.',
+        );
+      }
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
