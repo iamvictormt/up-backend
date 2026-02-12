@@ -28,6 +28,9 @@ import { StatisticsModule } from './statistics/statistics.module';
 import { AdminModule } from './admin/admin.module';
 import { PointsModule } from './points/points.module';
 import { BenefitModule } from './benefits/benefit.module';
+import { LoggerService } from './common/logger/logger.service';
+import { APP_FILTER } from '@nestjs/core';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 
 @Module({
   imports: [
@@ -63,6 +66,13 @@ import { BenefitModule } from './benefits/benefit.module';
     BenefitModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    LoggerService,
+    {
+      provide: APP_FILTER,
+      useClass: GlobalExceptionFilter,
+    },
+  ],
 })
 export class AppModule {}
