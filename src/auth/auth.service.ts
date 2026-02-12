@@ -34,7 +34,7 @@ export class AuthService {
       },
     });
 
-    if (!user) {
+    if (!user || user.isDeleted) {
       return null;
     }
 

@@ -66,81 +66,33 @@ export class AdminService {
 
   async deletePartnerSupplier(id: string) {
     return this.prisma.$transaction(async (tx) => {
-      const users = await tx.user.findMany({
-        where: { partnerSupplierId: id },
-      });
-      const userIds = users.map((u) => u.id);
-      const userAddressIds = users
-        .map((u) => u.addressId)
-        .filter((id): id is string => !!id);
-
-      const stores = await tx.store.findMany({
-        where: { partnerId: id },
-      });
-      const storeIds = stores.map((s) => s.id);
-      const storeAddressIds = stores.map((s) => s.addressId);
-
-      const addressIdsToCleanup = [
-        ...new Set([...userAddressIds, ...storeAddressIds]),
-      ];
-
-      // 1. Apaga subscription
+      // Apaga subscription
       await tx.subscription.deleteMany({
         where: { partnerSupplierId: id },
       });
 
-      // 2. Apaga produtos e eventos se houver lojas
-      if (storeIds.length > 0) {
-        await tx.product.deleteMany({ where: { storeId: { in: storeIds } } });
-        const events = await tx.event.findMany({
-          where: { storeId: { in: storeIds } },
-        });
-        const eventIds = events.map((e) => e.id);
-        if (eventIds.length > 0) {
-          await tx.eventRegistration.deleteMany({
-            where: { eventId: { in: eventIds } },
-          });
-          await tx.event.deleteMany({
-            where: { id: { in: eventIds } },
-          });
-        }
-      }
-
-      // 3. Apaga dados vinculados aos usuários
-      if (userIds.length > 0) {
-        await tx.passwordResetCode.deleteMany({
-          where: { userId: { in: userIds } },
-        });
-        await tx.notification.deleteMany({
-          where: { userId: { in: userIds } },
-        });
-        await tx.comment.deleteMany({ where: { userId: { in: userIds } } });
-        await tx.like.deleteMany({ where: { userId: { in: userIds } } });
-        await tx.post.deleteMany({ where: { authorId: { in: userIds } } });
-      }
-
-      // 4. Apaga as lojas e os usuários
-      await tx.store.deleteMany({
-        where: { partnerId: id },
-      });
+      // Apaga usuário vinculado
       await tx.user.deleteMany({
         where: { partnerSupplierId: id },
       });
 
-      // 5. Apaga endereços que ficaram órfãos
-      if (addressIdsToCleanup.length > 0) {
-        await tx.address.deleteMany({
-          where: {
-            id: { in: addressIdsToCleanup },
-            stores: { none: {} },
-            users: { none: {} },
-            events: { none: {} },
-            recommendedProfessional: { none: {} },
+      // Apaga endereço vinculado à loja
+      await tx.address.deleteMany({
+        where: {
+          stores: {
+            some: {
+              partnerId: id,
+            },
           },
-        });
-      }
+        },
+      });
 
-      // 6. Finalmente, apaga o PartnerSupplier
+      // Apaga loja
+      await tx.store.deleteMany({
+        where: { partnerId: id },
+      });
+
+      // Finalmente, apaga o PartnerSupplier
       return tx.partnerSupplier.delete({
         where: { id },
       });
@@ -201,7 +153,27 @@ export class AdminService {
       },
     );
 
-    return this.deletePartnerSupplier(id);
+    return this.prisma.$transaction(async (tx) => {
+      const timestamp = Date.now();
+
+      await tx.user.update({
+        where: { id: user.id },
+        data: {
+          isDeleted: true,
+          deletedAt: new Date(),
+          email: `deleted_${timestamp}_${user.email}`,
+        },
+      });
+
+      return tx.partnerSupplier.update({
+        where: { id },
+        data: {
+          status: 'REJECTED',
+          isDeleted: true,
+          deletedAt: new Date(),
+        },
+      });
+    });
   }
 
   async findAllRecommendedProfessionals() {
