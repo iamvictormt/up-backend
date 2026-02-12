@@ -12,19 +12,23 @@ describe('AdminService', () => {
   let mailService: MailService;
 
   beforeEach(async () => {
+    const mockPrisma = {
+      user: {
+        findFirst: jest.fn(),
+        update: jest.fn(),
+      },
+      partnerSupplier: {
+        update: jest.fn(),
+      },
+      $transaction: jest.fn((callback) => callback(mockPrisma)),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AdminService,
         {
           provide: PrismaService,
-          useValue: {
-            user: {
-              findFirst: jest.fn(),
-            },
-            partnerSupplier: {
-              update: jest.fn(),
-            },
-          },
+          useValue: mockPrisma,
         },
         {
           provide: MailService,
@@ -76,7 +80,11 @@ describe('AdminService', () => {
 
       expect(prismaService.partnerSupplier.update).toHaveBeenCalledWith({
         where: { id: 'partner-id' },
-        data: { status: 'REJECTED' },
+        data: {
+          status: 'REJECTED',
+          isDeleted: true,
+          deletedAt: expect.any(Date),
+        },
       });
     });
   });

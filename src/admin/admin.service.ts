@@ -167,14 +167,11 @@ export class AdminService {
     );
 
     return this.prisma.$transaction(async (tx) => {
-      const timestamp = Date.now();
-
       await tx.user.update({
         where: { id: user.id },
         data: {
           isDeleted: true,
           deletedAt: new Date(),
-          email: `deleted_${timestamp}_${user.email}`,
         },
       });
 

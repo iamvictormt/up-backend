@@ -10,7 +10,8 @@ datasource db {
 
 model User {
   id           String   @id @default(uuid())
-  email        String   @unique
+  email        String // @unique - Nota: O índice único global foi removido para suportar soft delete com o mesmo e-mail.
+  // Existe um índice único parcial no banco de dados: CREATE UNIQUE INDEX "User_email_active_key" ON "User"("email") WHERE "isDeleted" = false;
   password     String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
