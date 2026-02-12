@@ -71,7 +71,7 @@ model PartnerSupplier {
   stateRegistration String?
   contact           String?
 
-  accessPending Boolean @default(true)
+  status RegistrationStatus @default(PENDING)
 
   user         User?         @relation("UserPartner")
   store        Store?
@@ -459,4 +459,10 @@ enum RedemptionStatus {
   USED
   EXPIRED
   CANCELED
+}
+
+enum RegistrationStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
