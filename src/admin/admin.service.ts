@@ -35,6 +35,12 @@ export class AdminService {
             address: true,
           },
         },
+        user: true,
+      },
+      orderBy: {
+        user: {
+          createdAt: 'desc',
+        },
       },
     });
   }
