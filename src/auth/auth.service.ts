@@ -81,8 +81,11 @@ export class AuthService {
   }
 
   async requestReset(dto: RequestPasswordResetDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+    const user = await this.prisma.user.findFirst({
+      where: {
+        email: { equals: dto.email, mode: 'insensitive' },
+        isDeleted: false,
+      },
       include: {
         professional: true,
         loveDecoration: true,
@@ -135,8 +138,11 @@ export class AuthService {
   }
 
   async verifyCode(dto: VerifyResetCodeDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+    const user = await this.prisma.user.findFirst({
+      where: {
+        email: { equals: dto.email, mode: 'insensitive' },
+        isDeleted: false,
+      },
     });
     if (!user) throw new NotFoundException('Usuário não encontrado.');
 
@@ -170,7 +176,7 @@ export class AuthService {
     if (!stored) return false;
 
     await this.prisma.user.update({
-      where: { email },
+      where: { id: stored.userId },
       data: { password: hashedPassword },
     });
 

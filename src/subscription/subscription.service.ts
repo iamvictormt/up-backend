@@ -37,8 +37,8 @@ export class SubscriptionsService {
       return;
     }
 
-    const user = await this.prisma.user.findUnique({
-      where: { email },
+    const user = await this.prisma.user.findFirst({
+      where: { email, isDeleted: false },
       include: { partnerSupplier: true },
     });
 
