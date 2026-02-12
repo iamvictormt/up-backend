@@ -35,7 +35,13 @@ export class AdminService {
             address: true,
           },
         },
-        user: true,
+        user: {
+          select: {
+            email: true,
+            profileImage: true,
+            address: true,
+          },
+        },
       },
       orderBy: {
         user: {
