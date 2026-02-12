@@ -511,3 +511,14 @@ enum RegistrationStatus {
   APPROVED
   REJECTED
 }
+
+model ErrorLog {
+  id         String   @id @default(uuid())
+  message    String
+  stack      String?
+  statusCode Int?
+  path       String?
+  method     String?
+  context    Json?
+  timestamp  DateTime @default(now())
+}
