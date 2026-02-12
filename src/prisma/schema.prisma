@@ -28,6 +28,9 @@ model User {
   address   Address? @relation(fields: [addressId], references: [id])
   addressId String?
 
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
   posts             Post[]
   likes             Like[]
   comments          Comment[]
@@ -74,6 +77,9 @@ model PartnerSupplier {
   contact           String?
 
   status RegistrationStatus @default(PENDING)
+
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
 
   user         User?         @relation("UserPartner")
   store        Store?

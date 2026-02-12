@@ -23,7 +23,10 @@ export class AuthService {
 
   async validateUser(email: string, password: string) {
     const user = await this.prisma.user.findFirst({
-      where: { email: { equals: email, mode: 'insensitive' } },
+      where: {
+        email: { equals: email, mode: 'insensitive' },
+        isDeleted: false,
+      },
       include: {
         partnerSupplier: true,
         professional: {
@@ -42,12 +45,6 @@ export class AuthService {
       if (user.partnerSupplier.status === 'PENDING') {
         throw new ForbiddenException(
           'Cadastro pendente de aprovação. \nVocê receberá um email assim que o processo for concluído.',
-        );
-      }
-
-      if (user.partnerSupplier.status === 'REJECTED') {
-        throw new ForbiddenException(
-          'Seu cadastro foi reprovado. Entre em contato com o suporte para mais informações.',
         );
       }
     }

@@ -70,6 +70,7 @@ export class PartnerSupplierService {
     return this.prisma.partnerSupplier.findMany({
       where: {
         status: 'APPROVED',
+        isDeleted: false,
       },
       include: {
         store: {
@@ -97,11 +98,13 @@ export class PartnerSupplierService {
   async findPending() {
     return await this.prisma.user.findMany({
       where: {
+        isDeleted: false,
         partnerSupplierId: {
           not: null,
         },
         partnerSupplier: {
           status: 'PENDING',
+          isDeleted: false,
         },
       },
       include: {

@@ -166,11 +166,26 @@ export class AdminService {
       },
     );
 
-    return this.prisma.partnerSupplier.update({
-      where: { id },
-      data: {
-        status: 'REJECTED',
-      },
+    return this.prisma.$transaction(async (tx) => {
+      const timestamp = Date.now();
+
+      await tx.user.update({
+        where: { id: user.id },
+        data: {
+          isDeleted: true,
+          deletedAt: new Date(),
+          email: `deleted_${timestamp}_${user.email}`,
+        },
+      });
+
+      return tx.partnerSupplier.update({
+        where: { id },
+        data: {
+          status: 'REJECTED',
+          isDeleted: true,
+          deletedAt: new Date(),
+        },
+      });
     });
   }
 
