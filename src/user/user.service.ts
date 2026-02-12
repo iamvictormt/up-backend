@@ -94,8 +94,11 @@ export class UserService {
   }
 
   async checkIfEmailExists(email: string): Promise<boolean> {
-    const user = await this.prisma.user.findUnique({
-      where: { email },
+    const user = await this.prisma.user.findFirst({
+      where: {
+        email: { equals: email, mode: 'insensitive' },
+        isDeleted: false,
+      },
     });
     return user !== null;
   }

@@ -22,8 +22,11 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, password: string) {
-    const user = await this.prisma.user.findFirst({
-      where: { email: { equals: email, mode: 'insensitive' } },
+    let user = await this.prisma.user.findFirst({
+      where: {
+        email: { equals: email, mode: 'insensitive' },
+        isDeleted: false,
+      },
       include: {
         partnerSupplier: true,
         professional: {
@@ -34,7 +37,34 @@ export class AuthService {
       },
     });
 
-    if (!user || user.isDeleted) {
+    if (!user) {
+      user = await this.prisma.user.findFirst({
+        where: {
+          email: { endsWith: `_${email}`, mode: 'insensitive' },
+          isDeleted: true,
+        },
+        orderBy: { deletedAt: 'desc' },
+        include: {
+          partnerSupplier: true,
+          professional: {
+            include: { profession: true },
+          },
+          loveDecoration: true,
+          address: true,
+        },
+      });
+    }
+
+    if (!user) {
+      return null;
+    }
+
+    if (user.isDeleted) {
+      if (user.partnerSupplier?.status === 'REJECTED') {
+        throw new ForbiddenException(
+          'Seu cadastro foi reprovado. Entre em contato com o suporte para mais informações.',
+        );
+      }
       return null;
     }
 
