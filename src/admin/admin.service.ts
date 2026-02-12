@@ -130,7 +130,7 @@ export class AdminService {
     });
   }
 
-  async rejectPartnerSupplier(id: string) {
+  async rejectPartnerSupplier(id: string, reason: string) {
     const user = await this.prisma.user.findFirst({
       where: {
         partnerSupplierId: id,
@@ -150,6 +150,7 @@ export class AdminService {
       'cadastro-reprovado.html',
       {
         username: getUsername(user),
+        reason,
       },
     );
 

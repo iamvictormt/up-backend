@@ -13,6 +13,7 @@ import {
 import { AdminService } from './admin.service';
 import { AdminGuard } from 'src/auth/admin-auth.guard';
 import { LoginDto } from 'src/auth/dto/login.dto';
+import { RejectPartnerDto } from './dto/reject-partner.dto';
 import { CreateEventDto } from 'src/event/dto/create-event.dto';
 import { DashboardStatistics } from './types/DashboardStatistics';
 import { RecentActivity } from './types/RecentActivity';
@@ -51,8 +52,11 @@ export class AdminController {
 
   @UseGuards(AdminGuard)
   @Patch('reject-partner/:id')
-  async rejectPartnerSupplier(@Param('id') id: string) {
-    return await this.adminService.rejectPartnerSupplier(id);
+  async rejectPartnerSupplier(
+    @Param('id') id: string,
+    @Body() dto: RejectPartnerDto,
+  ) {
+    return await this.adminService.rejectPartnerSupplier(id, dto.reason);
   }
 
   @UseGuards(AdminGuard)
