@@ -61,6 +61,8 @@ model Professional {
 
   profession   Profession? @relation(fields: [professionId], references: [id])
   professionId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model PartnerSupplier {
@@ -77,6 +79,8 @@ model PartnerSupplier {
   store        Store?
   storeId      String?       @unique
   subscription Subscription?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model SocialMedia {
@@ -87,6 +91,8 @@ model SocialMedia {
 
   professional            Professional?
   recommendedProfessional RecommendedProfessional?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Address {
@@ -103,6 +109,8 @@ model Address {
   events                  Event[]
   users                   User[]
   recommendedProfessional RecommendedProfessional[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Store {
@@ -122,6 +130,8 @@ model Store {
 
   products Product[]
   events   Event[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Product {
@@ -136,6 +146,8 @@ model Product {
 
   storeId String
   store   Store  @relation(fields: [storeId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Event {
@@ -153,6 +165,8 @@ model Event {
   isActive     Boolean             @default(true)
   store        Store               @relation(fields: [storeId], references: [id])
   participants EventRegistration[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model EventRegistration {
@@ -164,6 +178,8 @@ model EventRegistration {
   registeredAt   DateTime     @default(now())
   checkedIn      Boolean      @default(false)
   checkedInAt    DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([professionalId, eventId])
 }
@@ -176,6 +192,7 @@ model PointHistory {
   professional   Professional   @relation(fields: [professionalId], references: [id])
   professionalId String
   createdAt      DateTime       @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Workshop {
@@ -188,6 +205,8 @@ model Workshop {
   professional   Professional     @relation(fields: [professionalId], references: [id])
   professionalId String
   modules        WorkshopModule[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model WorkshopModule {
@@ -196,6 +215,8 @@ model WorkshopModule {
   content    String
   workshop   Workshop @relation(fields: [workshopId], references: [id])
   workshopId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Coupon {
@@ -204,6 +225,7 @@ model Coupon {
   code      String   @unique
   quantity  Int
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model RecommendedProfessional {
@@ -233,6 +255,8 @@ model AvailableDay {
   dayOfWeek                 WeekDay
   recommendedProfessional   RecommendedProfessional @relation(fields: [recommendedProfessionalId], references: [id])
   recommendedProfessionalId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model LoveDecoration {
@@ -243,6 +267,8 @@ model LoveDecoration {
   tiktok    String?
 
   user User? @relation("UserLoveDecoration")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Community {
@@ -254,6 +280,7 @@ model Community {
   icon        String
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Post {
@@ -282,6 +309,8 @@ model Hashtag {
   name String @unique
 
   postHashtags PostHashtag[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model PostHashtag {
@@ -290,6 +319,8 @@ model PostHashtag {
 
   post    Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
   hashtag Hashtag @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@id([postId, hashtagId])
 }
@@ -303,6 +334,7 @@ model Like {
 
   postId String
   post   Post   @relation(fields: [postId], references: [id])
+  updatedAt DateTime @updatedAt
 }
 
 model Comment {
@@ -331,6 +363,7 @@ model Notification {
 
   postId String?
   post   Post?   @relation(fields: [postId], references: [id])
+  updatedAt DateTime @updatedAt
 }
 
 model Report {
@@ -344,6 +377,7 @@ model Report {
 
   targetId   String
   targetType String
+  updatedAt DateTime @updatedAt
 }
 
 model Profession {
@@ -352,6 +386,8 @@ model Profession {
   description String?
 
   professionals Professional[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model PasswordResetCode {
@@ -362,6 +398,7 @@ model PasswordResetCode {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Subscription {
@@ -405,6 +442,8 @@ model BenefitRedemption {
   usedAt         DateTime?
   expiresAt      DateTime?
   code           String?          @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 /**
