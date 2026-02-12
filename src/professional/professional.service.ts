@@ -26,6 +26,17 @@ export class ProfessionalService {
       throw new ConflictException('Email já cadastrado.');
     }
 
+    if (dto.professionId) {
+      const profession = await this.prisma.profession.findUnique({
+        where: { id: dto.professionId },
+      });
+      if (!profession) {
+        throw new NotFoundException('Profissão não encontrada.');
+      }
+    }
+
+    const hashedPassword = await this.userService.hashPassword(userDto.password);
+
     return await this.prisma.$transaction(async (tx) => {
       const professional = await tx.professional.create({
         data: {
@@ -50,6 +61,7 @@ export class ProfessionalService {
         professional.id,
         undefined,
         tx,
+        hashedPassword,
       );
       return { professional, user };
     });

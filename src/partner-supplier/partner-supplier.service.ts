@@ -27,6 +27,8 @@ export class PartnerSupplierService {
       throw new ConflictException('Email já cadastrado.');
     }
 
+    const hashedPassword = await this.userService.hashPassword(userDto.password);
+
     return await this.prisma.$transaction(async (tx) => {
       const partnerSupplier = await tx.partnerSupplier.create({
         data: {
@@ -44,6 +46,7 @@ export class PartnerSupplierService {
         undefined,
         undefined,
         tx,
+        hashedPassword,
       );
 
       return { partnerSupplier, user };

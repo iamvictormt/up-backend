@@ -25,6 +25,8 @@ export class LoveDecorationService {
       throw new ConflictException('Email já cadastrado.');
     }
 
+    const hashedPassword = await this.userService.hashPassword(userDto.password);
+
     return await this.prisma.$transaction(async (tx) => {
       const loveDecoration = await tx.loveDecoration.create({
         data: {
@@ -41,6 +43,7 @@ export class LoveDecorationService {
         undefined,
         loveDecoration.id,
         tx,
+        hashedPassword,
       );
 
       return { loveDecoration, user };

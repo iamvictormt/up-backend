@@ -15,16 +15,22 @@ export class UserService {
     private pointsService: PointsService,
   ) {}
 
+  async hashPassword(password: string): Promise<string> {
+    const salt = await bcrypt.genSalt(10);
+    return bcrypt.hash(password, salt);
+  }
+
   async createUserWithRelation(
     userDto: CreateUserDto,
     partnerSupplierId?: string,
     professionalId?: string,
     loveDecorationId?: string,
     tx?: Prisma.TransactionClient,
+    preHashedPassword?: string,
   ) {
     const prisma = tx || this.prisma;
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(userDto.password, salt);
+    const hashedPassword =
+      preHashedPassword || (await this.hashPassword(userDto.password));
     const address = await this.addressService.create(userDto.address, tx);
 
     if (professionalId) {
