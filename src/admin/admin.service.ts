@@ -34,20 +34,27 @@ export class AdminService {
         store: {
           include: {
             address: true,
+            _count: {
+              select: {
+                products: true,
+                events: true,
+              },
+            },
           },
         },
+        subscription: true,
         user: {
           select: {
+            id: true,
             email: true,
             profileImage: true,
+            createdAt: true,
             address: true,
           },
         },
       },
       orderBy: {
-        user: {
-          createdAt: 'desc',
-        },
+        createdAt: 'desc',
       },
     });
   }
@@ -408,6 +415,11 @@ export class AdminService {
             date: 'asc',
           },
         },
+        partner: {
+          include: {
+            subscription: true,
+          },
+        },
       },
       orderBy: {
         name: order,
@@ -558,10 +570,17 @@ export class AdminService {
   async grantTrial(partnerSupplierId: string, dto: GrantTrialDto) {
     const partner = await this.prisma.partnerSupplier.findUnique({
       where: { id: partnerSupplierId },
+      include: { subscription: true },
     });
 
     if (!partner) {
       throw new NotFoundException('Fornecedor parceiro não encontrado!');
+    }
+
+    if (partner.subscription && partner.subscription.isManual) {
+      throw new BadRequestException(
+        'Este parceiro já possui ou já utilizou um trial manual.',
+      );
     }
 
     const trialEnd = new Date();
@@ -587,6 +606,30 @@ export class AdminService {
         planType: dto.planType.toUpperCase(),
         currentPeriodEnd: trialEnd,
         isManual: true,
+      },
+    });
+  }
+
+  async cancelManualSubscription(partnerSupplierId: string) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { partnerSupplierId },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException('Assinatura não encontrada!');
+    }
+
+    if (!subscription.isManual) {
+      throw new BadRequestException(
+        'Apenas assinaturas manuais podem ser canceladas por aqui.',
+      );
+    }
+
+    return this.prisma.subscription.update({
+      where: { partnerSupplierId },
+      data: {
+        subscriptionStatus: 'CANCELED',
+        currentPeriodEnd: new Date(),
       },
     });
   }

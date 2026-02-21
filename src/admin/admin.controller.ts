@@ -197,4 +197,10 @@ export class AdminController {
   async grantTrial(@Param('id') id: string, @Body() dto: GrantTrialDto) {
     return await this.adminService.grantTrial(id, dto);
   }
+
+  @UseGuards(AdminGuard)
+  @Patch('cancel-trial/:id')
+  async cancelTrial(@Param('id') id: string) {
+    return await this.adminService.cancelManualSubscription(id);
+  }
 }
