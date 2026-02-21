@@ -115,6 +115,11 @@ export class StoreService {
             date: 'asc',
           },
         },
+        partner: {
+          include: {
+            subscription: true,
+          },
+        },
       },
     });
   }
@@ -133,7 +138,7 @@ export class StoreService {
           s."addressId",
           s."partnerId",
           CASE
-            WHEN sub.id IS NOT NULL AND (sub."subscriptionStatus" = 'ACTIVE' OR sub."subscriptionStatus" = 'TRIALING') AND sub."currentPeriodEnd" >= NOW() THEN
+            WHEN sub.id IS NOT NULL AND (sub."subscriptionStatus" = 'ACTIVE' OR sub."subscriptionStatus" = 'TRIALING') AND (sub."currentPeriodEnd" >= NOW() OR sub."isManual" = true) THEN
               CASE
                 WHEN sub."planType" = 'PREMIUM' THEN 3
                 WHEN sub."planType" = 'GOLD' THEN 2
@@ -145,7 +150,7 @@ export class StoreService {
           ROW_NUMBER() OVER (
           ORDER BY 
             CASE 
-              WHEN sub.id IS NOT NULL AND (sub."subscriptionStatus" = 'ACTIVE' OR sub."subscriptionStatus" = 'TRIALING') AND sub."currentPeriodEnd" >= NOW() THEN
+              WHEN sub.id IS NOT NULL AND (sub."subscriptionStatus" = 'ACTIVE' OR sub."subscriptionStatus" = 'TRIALING') AND (sub."currentPeriodEnd" >= NOW() OR sub."isManual" = true) THEN
                 CASE
                   WHEN sub."planType" = 'PREMIUM' THEN 3
                   WHEN sub."planType" = 'GOLD' THEN 2

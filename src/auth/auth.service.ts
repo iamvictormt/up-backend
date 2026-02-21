@@ -28,7 +28,9 @@ export class AuthService {
         isDeleted: false,
       },
       include: {
-        partnerSupplier: true,
+        partnerSupplier: {
+          include: { subscription: true },
+        },
         professional: {
           include: { profession: true },
         },
