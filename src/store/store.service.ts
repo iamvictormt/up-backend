@@ -133,17 +133,25 @@ export class StoreService {
           s."addressId",
           s."partnerId",
           CASE
-            WHEN sub."planType" = 'PREMIUM' THEN 3
-            WHEN sub."planType" = 'GOLD' THEN 2
-            WHEN sub."planType" = 'SILVER' THEN 1
+            WHEN sub.id IS NOT NULL AND (sub."subscriptionStatus" = 'ACTIVE' OR sub."subscriptionStatus" = 'TRIALING') AND sub."currentPeriodEnd" >= NOW() THEN
+              CASE
+                WHEN sub."planType" = 'PREMIUM' THEN 3
+                WHEN sub."planType" = 'GOLD' THEN 2
+                WHEN sub."planType" = 'SILVER' THEN 1
+                ELSE 0
+              END
             ELSE 0
             END as plan_priority,
           ROW_NUMBER() OVER (
           ORDER BY 
             CASE 
-              WHEN sub."planType" = 'PREMIUM' THEN 3
-              WHEN sub."planType" = 'GOLD' THEN 2
-              WHEN sub."planType" = 'SILVER' THEN 1
+              WHEN sub.id IS NOT NULL AND (sub."subscriptionStatus" = 'ACTIVE' OR sub."subscriptionStatus" = 'TRIALING') AND sub."currentPeriodEnd" >= NOW() THEN
+                CASE
+                  WHEN sub."planType" = 'PREMIUM' THEN 3
+                  WHEN sub."planType" = 'GOLD' THEN 2
+                  WHEN sub."planType" = 'SILVER' THEN 1
+                  ELSE 0
+                END
               ELSE 0
             END DESC,
             s.name ASC

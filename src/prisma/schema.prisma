@@ -417,6 +417,7 @@ model Subscription {
   planType           String
   currentPeriodEnd   DateTime
   cancelAtPeriodEnd  Boolean            @default(false)
+  isManual           Boolean            @default(false)
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 }

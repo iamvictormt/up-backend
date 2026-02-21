@@ -22,6 +22,7 @@ describe('AdminController', () => {
           provide: AdminService,
           useValue: {
             rejectPartnerSupplier: jest.fn(),
+            grantTrial: jest.fn(),
           },
         },
         AdminBenefitsService,
@@ -51,5 +52,14 @@ describe('AdminController', () => {
     await controller.rejectPartnerSupplier(id, dto);
 
     expect(adminService.rejectPartnerSupplier).toHaveBeenCalledWith(id, dto.reason);
+  });
+
+  it('should call adminService.grantTrial with correct arguments', async () => {
+    const id = 'partner-id';
+    const dto: any = { duration: 15, unit: 'days', planType: 'GOLD' };
+
+    await controller.grantTrial(id, dto);
+
+    expect(adminService.grantTrial).toHaveBeenCalledWith(id, dto);
   });
 });

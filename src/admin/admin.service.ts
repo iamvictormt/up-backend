@@ -17,6 +17,7 @@ import { CreateRecommendedProfessionalDto } from 'src/recommended-professional/d
 import { UpdateRecommendedProfessionalDto } from 'src/recommended-professional/dto/update-recommended-professional.dto';
 import { UpdateEventDto } from 'src/event/dto/update-event.dto';
 import { PointsService } from 'src/points/points.service';
+import { GrantTrialDto } from './dto/grant-trial.dto';
 
 @Injectable()
 export class AdminService {
@@ -552,6 +553,42 @@ export class AdminService {
     activities.sort((a, b) => b.date.getTime() - a.date.getTime());
 
     return activities.slice(0, 5);
+  }
+
+  async grantTrial(partnerSupplierId: string, dto: GrantTrialDto) {
+    const partner = await this.prisma.partnerSupplier.findUnique({
+      where: { id: partnerSupplierId },
+    });
+
+    if (!partner) {
+      throw new NotFoundException('Fornecedor parceiro não encontrado!');
+    }
+
+    const trialEnd = new Date();
+    if (dto.unit === 'days') {
+      trialEnd.setDate(trialEnd.getDate() + dto.duration);
+    } else if (dto.unit === 'weeks') {
+      trialEnd.setDate(trialEnd.getDate() + dto.duration * 7);
+    } else if (dto.unit === 'months') {
+      trialEnd.setMonth(trialEnd.getMonth() + dto.duration);
+    }
+
+    return this.prisma.subscription.upsert({
+      where: { partnerSupplierId },
+      update: {
+        subscriptionStatus: 'TRIALING',
+        planType: dto.planType.toUpperCase(),
+        currentPeriodEnd: trialEnd,
+        isManual: true,
+      },
+      create: {
+        partnerSupplierId,
+        subscriptionStatus: 'TRIALING',
+        planType: dto.planType.toUpperCase(),
+        currentPeriodEnd: trialEnd,
+        isManual: true,
+      },
+    });
   }
 
   /*

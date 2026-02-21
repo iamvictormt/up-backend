@@ -61,6 +61,7 @@ export class SubscriptionsService {
         planType: getPlanType(plan.amount.toString()),
         currentPeriodEnd: periodEnd,
         cancelAtPeriodEnd: cancel_at_period_end ?? false,
+        isManual: false,
       },
       create: {
         partnerSupplierId: partnerSupplier.id,
@@ -70,6 +71,7 @@ export class SubscriptionsService {
         planType: getPlanType(plan.amount.toString()),
         currentPeriodEnd: periodEnd,
         cancelAtPeriodEnd: cancel_at_period_end ?? false,
+        isManual: false,
       },
     });
 
