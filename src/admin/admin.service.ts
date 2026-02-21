@@ -577,9 +577,13 @@ export class AdminService {
       throw new NotFoundException('Fornecedor parceiro não encontrado!');
     }
 
-    if (partner.subscription && partner.subscription.isManual) {
+    if (
+      partner.subscription &&
+      partner.subscription.isManual &&
+      partner.subscription.subscriptionStatus === 'TRIALING'
+    ) {
       throw new BadRequestException(
-        'Este parceiro já possui ou já utilizou um trial manual.',
+        'Este parceiro já possui um trial manual ativo.',
       );
     }
 
