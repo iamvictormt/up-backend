@@ -523,7 +523,7 @@ export class AdminService {
     const recentProfessionals = await this.prisma.professional.findMany({
       orderBy: { id: 'desc' },
       take: 5,
-      select: { id: true, name: true },
+      select: { id: true, name: true, createdAt: true },
     });
 
     const recentPosts = await this.prisma.post.findMany({
@@ -541,7 +541,7 @@ export class AdminService {
       ...recentProfessionals.map((p) => ({
         type: 'Professional' as const,
         description: p.name,
-        date: new Date(),
+        date: p.createdAt,
       })),
       ...recentPosts.map((p) => ({
         type: 'Post' as const,
