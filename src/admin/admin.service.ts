@@ -18,6 +18,7 @@ import { UpdateRecommendedProfessionalDto } from 'src/recommended-professional/d
 import { UpdateEventDto } from 'src/event/dto/update-event.dto';
 import { PointsService } from 'src/points/points.service';
 import { GrantTrialDto } from './dto/grant-trial.dto';
+import { getActiveSubscription } from 'src/ultis/subscription.util';
 
 @Injectable()
 export class AdminService {
@@ -29,7 +30,7 @@ export class AdminService {
   ) {}
 
   async findAllPartnerSuppliers() {
-    return this.prisma.partnerSupplier.findMany({
+    const partners = await this.prisma.partnerSupplier.findMany({
       include: {
         store: {
           include: {
@@ -42,7 +43,7 @@ export class AdminService {
             },
           },
         },
-        subscription: true,
+        subscriptions: true,
         user: {
           select: {
             id: true,
@@ -57,6 +58,11 @@ export class AdminService {
         createdAt: 'desc',
       },
     });
+
+    return partners.map((p) => ({
+      ...p,
+      subscription: getActiveSubscription(p.subscriptions),
+    }));
   }
 
   adminLogin(loginDto: LoginDto) {
@@ -401,7 +407,7 @@ export class AdminService {
   }
 
   async findStores(order: 'asc' | 'desc' = 'asc') {
-    return this.prisma.store.findMany({
+    const stores = await this.prisma.store.findMany({
       include: {
         address: true,
         products: {
@@ -417,7 +423,7 @@ export class AdminService {
         },
         partner: {
           include: {
-            subscription: true,
+            subscriptions: true,
           },
         },
       },
@@ -425,6 +431,14 @@ export class AdminService {
         name: order,
       },
     });
+
+    return stores.map((s) => ({
+      ...s,
+      partner: {
+        ...s.partner,
+        subscription: getActiveSubscription(s.partner.subscriptions),
+      },
+    }));
   }
 
   async getEventParticipants(eventId: string) {
@@ -570,17 +584,19 @@ export class AdminService {
   async grantTrial(partnerSupplierId: string, dto: GrantTrialDto) {
     const partner = await this.prisma.partnerSupplier.findUnique({
       where: { id: partnerSupplierId },
-      include: { subscription: true },
+      include: { subscriptions: true },
     });
 
     if (!partner) {
       throw new NotFoundException('Fornecedor parceiro não encontrado!');
     }
 
+    const activeSubscription = getActiveSubscription(partner.subscriptions);
+
     if (
-      partner.subscription &&
-      partner.subscription.isManual &&
-      partner.subscription.subscriptionStatus === 'TRIALING'
+      activeSubscription &&
+      activeSubscription.isManual &&
+      activeSubscription.subscriptionStatus === 'TRIALING'
     ) {
       throw new BadRequestException(
         'Este parceiro já possui um trial manual ativo.',
@@ -596,15 +612,8 @@ export class AdminService {
       trialEnd.setMonth(trialEnd.getMonth() + dto.duration);
     }
 
-    return this.prisma.subscription.upsert({
-      where: { partnerSupplierId },
-      update: {
-        subscriptionStatus: 'TRIALING',
-        planType: dto.planType.toUpperCase(),
-        currentPeriodEnd: trialEnd,
-        isManual: true,
-      },
-      create: {
+    return this.prisma.subscription.create({
+      data: {
         partnerSupplierId,
         subscriptionStatus: 'TRIALING',
         planType: dto.planType.toUpperCase(),
@@ -615,22 +624,28 @@ export class AdminService {
   }
 
   async cancelManualSubscription(partnerSupplierId: string) {
-    const subscription = await this.prisma.subscription.findUnique({
-      where: { partnerSupplierId },
+    const partner = await this.prisma.partnerSupplier.findUnique({
+      where: { id: partnerSupplierId },
+      include: { subscriptions: true },
     });
 
-    if (!subscription) {
-      throw new NotFoundException('Assinatura não encontrada!');
+    if (!partner) {
+      throw new NotFoundException('Fornecedor parceiro não encontrado!');
     }
 
-    if (!subscription.isManual) {
-      throw new BadRequestException(
-        'Apenas assinaturas manuais podem ser canceladas por aqui.',
-      );
+    const manualSubscription = partner.subscriptions.find(
+      (s) =>
+        s.isManual &&
+        (s.subscriptionStatus === 'ACTIVE' ||
+          s.subscriptionStatus === 'TRIALING'),
+    );
+
+    if (!manualSubscription) {
+      throw new NotFoundException('Assinatura manual ativa não encontrada!');
     }
 
     return this.prisma.subscription.update({
-      where: { partnerSupplierId },
+      where: { id: manualSubscription.id },
       data: {
         subscriptionStatus: 'CANCELED',
         currentPeriodEnd: new Date(),
