@@ -25,6 +25,7 @@ import { UpdateRedemptionStatusDto } from '../benefits/dto/update-redemption-sta
 import { UpdateBenefitDto } from '../benefits/dto/update-benefit.dto';
 import { CreateBenefitDTO } from '../benefits/dto/create-benefit.dto';
 import { AdminBenefitsService } from './admin-benefit.service';
+import { GrantTrialDto } from './dto/grant-trial.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -189,5 +190,11 @@ export class AdminController {
   @Patch('benefits/:id/toggle')
   async toggleBenefit(@Param('id') benefitId: string) {
     return await this.adminBenefitsService.toggleBenefitStatus(benefitId);
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('grant-trial/:id')
+  async grantTrial(@Param('id') id: string, @Body() dto: GrantTrialDto) {
+    return await this.adminService.grantTrial(id, dto);
   }
 }

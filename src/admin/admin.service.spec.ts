@@ -12,19 +12,27 @@ describe('AdminService', () => {
   let mailService: MailService;
 
   beforeEach(async () => {
+    const prismaMock: any = {
+      $transaction: jest.fn((cb) => cb(prismaMock)),
+      user: {
+        findFirst: jest.fn(),
+        update: jest.fn(),
+      },
+      partnerSupplier: {
+        findUnique: jest.fn(),
+        update: jest.fn(),
+      },
+      subscription: {
+        upsert: jest.fn(),
+      },
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AdminService,
         {
           provide: PrismaService,
-          useValue: {
-            user: {
-              findFirst: jest.fn(),
-            },
-            partnerSupplier: {
-              update: jest.fn(),
-            },
-          },
+          useValue: prismaMock,
         },
         {
           provide: MailService,
@@ -76,8 +84,50 @@ describe('AdminService', () => {
 
       expect(prismaService.partnerSupplier.update).toHaveBeenCalledWith({
         where: { id: 'partner-id' },
-        data: { status: 'REJECTED' },
+        data: expect.objectContaining({ status: 'REJECTED' }),
       });
+    });
+  });
+
+  describe('grantTrial', () => {
+    it('should grant a trial to a partner supplier', async () => {
+      const partnerSupplierId = 'partner-id';
+      const dto: any = { duration: 30, unit: 'days', planType: 'PREMIUM' };
+
+      (prismaService.partnerSupplier.findUnique as jest.Mock).mockResolvedValue({
+        id: partnerSupplierId,
+      });
+      (prismaService.subscription.upsert as jest.Mock).mockResolvedValue({
+        partnerSupplierId,
+        subscriptionStatus: 'TRIALING',
+      });
+
+      const result = await service.grantTrial(partnerSupplierId, dto);
+
+      expect(prismaService.subscription.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { partnerSupplierId },
+          update: expect.objectContaining({
+            subscriptionStatus: 'TRIALING',
+            planType: 'PREMIUM',
+            isManual: true,
+          }),
+        }),
+      );
+      expect(result.subscriptionStatus).toBe('TRIALING');
+    });
+
+    it('should throw NotFoundException if partner supplier does not exist', async () => {
+      (prismaService.partnerSupplier.findUnique as jest.Mock).mockResolvedValue(
+        null,
+      );
+      await expect(
+        service.grantTrial('invalid-id', {
+          duration: 30,
+          unit: 'days',
+          planType: 'PREMIUM',
+        }),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });
