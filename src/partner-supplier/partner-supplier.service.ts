@@ -73,7 +73,7 @@ export class PartnerSupplierService {
         isDeleted: false,
       },
       include: {
-        store: {
+        stores: {
           include: {
             address: true,
           },
@@ -86,7 +86,7 @@ export class PartnerSupplierService {
     return this.prisma.partnerSupplier.findUnique({
       where: { id },
       include: {
-        store: {
+        stores: {
           include: {
             address: true,
           },

@@ -31,7 +31,7 @@ export class AdminService {
   async findAllPartnerSuppliers() {
     return this.prisma.partnerSupplier.findMany({
       include: {
-        store: {
+        stores: {
           include: {
             address: true,
             _count: {
