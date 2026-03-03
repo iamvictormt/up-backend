@@ -49,7 +49,22 @@ export class PartnerSupplierService {
         hashedPassword,
       );
 
-      return { partnerSupplier, user };
+      const store = await tx.store.create({
+        data: {
+          name: dto.tradeName,
+          partnerId: partnerSupplier.id,
+          addressId: user.addressId,
+        },
+      });
+
+      await tx.partnerSupplier.update({
+        where: { id: partnerSupplier.id },
+        data: {
+          storeId: store.id,
+        },
+      });
+
+      return { partnerSupplier, user, store };
     });
   }
 

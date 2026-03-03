@@ -346,14 +346,15 @@ export class AdminService {
     } else {
       const store = await this.prisma.store.findUnique({
         where: { id: dto.storeId },
-        select: { addressId: true },
+        include: { address: true },
       });
 
-      if (!store) {
-        throw new NotFoundException('Loja não encontrada');
+      if (!store || !store.address) {
+        throw new NotFoundException('Loja ou endereço da loja não encontrado');
       }
 
-      addressData = { connect: { id: store.addressId } };
+      const { id, createdAt, updatedAt, ...addressDetails } = store.address;
+      addressData = { create: addressDetails };
     }
 
     return this.prisma.event.create({
