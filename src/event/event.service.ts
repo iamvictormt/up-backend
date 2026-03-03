@@ -13,7 +13,24 @@ export class EventService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateEventDto) {
-    await this.prisma.event.create({
+    let addressData: any;
+
+    if (dto.address) {
+      addressData = { create: dto.address };
+    } else {
+      const store = await this.prisma.store.findUnique({
+        where: { id: dto.storeId },
+        select: { addressId: true },
+      });
+
+      if (!store) {
+        throw new NotFoundException('Loja não encontrada');
+      }
+
+      addressData = { connect: { id: store.addressId } };
+    }
+
+    return await this.prisma.event.create({
       data: {
         name: dto.name,
         description: dto.description,
@@ -24,9 +41,7 @@ export class EventService {
         store: {
           connect: { id: dto.storeId },
         },
-        address: {
-          create: dto.address,
-        },
+        address: addressData,
       },
     });
   }

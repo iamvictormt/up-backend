@@ -339,6 +339,23 @@ export class AdminService {
   }
 
   async createEvent(dto: CreateEventDto) {
+    let addressData: any;
+
+    if (dto.address) {
+      addressData = { create: dto.address };
+    } else {
+      const store = await this.prisma.store.findUnique({
+        where: { id: dto.storeId },
+        select: { addressId: true },
+      });
+
+      if (!store) {
+        throw new NotFoundException('Loja não encontrada');
+      }
+
+      addressData = { connect: { id: store.addressId } };
+    }
+
     return this.prisma.event.create({
       data: {
         name: dto.name,
@@ -350,9 +367,7 @@ export class AdminService {
         store: {
           connect: { id: dto.storeId },
         },
-        address: {
-          create: dto.address,
-        },
+        address: addressData,
       },
       include: {
         address: true,
