@@ -12,6 +12,7 @@ import { VerifyResetCodeDto } from './dto/verify-reset-code.dto';
 import { MailService } from '../mail/mail.service';
 import { getUsername } from '../ultis';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { getActiveSubscription } from 'src/ultis/subscription.util';
 
 @Injectable()
 export class AuthService {
@@ -29,7 +30,7 @@ export class AuthService {
       },
       include: {
         partnerSupplier: {
-          include: { subscription: true },
+          include: { subscriptions: true },
         },
         professional: {
           include: { profession: true },
@@ -44,6 +45,9 @@ export class AuthService {
     }
 
     if (user.partnerSupplier) {
+      (user as any).partnerSupplier.subscription = getActiveSubscription(
+        user.partnerSupplier.subscriptions,
+      );
       if (user.partnerSupplier.status === 'PENDING') {
         throw new ForbiddenException(
           'Cadastro pendente de aprovação. \nVocê receberá um email assim que o processo for concluído.',

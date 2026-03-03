@@ -53,10 +53,9 @@ export class SubscriptionsService {
 
     await this.prisma.subscription.upsert({
       where: {
-        partnerSupplierId: partnerSupplier.id,
+        subscriptionId,
       },
       update: {
-        subscriptionId,
         subscriptionStatus: status.toUpperCase(),
         planType: getPlanType(plan.amount.toString()),
         currentPeriodEnd: periodEnd,

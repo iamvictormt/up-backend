@@ -23,7 +23,7 @@ describe('AdminService', () => {
         update: jest.fn(),
       },
       subscription: {
-        upsert: jest.fn(),
+        create: jest.fn(),
       },
     };
 
@@ -97,17 +97,16 @@ describe('AdminService', () => {
       (prismaService.partnerSupplier.findUnique as jest.Mock).mockResolvedValue({
         id: partnerSupplierId,
       });
-      (prismaService.subscription.upsert as jest.Mock).mockResolvedValue({
+      (prismaService.subscription.create as jest.Mock).mockResolvedValue({
         partnerSupplierId,
         subscriptionStatus: 'TRIALING',
       });
 
       const result = await service.grantTrial(partnerSupplierId, dto);
 
-      expect(prismaService.subscription.upsert).toHaveBeenCalledWith(
+      expect(prismaService.subscription.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { partnerSupplierId },
-          update: expect.objectContaining({
+          data: expect.objectContaining({
             subscriptionStatus: 'TRIALING',
             planType: 'PREMIUM',
             isManual: true,

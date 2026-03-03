@@ -6,6 +6,7 @@ import { AddressService } from '../address/address.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PointsService } from 'src/points/points.service';
 import { Prisma } from '@prisma/client';
+import { getActiveSubscription } from 'src/ultis/subscription.util';
 
 @Injectable()
 export class UserService {
@@ -104,13 +105,13 @@ export class UserService {
   }
 
   async findOne(id: string) {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id },
       select: {
         id: true,
         email: true,
         partnerSupplier: {
-          include: { subscription: true },
+          include: { subscriptions: true },
         },
         professional: {
           include: {
@@ -122,6 +123,20 @@ export class UserService {
         profileImage: true,
       },
     });
+
+    if (!user) return null;
+
+    if (user.partnerSupplier) {
+      return {
+        ...user,
+        partnerSupplier: {
+          ...user.partnerSupplier,
+          subscription: getActiveSubscription(user.partnerSupplier.subscriptions),
+        },
+      };
+    }
+
+    return user;
   }
 
   remove(id: string) {

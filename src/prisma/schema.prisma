@@ -84,7 +84,7 @@ model PartnerSupplier {
   user         User?         @relation("UserPartner")
   store        Store?
   storeId      String?       @unique
-  subscription Subscription?
+  subscriptions Subscription[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -410,9 +410,9 @@ model PasswordResetCode {
 model Subscription {
   id                 String             @id @default(cuid())
   partnerSupplier    PartnerSupplier    @relation(fields: [partnerSupplierId], references: [id])
-  partnerSupplierId  String             @unique
+  partnerSupplierId  String
   stripeCustomerId   String?
-  subscriptionId     String?
+  subscriptionId     String?            @unique
   subscriptionStatus SubscriptionStatus
   planType           String
   currentPeriodEnd   DateTime

@@ -4,6 +4,7 @@ import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import now = jest.now;
 import { Prisma, Store } from '@prisma/client';
+import { getActiveSubscription } from 'src/ultis/subscription.util';
 
 @Injectable()
 export class StoreService {
@@ -94,7 +95,7 @@ export class StoreService {
       return null;
     }
 
-    return this.prisma.store.findUnique({
+    const storeData = await this.prisma.store.findUnique({
       where: { id: store.id },
       include: {
         address: true,
@@ -117,11 +118,21 @@ export class StoreService {
         },
         partner: {
           include: {
-            subscription: true,
+            subscriptions: true,
           },
         },
       },
     });
+
+    if (!storeData) return null;
+
+    return {
+      ...storeData,
+      partner: {
+        ...storeData.partner,
+        subscription: getActiveSubscription(storeData.partner.subscriptions),
+      },
+    };
   }
 
   async findAll(search?: string, page = 1, limit = 10) {
@@ -163,7 +174,21 @@ export class StoreService {
         ) as row_num
         FROM "Store" s
                INNER JOIN "PartnerSupplier" ps ON s."partnerId" = ps.id
-               LEFT JOIN "Subscription" sub ON ps.id = sub."partnerSupplierId"
+               LEFT JOIN LATERAL (
+                 SELECT * FROM "Subscription" s2
+                 WHERE s2."partnerSupplierId" = ps.id
+                 AND (s2."subscriptionStatus" = 'ACTIVE' OR s2."subscriptionStatus" = 'TRIALING')
+                 AND (s2."currentPeriodEnd" >= NOW() OR s2."isManual" = true)
+                 ORDER BY
+                   CASE
+                     WHEN s2."planType" = 'PREMIUM' THEN 3
+                     WHEN s2."planType" = 'GOLD' THEN 2
+                     WHEN s2."planType" = 'SILVER' THEN 1
+                     ELSE 0
+                   END DESC,
+                   s2."currentPeriodEnd" DESC
+                 LIMIT 1
+               ) sub ON true
         WHERE 1=1
         ${
           search
@@ -208,19 +233,31 @@ export class StoreService {
           },
           partner: {
             include: {
-              subscription: true,
+              subscriptions: true,
             },
           },
         },
       });
 
       // mantém a ordem correta do ranking
-      return ids.map((id) => stores.find((s) => s.id === id)).filter(Boolean);
+      return ids
+        .map((id) => {
+          const s = stores.find((store) => store.id === id);
+          if (!s) return null;
+          return {
+            ...s,
+            partner: {
+              ...s.partner,
+              subscription: getActiveSubscription(s.partner.subscriptions),
+            },
+          };
+        })
+        .filter(Boolean);
     });
   }
 
   async findOne(id: string) {
-    return this.prisma.store.findUnique({
+    const store = await this.prisma.store.findUnique({
       where: { id },
       include: {
         address: true,
@@ -243,10 +280,20 @@ export class StoreService {
         },
         partner: {
           include: {
-            subscription: true,
+            subscriptions: true,
           },
         },
       },
     });
+
+    if (!store) return null;
+
+    return {
+      ...store,
+      partner: {
+        ...store.partner,
+        subscription: getActiveSubscription(store.partner.subscriptions),
+      },
+    };
   }
 }
