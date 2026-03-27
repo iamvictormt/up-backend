@@ -41,7 +41,10 @@ export class AdminService {
       order = 'desc',
     } = dto;
 
-    const skip = (page - 1) * limit;
+    const pageNumber = Number(page) || 1;
+    const limitNumber = Number(limit) || 10;
+
+    const skip = (pageNumber - 1) * limitNumber;
 
     const where: any = {
       user: {
@@ -75,7 +78,7 @@ export class AdminService {
       this.prisma.professional.findMany({
         where,
         skip,
-        take: limit,
+        take: limitNumber, 
         include: {
           user: {
             select: {
@@ -106,9 +109,9 @@ export class AdminService {
       data,
       meta: {
         total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
+        page: pageNumber,
+        limit: limitNumber,
+        totalPages: Math.ceil(total / limitNumber),
       },
     };
   }
