@@ -25,6 +25,10 @@ describe('AdminService', () => {
       subscription: {
         upsert: jest.fn(),
       },
+      professional: {
+        count: jest.fn(),
+        findMany: jest.fn(),
+      },
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -85,6 +89,55 @@ describe('AdminService', () => {
       expect(prismaService.partnerSupplier.update).toHaveBeenCalledWith({
         where: { id: 'partner-id' },
         data: expect.objectContaining({ status: 'REJECTED' }),
+      });
+    });
+  });
+
+  describe('findAllProfessionals', () => {
+    it('should return a list of professionals with pagination metadata', async () => {
+      const dto = { page: 1, limit: 10 };
+      const mockProfessionals = [{ id: '1', name: 'Pro 1' }];
+      const mockCount = 1;
+
+      (prismaService.professional.count as jest.Mock).mockResolvedValue(mockCount);
+      (prismaService.professional.findMany as jest.Mock).mockResolvedValue(mockProfessionals);
+
+      const result = await service.findAllProfessionals(dto);
+
+      expect(prismaService.professional.count).toHaveBeenCalled();
+      expect(prismaService.professional.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          skip: 0,
+          take: 10,
+        }),
+      );
+      expect(result).toEqual({
+        data: mockProfessionals,
+        meta: {
+          total: mockCount,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+        },
+      });
+    });
+
+    it('should apply filters correctly', async () => {
+      const dto = { search: 'John', level: 'GOLD' as any, verified: true };
+
+      (prismaService.professional.count as jest.Mock).mockResolvedValue(0);
+      (prismaService.professional.findMany as jest.Mock).mockResolvedValue([]);
+
+      await service.findAllProfessionals(dto);
+
+      expect(prismaService.professional.count).toHaveBeenCalledWith({
+        where: expect.objectContaining({
+          level: 'GOLD',
+          verified: true,
+          OR: expect.arrayContaining([
+            { name: { contains: 'John', mode: 'insensitive' } },
+          ]),
+        }),
       });
     });
   });
