@@ -26,6 +26,7 @@ import { UpdateBenefitDto } from '../benefits/dto/update-benefit.dto';
 import { CreateBenefitDTO } from '../benefits/dto/create-benefit.dto';
 import { AdminBenefitsService } from './admin-benefit.service';
 import { GrantTrialDto } from './dto/grant-trial.dto';
+import { FindAllProfessionalsDto } from './dto/find-all-professionals.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -37,6 +38,12 @@ export class AdminController {
   @Post('login')
   adminLogin(@Body() loginDto: LoginDto) {
     return this.adminService.adminLogin(loginDto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('professionals')
+  findAllProfessionals(@Query() dto: FindAllProfessionalsDto) {
+    return this.adminService.findAllProfessionals(dto);
   }
 
   @UseGuards(AdminGuard)
@@ -202,5 +209,11 @@ export class AdminController {
   @Patch('cancel-trial/:id')
   async cancelTrial(@Param('id') id: string) {
     return await this.adminService.cancelManualSubscription(id);
+  }
+
+  @UseGuards(AdminGuard)
+  @Delete('partner-supplier/:id')
+  async softDeletePartnerSupplier(@Param('id') id: string) {
+    return await this.adminService.softDeletePartnerSupplier(id);
   }
 }

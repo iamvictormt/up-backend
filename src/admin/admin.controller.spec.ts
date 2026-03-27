@@ -23,6 +23,7 @@ describe('AdminController', () => {
           useValue: {
             rejectPartnerSupplier: jest.fn(),
             grantTrial: jest.fn(),
+            findAllProfessionals: jest.fn(),
           },
         },
         AdminBenefitsService,
@@ -61,5 +62,13 @@ describe('AdminController', () => {
     await controller.grantTrial(id, dto);
 
     expect(adminService.grantTrial).toHaveBeenCalledWith(id, dto);
+  });
+
+  it('should call adminService.findAllProfessionals with correct arguments', async () => {
+    const dto: any = { page: 1, limit: 10 };
+
+    await controller.findAllProfessionals(dto);
+
+    expect(adminService.findAllProfessionals).toHaveBeenCalledWith(dto);
   });
 });

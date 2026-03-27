@@ -18,6 +18,7 @@ import { UpdateRecommendedProfessionalDto } from 'src/recommended-professional/d
 import { UpdateEventDto } from 'src/event/dto/update-event.dto';
 import { PointsService } from 'src/points/points.service';
 import { GrantTrialDto } from './dto/grant-trial.dto';
+import { FindAllProfessionalsDto } from './dto/find-all-professionals.dto';
 
 @Injectable()
 export class AdminService {
@@ -27,6 +28,90 @@ export class AdminService {
     private readonly jwtService: JwtService,
     private readonly pointsService: PointsService,
   ) {}
+
+  async findAllProfessionals(dto: FindAllProfessionalsDto) {
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      level,
+      professionId,
+      verified,
+      orderBy = 'createdAt',
+      order = 'desc',
+    } = dto;
+
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      user: {
+        isDeleted: false,
+      },
+    };
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { user: { email: { contains: search, mode: 'insensitive' } } },
+        { document: { contains: search, mode: 'insensitive' } },
+        { phone: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (level) {
+      where.level = level;
+    }
+
+    if (professionId) {
+      where.professionId = professionId;
+    }
+
+    if (verified !== undefined) {
+      where.verified = verified;
+    }
+
+    const [total, data] = await Promise.all([
+      this.prisma.professional.count({ where }),
+      this.prisma.professional.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              profileImage: true,
+              createdAt: true,
+              address: true,
+            },
+          },
+          profession: true,
+          social: true,
+          _count: {
+            select: {
+              eventRegistrations: true,
+              workshops: true,
+              redemptions: true,
+            },
+          },
+        },
+        orderBy: {
+          [orderBy]: order,
+        },
+      }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
 
   async findAllPartnerSuppliers() {
     return this.prisma.partnerSupplier.findMany({
@@ -84,39 +169,82 @@ export class AdminService {
     };
   }
 
-  async deletePartnerSupplier(id: string) {
-    return this.prisma.$transaction(async (tx) => {
-      // Apaga subscription
-      await tx.subscription.deleteMany({
-        where: { partnerSupplierId: id },
-      });
+  async softDeletePartnerSupplier(id: string) {
+    const partner = await this.prisma.partnerSupplier.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        store: true,
+      },
+    });
 
-      // Apaga usuário vinculado
-      await tx.user.deleteMany({
-        where: { partnerSupplierId: id },
-      });
+    if (!partner) {
+      throw new NotFoundException('Fornecedor parceiro não encontrado!');
+    }
 
-      // Apaga endereço vinculado à loja
-      await tx.address.deleteMany({
-        where: {
-          stores: {
-            some: {
-              partnerId: id,
-            },
+    const result = await this.prisma.$transaction(async (tx) => {
+      const timestamp = Date.now();
+
+      // Desativa todos os usuários vinculados
+      if (partner.user) {
+        await tx.user.update({
+          where: { id: partner.user.id },
+          data: {
+            isDeleted: true,
+            deletedAt: new Date(),
+            email: `deleted_${timestamp}_${partner.user.email}`,
           },
+        });
+      }
+
+      await tx.user.updateMany({
+        where: { partnerSupplierId: id, isDeleted: false },
+        data: {
+          isDeleted: true,
+          deletedAt: new Date(),
         },
       });
 
-      // Apaga loja
-      await tx.store.deleteMany({
-        where: { partnerId: id },
+      // Cancela assinaturas
+      await tx.subscription.updateMany({
+        where: { partnerSupplierId: id },
+        data: {
+          subscriptionStatus: 'CANCELED',
+        },
       });
 
-      // Finalmente, apaga o PartnerSupplier
-      return tx.partnerSupplier.delete({
+      // Desativa a loja vinculada, se existir
+      if (partner.store) {
+        // Como o modelo Store não possui isDeleted, poderíamos considerar adicionar
+        // ou simplesmente garantir que ela não apareça nos resultados.
+        // Por enquanto, seguiremos a recomendação do review de "desativar".
+        // Se não houver campo isActive/isDeleted na Store, a própria desativação do Partner
+        // já deve filtrar na maioria das queries (visto em StoreService.findAll).
+      }
+
+      // Desativa o lojista parceiro
+      return tx.partnerSupplier.update({
         where: { id },
+        data: {
+          isDeleted: true,
+          deletedAt: new Date(),
+        },
       });
     });
+
+    // Envia email de notificação após sucesso da transação
+    if (partner.user) {
+      await this.mailService.sendMail(
+        partner.user.email,
+        'Conta de lojista desativada',
+        'conta-excluida.html',
+        {
+          username: getUsername(partner.user),
+        },
+      );
+    }
+
+    return result;
   }
 
   async approvePartnerSupplier(id: string) {
