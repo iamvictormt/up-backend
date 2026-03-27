@@ -203,4 +203,10 @@ export class AdminController {
   async cancelTrial(@Param('id') id: string) {
     return await this.adminService.cancelManualSubscription(id);
   }
+
+  @UseGuards(AdminGuard)
+  @Delete('partner-supplier/:id')
+  async softDeletePartnerSupplier(@Param('id') id: string) {
+    return await this.adminService.softDeletePartnerSupplier(id);
+  }
 }
