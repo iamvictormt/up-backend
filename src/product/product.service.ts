@@ -64,12 +64,12 @@ export class ProductService {
       where: { id: userId },
       include: {
         partnerSupplier: {
-          include: { store: true },
+          include: { stores: true },
         },
       },
     });
 
-    const store = user?.partnerSupplier?.store;
+    const store = user?.partnerSupplier?.stores[0];
 
     if (!store) {
       throw new NotFoundException('Loja não encontrada para esse usuário!');

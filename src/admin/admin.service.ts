@@ -122,7 +122,7 @@ export class AdminService {
         isDeleted: false,
       },
       include: {
-        store: {
+        stores: {
           include: {
             address: true,
             _count: {

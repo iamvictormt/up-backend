@@ -82,8 +82,7 @@ model PartnerSupplier {
   deletedAt DateTime?
 
   user         User?         @relation("UserPartner")
-  store        Store?
-  storeId      String?       @unique
+  stores       Store[]
   subscription Subscription?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -131,7 +130,7 @@ model Store {
   address   Address @relation(fields: [addressId], references: [id])
   addressId String
 
-  partnerId String          @unique
+  partnerId String
   partner   PartnerSupplier @relation(fields: [partnerId], references: [id])
 
   products Product[]
