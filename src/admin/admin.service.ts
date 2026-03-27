@@ -18,6 +18,7 @@ import { UpdateRecommendedProfessionalDto } from 'src/recommended-professional/d
 import { UpdateEventDto } from 'src/event/dto/update-event.dto';
 import { PointsService } from 'src/points/points.service';
 import { GrantTrialDto } from './dto/grant-trial.dto';
+import { FindAllProfessionalsDto } from './dto/find-all-professionals.dto';
 
 @Injectable()
 export class AdminService {
@@ -27,6 +28,90 @@ export class AdminService {
     private readonly jwtService: JwtService,
     private readonly pointsService: PointsService,
   ) {}
+
+  async findAllProfessionals(dto: FindAllProfessionalsDto) {
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      level,
+      professionId,
+      verified,
+      orderBy = 'createdAt',
+      order = 'desc',
+    } = dto;
+
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      user: {
+        isDeleted: false,
+      },
+    };
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { user: { email: { contains: search, mode: 'insensitive' } } },
+        { document: { contains: search, mode: 'insensitive' } },
+        { phone: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (level) {
+      where.level = level;
+    }
+
+    if (professionId) {
+      where.professionId = professionId;
+    }
+
+    if (verified !== undefined) {
+      where.verified = verified;
+    }
+
+    const [total, data] = await Promise.all([
+      this.prisma.professional.count({ where }),
+      this.prisma.professional.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              profileImage: true,
+              createdAt: true,
+              address: true,
+            },
+          },
+          profession: true,
+          social: true,
+          _count: {
+            select: {
+              eventRegistrations: true,
+              workshops: true,
+              redemptions: true,
+            },
+          },
+        },
+        orderBy: {
+          [orderBy]: order,
+        },
+      }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
 
   async findAllPartnerSuppliers() {
     return this.prisma.partnerSupplier.findMany({
