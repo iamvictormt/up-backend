@@ -118,6 +118,9 @@ export class AdminService {
 
   async findAllPartnerSuppliers() {
     return this.prisma.partnerSupplier.findMany({
+      where: {
+        isDeleted: false,
+      },
       include: {
         store: {
           include: {
@@ -548,6 +551,11 @@ export class AdminService {
 
   async findStores(order: 'asc' | 'desc' = 'asc') {
     return this.prisma.store.findMany({
+      where: {
+        partner: {
+          isDeleted: false,
+        },
+      },
       include: {
         address: true,
         products: {
@@ -640,12 +648,14 @@ export class AdminService {
       totalRecommendedProfessionals,
       totalPosts,
     ] = await Promise.all([
-      this.prisma.user.count(),
       this.prisma.user.count({
-        where: { professionalId: { not: null } },
+        where: { isDeleted: false },
       }),
       this.prisma.user.count({
-        where: { partnerSupplierId: { not: null } },
+        where: { professionalId: { not: null }, isDeleted: false },
+      }),
+      this.prisma.user.count({
+        where: { partnerSupplierId: { not: null }, isDeleted: false },
       }),
       this.prisma.event.count({
         where: {
