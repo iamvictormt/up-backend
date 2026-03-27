@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PointOperation, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -74,5 +74,18 @@ export class PointsService {
     });
 
     return history;
+  }
+
+  async getHistoryByUserEmail(email: string, limit = 50) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      include: { professional: true },
+    });
+
+    if (!user || !user.professional) {
+      throw new NotFoundException('Perfil de profissional não encontrado.');
+    }
+
+    return this.getHistory(user.professional.id, limit);
   }
 }
