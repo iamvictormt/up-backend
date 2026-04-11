@@ -53,6 +53,8 @@ model Professional {
   level              ProfessionalLevel @default(BRONZE)
   points             Int               @default(0)
   phone              String
+
+  favoritePartners   PartnerSupplier[] @relation("FavoriteWellness")
   socialMediaId      String?           @unique
   social             SocialMedia?      @relation(fields: [socialMediaId], references: [id])
 
@@ -75,6 +77,8 @@ model PartnerSupplier {
   document          String
   stateRegistration String?
   contact           String?
+  type              PartnerType @default(SUPPLIER)
+  isVerified        Boolean     @default(false)
 
   status RegistrationStatus @default(PENDING)
 
@@ -85,6 +89,9 @@ model PartnerSupplier {
   store        Store?
   storeId      String?       @unique
   subscription Subscription?
+
+  favoritedBy  Professional[] @relation("FavoriteWellness")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -149,6 +156,7 @@ model Product {
   featured    Boolean @default(false)
   promotion   Boolean @default(false)
   photoUrl    String?
+  duration    String?
 
   storeId String
   store   Store  @relation(fields: [storeId], references: [id])
@@ -511,6 +519,11 @@ enum RegistrationStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum PartnerType {
+  SUPPLIER
+  WELLNESS
 }
 
 model ErrorLog {
