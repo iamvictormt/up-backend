@@ -150,6 +150,41 @@ export class AdminService {
     });
   }
 
+  async findAllPhysicalSales() {
+    return this.prisma.physicalSale.findMany({
+      include: {
+        partner: true,
+        professional: {
+          include: {
+            user: {
+              select: {
+                email: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async updatePartnerPointsLimit(id: string, pointsLimit: number) {
+    const partner = await this.prisma.partnerSupplier.findUnique({
+      where: { id },
+    });
+
+    if (!partner) {
+      throw new NotFoundException('Fornecedor parceiro não encontrado!');
+    }
+
+    return this.prisma.partnerSupplier.update({
+      where: { id },
+      data: { pointsLimit },
+    });
+  }
+
   async togglePartnerVerification(id: string) {
     const partner = await this.prisma.partnerSupplier.findUnique({
       where: { id },
@@ -664,6 +699,8 @@ export class AdminService {
       totalEventsThisMonth,
       totalRecommendedProfessionals,
       totalPosts,
+      totalPhysicalSales,
+      pointsAggregate,
     ] = await Promise.all([
       this.prisma.user.count({
         where: { isDeleted: false },
@@ -686,6 +723,15 @@ export class AdminService {
         where: { isActive: true },
       }),
       this.prisma.post.count(),
+      this.prisma.physicalSale.count(),
+      this.prisma.physicalSale.aggregate({
+        _sum: {
+          points: true,
+        },
+        where: {
+          redeemedAt: { not: null },
+        },
+      }),
     ]);
 
     return {
@@ -695,6 +741,8 @@ export class AdminService {
       totalEventsThisMonth,
       totalRecommendedProfessionals,
       totalPosts,
+      totalPhysicalSales,
+      totalPointsAwardedPhysical: pointsAggregate._sum.points || 0,
     };
   }
 

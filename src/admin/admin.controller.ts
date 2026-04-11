@@ -27,6 +27,7 @@ import { CreateBenefitDTO } from '../benefits/dto/create-benefit.dto';
 import { AdminBenefitsService } from './admin-benefit.service';
 import { GrantTrialDto } from './dto/grant-trial.dto';
 import { FindAllProfessionalsDto } from './dto/find-all-professionals.dto';
+import { UpdatePointsLimitDto } from './dto/update-points-limit.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -50,6 +51,21 @@ export class AdminController {
   @Get('partner-suppliers')
   async findAllPartnerSuppliers() {
     return await this.adminService.findAllPartnerSuppliers();
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('physical-sales')
+  async findAllPhysicalSales() {
+    return await this.adminService.findAllPhysicalSales();
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('partner-suppliers/:id/points-limit')
+  async updatePartnerPointsLimit(
+    @Param('id') id: string,
+    @Body() dto: UpdatePointsLimitDto,
+  ) {
+    return await this.adminService.updatePartnerPointsLimit(id, dto.pointsLimit);
   }
 
   @UseGuards(AdminGuard)
