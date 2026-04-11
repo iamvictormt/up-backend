@@ -5,4 +5,6 @@ export interface DashboardStatistics {
   totalEventsThisMonth: number;
   totalRecommendedProfessionals: number;
   totalPosts: number;
+  totalPhysicalSales: number;
+  totalPointsAwardedPhysical: number;
 }

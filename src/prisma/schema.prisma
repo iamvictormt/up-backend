@@ -63,6 +63,7 @@ model Professional {
   pointHistory       PointHistory[]
   eventRegistrations EventRegistration[]
   redemptions        BenefitRedemption[]
+  physicalSales      PhysicalSale[]
 
   profession   Profession? @relation(fields: [professionId], references: [id])
   professionId String?
@@ -92,8 +93,32 @@ model PartnerSupplier {
 
   favoritedBy  Professional[] @relation("FavoriteWellness")
 
+  pointsLimit           Int @default(0)
+  currentPointsAwarded  Int @default(0)
+  physicalSales         PhysicalSale[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model PhysicalSale {
+  id           String   @id @default(uuid())
+  code         String   @unique
+  customerName String
+  value        Float
+  sellerName   String?
+  invoice      String?
+  points       Int
+
+  partnerId    String
+  partner      PartnerSupplier @relation(fields: [partnerId], references: [id])
+
+  professionalId String?
+  professional   Professional? @relation(fields: [professionalId], references: [id])
+
+  redeemedAt   DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model SocialMedia {
