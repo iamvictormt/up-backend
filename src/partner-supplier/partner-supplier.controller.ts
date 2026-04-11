@@ -6,6 +6,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { PartnerSupplierService } from './partner-supplier.service';
@@ -34,12 +35,27 @@ export class PartnerSupplierController {
     return await this.partnerSupplierService.update(user.sub, dto);
   }
 
-  @Get() async findAll() {
-    return await this.partnerSupplierService.findAll();
+  @Get() async findAll(@Query('type') type?: string) {
+    return await this.partnerSupplierService.findAll(type);
+  }
+
+  @Get('wellness') async findWellness() {
+    return await this.partnerSupplierService.findAll('WELLNESS');
+  }
+
+  @Post(':id/favorite')
+  @UseGuards(JwtAuthGuard)
+  async toggleFavorite(@CurrentUser() user, @Param('id') partnerId: string) {
+    const professionalId =
+      await this.partnerSupplierService.findProfessionalIdByUserId(user.sub);
+    return await this.partnerSupplierService.toggleFavorite(
+      professionalId,
+      partnerId,
+    );
   }
 
   @Get('pending') async findPending() {
-    return await this.partnerSupplierService.findAll();
+    return await this.partnerSupplierService.findPending();
   }
 
   @Get(':id') async findOne(@Param('id') id: string) {

@@ -28,4 +28,8 @@ export class CreateProductDto {
   @IsOptional()
   @IsString()
   photoUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  duration?: string;
 }

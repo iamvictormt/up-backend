@@ -150,6 +150,23 @@ export class AdminService {
     });
   }
 
+  async togglePartnerVerification(id: string) {
+    const partner = await this.prisma.partnerSupplier.findUnique({
+      where: { id },
+    });
+
+    if (!partner) {
+      throw new NotFoundException('Fornecedor parceiro não encontrado!');
+    }
+
+    return this.prisma.partnerSupplier.update({
+      where: { id },
+      data: {
+        isVerified: !partner.isVerified,
+      },
+    });
+  }
+
   adminLogin(loginDto: LoginDto) {
     const { email, password } = loginDto;
 

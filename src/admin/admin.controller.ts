@@ -59,6 +59,12 @@ export class AdminController {
   }
 
   @UseGuards(AdminGuard)
+  @Patch('partner-suppliers/:id/toggle-verification')
+  async togglePartnerVerification(@Param('id') id: string) {
+    return await this.adminService.togglePartnerVerification(id);
+  }
+
+  @UseGuards(AdminGuard)
   @Patch('reject-partner/:id')
   async rejectPartnerSupplier(
     @Param('id') id: string,

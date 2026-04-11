@@ -22,4 +22,7 @@ export class CreatePartnerSupplierDto {
   @IsString()
   profileImage?: string;
 
+  @IsOptional()
+  @IsString()
+  type?: string;
 }
