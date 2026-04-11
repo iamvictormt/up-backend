@@ -63,7 +63,14 @@ export class PartnerSupplierService {
 
     return this.prisma.partnerSupplier.update({
       where: { id: user.partnerSupplier.id },
-      data: { ...dto },
+      data: {
+        tradeName: dto.tradeName,
+        companyName: dto.companyName,
+        document: dto.document,
+        stateRegistration: dto.stateRegistration,
+        contact: dto.contact,
+        type: dto.type as any,
+      },
     });
   }
 

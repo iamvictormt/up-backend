@@ -28,6 +28,7 @@ import { StatisticsModule } from './statistics/statistics.module';
 import { AdminModule } from './admin/admin.module';
 import { PointsModule } from './points/points.module';
 import { BenefitModule } from './benefits/benefit.module';
+import { ConexaoPremiadaModule } from './conexao-premiada/conexao-premiada.module';
 import { LoggerService } from './common/logger/logger.service';
 import { APP_FILTER } from '@nestjs/core';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
@@ -64,6 +65,7 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
     AdminModule,
     PointsModule,
     BenefitModule,
+    ConexaoPremiadaModule,
   ],
   controllers: [AppController],
   providers: [
