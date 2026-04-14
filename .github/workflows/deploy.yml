@@ -1,0 +1,23 @@
+name: Deploy NestJS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Executar Script de Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            cd /home/${{ secrets.EC2_USER }}/nome-da-sua-pasta-do-projeto
+            chmod +x deploy.sh
+            ./deploy.sh
