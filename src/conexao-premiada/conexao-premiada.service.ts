@@ -121,4 +121,38 @@ export class ConexaoPremiadaService {
     // Gera um código de 16 caracteres alfanuméricos
     return randomBytes(8).toString('hex').toUpperCase();
   }
+
+  async findAllPhysicalSales(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { partnerSupplier: true },
+    });
+
+    if (!user || !user.partnerSupplier) {
+      throw new ForbiddenException('Apenas parceiros podem ver as vendas.');
+    }
+
+    const partner = user.partnerSupplier;
+
+    return this.prisma.physicalSale.findMany({
+      where: {
+        partnerId: partner.id,
+      },
+      include: {
+        partner: true,
+        professional: {
+          include: {
+            user: {
+              select: {
+                email: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
 }

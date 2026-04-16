@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { ConexaoPremiadaService } from './conexao-premiada.service';
@@ -24,5 +24,12 @@ export class ConexaoPremiadaController {
     @Body() dto: RedeemCodeDto,
   ) {
     return this.conexaoPremiadaService.redeemCode(user.sub, dto);
+  }
+
+  @Get('get-all-sales')
+  async getAllSales(
+    @CurrentUser() user: any,
+  ) {
+    return this.conexaoPremiadaService.findAllPhysicalSales(user.sub);
   }
 }
