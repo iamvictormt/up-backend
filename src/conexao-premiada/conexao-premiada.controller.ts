@@ -15,7 +15,7 @@ export class ConexaoPremiadaController {
     @CurrentUser() user: any,
     @Body() dto: RegisterSaleDto,
   ) {
-    return this.conexaoPremiadaService.registerSale(user.userId || user.id, dto);
+    return this.conexaoPremiadaService.registerSale(user.sub, dto);
   }
 
   @Post('redeem-code')
@@ -23,8 +23,6 @@ export class ConexaoPremiadaController {
     @CurrentUser() user: any,
     @Body() dto: RedeemCodeDto,
   ) {
-    console.log('user', user);
-    console.log('dto', dto);
-    return this.conexaoPremiadaService.redeemCode(user.userId || user.id, dto);
+    return this.conexaoPremiadaService.redeemCode(user.sub, dto);
   }
 }
