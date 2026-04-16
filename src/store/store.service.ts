@@ -165,7 +165,7 @@ export class StoreService {
                INNER JOIN "PartnerSupplier" ps ON s."partnerId" = ps.id
                LEFT JOIN "Subscription" sub ON ps.id = sub."partnerSupplierId"
         WHERE ps."isDeleted" = false
-        ${type ? Prisma.sql`AND ps."type" = ${type}` : Prisma.empty}
+        ${type ? Prisma.sql`AND ps."type" = ${type}::"PartnerType"` : Prisma.empty}
         ${
           search
             ? Prisma.sql`AND (
