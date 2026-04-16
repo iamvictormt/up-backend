@@ -5,8 +5,8 @@ import { ConexaoPremiadaService } from './conexao-premiada.service';
 import { RegisterSaleDto } from './dto/register-sale.dto';
 import { RedeemCodeDto } from './dto/redeem-code.dto';
 
-@Controller('conexao-premiada')
 @UseGuards(JwtAuthGuard)
+@Controller('conexao-premiada')
 export class ConexaoPremiadaController {
   constructor(private readonly conexaoPremiadaService: ConexaoPremiadaService) {}
 
@@ -23,6 +23,8 @@ export class ConexaoPremiadaController {
     @CurrentUser() user: any,
     @Body() dto: RedeemCodeDto,
   ) {
+    console.log('user', user);
+    console.log('dto', dto);
     return this.conexaoPremiadaService.redeemCode(user.userId || user.id, dto);
   }
 }

@@ -118,7 +118,7 @@ export class ConexaoPremiadaService {
   }
 
   private generateUniqueCode(): string {
-    // Gera um código de 8 caracteres alfanuméricos
-    return randomBytes(4).toString('hex').toUpperCase();
+    // Gera um código de 16 caracteres alfanuméricos
+    return randomBytes(8).toString('hex').toUpperCase();
   }
 }
