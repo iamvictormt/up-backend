@@ -3,7 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import now = jest.now;
-import { Prisma, Store } from '@prisma/client';
+import { PartnerType, Prisma, Store } from '@prisma/client';
 
 @Injectable()
 export class StoreService {
@@ -124,7 +124,7 @@ export class StoreService {
     });
   }
 
-  async findAll(search?: string, page = 1, limit = 10) {
+  async findAll(search?: string, page = 1, limit = 10, type?: PartnerType) {
     return this.prisma.$queryRaw`
       WITH RankedStores AS (
         SELECT
@@ -165,6 +165,7 @@ export class StoreService {
                INNER JOIN "PartnerSupplier" ps ON s."partnerId" = ps.id
                LEFT JOIN "Subscription" sub ON ps.id = sub."partnerSupplierId"
         WHERE ps."isDeleted" = false
+        ${type ? Prisma.sql`AND ps."type" = ${type}` : Prisma.empty}
         ${
           search
             ? Prisma.sql`AND (
@@ -214,7 +215,6 @@ export class StoreService {
         },
       });
 
-      // mantém a ordem correta do ranking
       return ids.map((id) => stores.find((s) => s.id === id)).filter(Boolean);
     });
   }

@@ -12,6 +12,7 @@ import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { PartnerType } from '@prisma/client';
 
 @UseGuards(JwtAuthGuard)
 @Controller('stores')
@@ -40,11 +41,12 @@ export class StoreController {
     @Query('search') search?: string,
     @Query('page') page = '1',
     @Query('limit') limit = '10',
+    @Query('type') type?: PartnerType,
   ) {
     const pageNumber = parseInt(page);
     const pageSize = parseInt(limit);
 
-    return this.storeService.findAll(search, pageNumber, pageSize);
+    return this.storeService.findAll(search, pageNumber, pageSize, type);
   }
 
   @Get(':id') async findOne(@Param('id') id: string) {
