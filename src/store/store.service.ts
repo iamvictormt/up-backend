@@ -125,16 +125,22 @@ export class StoreService {
   }
 
   async findAll(search?: string, page = 1, limit = 10, type?: PartnerType) {
-    const skip = (page - 1) * limit;
-  
-    const storeIds: { id: string }[] = await this.prisma.$queryRaw`
+    return this.prisma.$queryRaw`
       WITH RankedStores AS (
         SELECT
           s.id,
+          s.name,
+          s.description,
+          s.website,
+          s.rating,
+          s."openingHours",
+          s."logoUrl",
+          s."addressId",
+          s."partnerId",
           CASE
-            WHEN sub.id IS NOT NULL 
-                 AND (sub."subscriptionStatus" = 'ACTIVE' OR sub."subscriptionStatus" = 'TRIALING') 
-                 AND (sub."currentPeriodEnd" >= NOW() OR sub."isManual" = true) THEN
+            WHEN sub.id IS NOT NULL AND (sub."subscriptionStatus" = 'ACTIVE' OR sub."subscriptionStatus" = 'TRIALING') 
+            --AND (sub."currentPeriodEnd" >= NOW() OR sub."isManual" = true) --para considerar o trial manual
+            THEN
               CASE
                 WHEN sub."planType" = 'PREMIUM' THEN 3
                 WHEN sub."planType" = 'GOLD' THEN 2
@@ -142,10 +148,26 @@ export class StoreService {
                 ELSE 0
               END
             ELSE 0
-          END as plan_priority
+            END as plan_priority,
+          ROW_NUMBER() OVER (
+          ORDER BY 
+            CASE 
+              WHEN sub.id IS NOT NULL AND (sub."subscriptionStatus" = 'ACTIVE' OR sub."subscriptionStatus" = 'TRIALING') 
+              --AND (sub."currentPeriodEnd" >= NOW() OR sub."isManual" = true) --para considerar o trial manual
+              THEN
+                CASE
+                  WHEN sub."planType" = 'PREMIUM' THEN 3
+                  WHEN sub."planType" = 'GOLD' THEN 2
+                  WHEN sub."planType" = 'SILVER' THEN 1
+                  ELSE 0
+                END
+              ELSE 0
+            END DESC,
+            s.name ASC
+        ) as row_num
         FROM "Store" s
-        INNER JOIN "PartnerSupplier" ps ON s."partnerId" = ps.id
-        LEFT JOIN "Subscription" sub ON ps.id = sub."partnerSupplierId"
+               INNER JOIN "PartnerSupplier" ps ON s."partnerId" = ps.id
+               LEFT JOIN "Subscription" sub ON ps.id = sub."partnerSupplierId"
         WHERE ps."isDeleted" = false
         ${type ? Prisma.sql`AND ps."type" = ${type}::"PartnerType"` : Prisma.empty}
         ${
@@ -154,45 +176,51 @@ export class StoreService {
                 s.name ILIKE ${`%${search}%`}
                 OR s.description ILIKE ${`%${search}%`}
                 OR EXISTS (
-                  SELECT 1 FROM "Product" p 
-                  WHERE p."storeId" = s.id AND p.name ILIKE ${`%${search}%`}
+                  SELECT 1 
+                  FROM "Product" p 
+                  WHERE p."storeId" = s.id 
+                  AND (
+                    p.name ILIKE ${`%${search}%`}
+                  )
                 )
               )`
             : Prisma.empty
         }
-        ORDER BY plan_priority DESC, s.name ASC
-        LIMIT ${limit} OFFSET ${skip}
-      )
-      SELECT id FROM RankedStores;
-    `;
-  
-    const ids = storeIds.map((s) => s.id);
-    if (ids.length === 0) return [];
+        )
+      SELECT id FROM RankedStores
+      WHERE row_num > ${(page - 1) * limit}
+        AND row_num <= ${page * limit}
+      ORDER BY row_num;
+    `.then(async (storeIds: any[]) => {
+      const ids = storeIds.map((s) => s.id);
 
-    const stores = await this.prisma.store.findMany({
-      where: { id: { in: ids } },
-      include: {
-        address: true,
-        products: {
-          orderBy: [{ featured: 'desc' }, { name: 'asc' }],
-        },
-        events: {
-          where: {
-            isActive: true,
-            date: { gte: new Date() },
+      if (ids.length === 0) return [];
+
+      const stores = await this.prisma.store.findMany({
+        where: { id: { in: ids } },
+        include: {
+          address: true,
+          products: {
+            orderBy: [{ featured: 'desc' }, { name: 'asc' }],
           },
-          include: { address: true },
-          orderBy: { date: 'asc' },
+          events: {
+            where: {
+              isActive: true,
+              date: { gte: new Date() },
+            },
+            include: { address: true },
+            orderBy: { date: 'asc' },
+          },
+          partner: {
+            include: {
+              subscription: true,
+            },
+          },
         },
-        partner: {
-          include: { subscription: true },
-        },
-      },
+      });
+
+      return ids.map((id) => stores.find((s) => s.id === id)).filter(Boolean);
     });
-  
-    return ids
-      .map((id) => stores.find((store) => store.id === id))
-      .filter((store): store is NonNullable<typeof store> => !!store);
   }
 
   async findOne(id: string) {
