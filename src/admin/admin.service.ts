@@ -21,11 +21,18 @@ import { GrantTrialDto } from './dto/grant-trial.dto';
 import { FindAllProfessionalsDto } from './dto/find-all-professionals.dto';
 import { UpdateProfessionalDto } from 'src/professional/dto/update-professional.dto';
 import { UpdatePartnerSupplierDto } from 'src/partner-supplier/dto/update-partner-supplier.dto';
-import { PartnerType } from '@prisma/client';
+import { PartnerType, RedemptionStatus, RegistrationStatus } from '@prisma/client';
 import { CreateStoreDto } from 'src/store/dto/create-store.dto';
 import { UpdateStoreDto } from 'src/store/dto/update-store.dto';
 import { CreateProductDto } from 'src/product/dto/create-product.dto';
 import { UpdateProductDto } from 'src/product/dto/update-product.dto';
+import { CreateProfessionDto } from 'src/profession/dto/create-profession.dto';
+import { UpdateProfessionDto } from 'src/profession/dto/update-profession.dto';
+import { CreateCommunityDto } from 'src/community/dto/create-community.dto';
+import { UpdateCommunityDto } from 'src/community/dto/update-community.dto';
+import { CreatePostDTO } from 'src/post/dto/create-post.dto';
+import { UpdatePostDto } from 'src/post/dto/update-post.dto';
+import { CreateReportDto } from 'src/report/dto/create-report.dto';
 
 @Injectable()
 export class AdminService {
@@ -159,6 +166,418 @@ export class AdminService {
         },
       },
     });
+  }
+
+  async findAllProfessions() {
+    return this.prisma.profession.findMany({
+      include: {
+        _count: {
+          select: { professionals: true },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async createProfession(dto: CreateProfessionDto) {
+    return this.prisma.profession.create({
+      data: {
+        name: dto.name.trim(),
+        description: dto.description?.trim(),
+      },
+      include: {
+        _count: {
+          select: { professionals: true },
+        },
+      },
+    });
+  }
+
+  async updateProfession(id: string, dto: UpdateProfessionDto) {
+    const profession = await this.prisma.profession.findUnique({
+      where: { id },
+    });
+
+    if (!profession) {
+      throw new NotFoundException('Profissão não encontrada.');
+    }
+
+    return this.prisma.profession.update({
+      where: { id },
+      data: {
+        name: dto.name?.trim(),
+        description: dto.description?.trim(),
+      },
+      include: {
+        _count: {
+          select: { professionals: true },
+        },
+      },
+    });
+  }
+
+  async deleteProfession(id: string) {
+    const profession = await this.prisma.profession.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { professionals: true },
+        },
+      },
+    });
+
+    if (!profession) {
+      throw new NotFoundException('Profissão não encontrada.');
+    }
+
+    if (profession._count.professionals > 0) {
+      throw new BadRequestException(
+        'Esta profissão está em uso. Remova ou altere os profissionais vinculados antes de excluir.',
+      );
+    }
+
+    return this.prisma.profession.delete({ where: { id } });
+  }
+
+  async findAllCommunities() {
+    return this.prisma.community.findMany({
+      include: {
+        _count: {
+          select: { posts: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async createCommunity(dto: CreateCommunityDto) {
+    return this.prisma.community.create({
+      data: {
+        name: dto.name.trim(),
+        description: dto.description?.trim(),
+        color: dto.color,
+        icon: dto.icon.trim(),
+      },
+      include: {
+        _count: {
+          select: { posts: true },
+        },
+      },
+    });
+  }
+
+  async updateCommunity(id: string, dto: UpdateCommunityDto) {
+    const community = await this.prisma.community.findUnique({
+      where: { id },
+    });
+
+    if (!community) {
+      throw new NotFoundException('Comunidade não encontrada.');
+    }
+
+    return this.prisma.community.update({
+      where: { id },
+      data: {
+        name: dto.name?.trim(),
+        description: dto.description?.trim(),
+        color: dto.color,
+        icon: dto.icon?.trim(),
+      },
+      include: {
+        _count: {
+          select: { posts: true },
+        },
+      },
+    });
+  }
+
+  async deleteCommunity(id: string) {
+    const community = await this.prisma.community.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { posts: true },
+        },
+      },
+    });
+
+    if (!community) {
+      throw new NotFoundException('Comunidade não encontrada.');
+    }
+
+    if (community._count.posts > 0) {
+      throw new BadRequestException(
+        'Esta comunidade possui publicações. Exclua ou mova as publicações antes de apagar a comunidade.',
+      );
+    }
+
+    return this.prisma.community.delete({ where: { id } });
+  }
+
+  async findPostAuthors() {
+    const users = await this.prisma.user.findMany({
+      where: { isDeleted: false },
+      select: {
+        id: true,
+        email: true,
+        profileImage: true,
+        professional: { select: { name: true } },
+        partnerSupplier: { select: { tradeName: true } },
+        loveDecoration: { select: { name: true } },
+      },
+      orderBy: { email: 'asc' },
+    });
+
+    return users.map((user) => ({
+      id: user.id,
+      email: user.email,
+      profileImage: user.profileImage,
+      name: getUsername(user),
+    }));
+  }
+
+  async findAllPosts() {
+    return this.prisma.post.findMany({
+      include: {
+        author: {
+          select: {
+            id: true,
+            email: true,
+            profileImage: true,
+            professional: { select: { name: true } },
+            partnerSupplier: { select: { tradeName: true } },
+            loveDecoration: { select: { name: true } },
+          },
+        },
+        community: true,
+        postHashtags: {
+          include: { hashtag: true },
+        },
+        _count: {
+          select: { likes: true, comments: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async createPost(dto: CreatePostDTO) {
+    const { hashtags, image, ...postData } = dto;
+
+    return this.prisma.$transaction(async (tx) => {
+      const post = await tx.post.create({
+        data: {
+          ...postData,
+          title: postData.title.trim(),
+          content: postData.content.trim(),
+          attachedImage: postData.attachedImage?.trim() || image?.trim(),
+        },
+      });
+
+      if (hashtags?.length) {
+        for (const tag of hashtags) {
+          const name = tag.trim();
+          if (!name) continue;
+
+          const hashtag = await tx.hashtag.upsert({
+            where: { name },
+            update: {},
+            create: { name },
+          });
+
+          await tx.postHashtag.create({
+            data: {
+              postId: post.id,
+              hashtagId: hashtag.id,
+            },
+          });
+        }
+      }
+
+      return tx.post.findUnique({
+        where: { id: post.id },
+        include: {
+          author: {
+            select: {
+              id: true,
+              email: true,
+              profileImage: true,
+              professional: { select: { name: true } },
+              partnerSupplier: { select: { tradeName: true } },
+              loveDecoration: { select: { name: true } },
+            },
+          },
+          community: true,
+          postHashtags: { include: { hashtag: true } },
+          _count: { select: { likes: true, comments: true } },
+        },
+      });
+    });
+  }
+
+  async updatePost(id: string, dto: UpdatePostDto) {
+    const post = await this.prisma.post.findUnique({ where: { id } });
+
+    if (!post) {
+      throw new NotFoundException('Publicação não encontrada.');
+    }
+
+    const { hashtags, image, ...postData } = dto;
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.postHashtag.deleteMany({ where: { postId: id } });
+
+      if (hashtags?.length) {
+        for (const tag of hashtags) {
+          const name = tag.trim();
+          if (!name) continue;
+
+          const hashtag = await tx.hashtag.upsert({
+            where: { name },
+            update: {},
+            create: { name },
+          });
+
+          await tx.postHashtag.create({
+            data: {
+              postId: id,
+              hashtagId: hashtag.id,
+            },
+          });
+        }
+      }
+
+      await tx.post.update({
+        where: { id },
+        data: {
+          ...postData,
+          title: postData.title?.trim(),
+          content: postData.content?.trim(),
+          attachedImage: postData.attachedImage?.trim() || image?.trim(),
+        },
+      });
+
+      return tx.post.findUnique({
+        where: { id },
+        include: {
+          author: {
+            select: {
+              id: true,
+              email: true,
+              profileImage: true,
+              professional: { select: { name: true } },
+              partnerSupplier: { select: { tradeName: true } },
+              loveDecoration: { select: { name: true } },
+            },
+          },
+          community: true,
+          postHashtags: { include: { hashtag: true } },
+          _count: { select: { likes: true, comments: true } },
+        },
+      });
+    });
+  }
+
+  async deletePost(id: string) {
+    const post = await this.prisma.post.findUnique({ where: { id } });
+
+    if (!post) {
+      throw new NotFoundException('Publicação não encontrada.');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.notification.deleteMany({ where: { postId: id } });
+      await tx.like.deleteMany({ where: { postId: id } });
+      await tx.comment.deleteMany({ where: { postId: id } });
+      await tx.postHashtag.deleteMany({ where: { postId: id } });
+      return tx.post.delete({ where: { id } });
+    });
+  }
+
+  async findAllReports() {
+    return this.prisma.report.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            profileImage: true,
+            professional: { select: { name: true } },
+            partnerSupplier: { select: { tradeName: true } },
+            loveDecoration: { select: { name: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async createReport(dto: CreateReportDto) {
+    if (!dto.userId) {
+      throw new BadRequestException('Selecione o usuário denunciante.');
+    }
+
+    return this.prisma.report.create({
+      data: {
+        reason: dto.reason.trim(),
+        description: dto.description?.trim(),
+        targetId: dto.targetId,
+        targetType: dto.targetType.trim(),
+        user: { connect: { id: dto.userId } },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            profileImage: true,
+            professional: { select: { name: true } },
+            partnerSupplier: { select: { tradeName: true } },
+            loveDecoration: { select: { name: true } },
+          },
+        },
+      },
+    });
+  }
+
+  async updateReport(id: string, dto: Partial<CreateReportDto>) {
+    const report = await this.prisma.report.findUnique({ where: { id } });
+
+    if (!report) {
+      throw new NotFoundException('Denúncia não encontrada.');
+    }
+
+    return this.prisma.report.update({
+      where: { id },
+      data: {
+        reason: dto.reason?.trim(),
+        description: dto.description?.trim(),
+        targetId: dto.targetId,
+        targetType: dto.targetType?.trim(),
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            profileImage: true,
+            professional: { select: { name: true } },
+            partnerSupplier: { select: { tradeName: true } },
+            loveDecoration: { select: { name: true } },
+          },
+        },
+      },
+    });
+  }
+
+  async deleteReport(id: string) {
+    const report = await this.prisma.report.findUnique({ where: { id } });
+
+    if (!report) {
+      throw new NotFoundException('Denúncia não encontrada.');
+    }
+
+    return this.prisma.report.delete({ where: { id } });
   }
 
   async toggleProfessionalVerification(id: string) {
@@ -1051,6 +1470,12 @@ export class AdminService {
       totalPosts,
       totalPhysicalSales,
       pointsAggregate,
+      totalProfessions,
+      totalCommunities,
+      totalReports,
+      pendingPartnerSuppliers,
+      pendingBenefitRedemptions,
+      postsThisMonth,
     ] = await Promise.all([
       this.prisma.user.count({
         where: { isDeleted: false },
@@ -1082,6 +1507,28 @@ export class AdminService {
           redeemedAt: { not: null },
         },
       }),
+      this.prisma.profession.count(),
+      this.prisma.community.count(),
+      this.prisma.report.count(),
+      this.prisma.partnerSupplier.count({
+        where: {
+          status: RegistrationStatus.PENDING,
+          isDeleted: false,
+        },
+      }),
+      this.prisma.benefitRedemption.count({
+        where: {
+          status: RedemptionStatus.PENDING,
+        },
+      }),
+      this.prisma.post.count({
+        where: {
+          createdAt: {
+            gte: firstDayOfMonth,
+            lte: lastDayOfMonth,
+          },
+        },
+      }),
     ]);
 
     return {
@@ -1093,6 +1540,12 @@ export class AdminService {
       totalPosts,
       totalPhysicalSales,
       totalPointsAwardedPhysical: pointsAggregate._sum.points || 0,
+      totalProfessions,
+      totalCommunities,
+      totalReports,
+      pendingPartnerSuppliers,
+      pendingBenefitRedemptions,
+      postsThisMonth,
     };
   }
 

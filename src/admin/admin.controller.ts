@@ -34,6 +34,13 @@ import { CreateStoreDto } from 'src/store/dto/create-store.dto';
 import { UpdateStoreDto } from 'src/store/dto/update-store.dto';
 import { CreateProductDto } from 'src/product/dto/create-product.dto';
 import { UpdateProductDto } from 'src/product/dto/update-product.dto';
+import { CreateProfessionDto } from 'src/profession/dto/create-profession.dto';
+import { UpdateProfessionDto } from 'src/profession/dto/update-profession.dto';
+import { CreateCommunityDto } from 'src/community/dto/create-community.dto';
+import { UpdateCommunityDto } from 'src/community/dto/update-community.dto';
+import { CreatePostDTO } from 'src/post/dto/create-post.dto';
+import { UpdatePostDto } from 'src/post/dto/update-post.dto';
+import { CreateReportDto } from 'src/report/dto/create-report.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -60,6 +67,114 @@ export class AdminController {
     @Body() dto: UpdateProfessionalDto,
   ) {
     return this.adminService.updateProfessional(id, dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('professions')
+  findAllProfessions() {
+    return this.adminService.findAllProfessions();
+  }
+
+  @UseGuards(AdminGuard)
+  @Post('professions')
+  createProfession(@Body() dto: CreateProfessionDto) {
+    return this.adminService.createProfession(dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('professions/:id')
+  updateProfession(
+    @Param('id') id: string,
+    @Body() dto: UpdateProfessionDto,
+  ) {
+    return this.adminService.updateProfession(id, dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Delete('professions/:id')
+  deleteProfession(@Param('id') id: string) {
+    return this.adminService.deleteProfession(id);
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('communities')
+  findAllCommunities() {
+    return this.adminService.findAllCommunities();
+  }
+
+  @UseGuards(AdminGuard)
+  @Post('communities')
+  createCommunity(@Body() dto: CreateCommunityDto) {
+    return this.adminService.createCommunity(dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('communities/:id')
+  updateCommunity(
+    @Param('id') id: string,
+    @Body() dto: UpdateCommunityDto,
+  ) {
+    return this.adminService.updateCommunity(id, dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Delete('communities/:id')
+  deleteCommunity(@Param('id') id: string) {
+    return this.adminService.deleteCommunity(id);
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('post-authors')
+  findPostAuthors() {
+    return this.adminService.findPostAuthors();
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('posts')
+  findAllPosts() {
+    return this.adminService.findAllPosts();
+  }
+
+  @UseGuards(AdminGuard)
+  @Post('posts')
+  createPost(@Body() dto: CreatePostDTO) {
+    return this.adminService.createPost(dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('posts/:id')
+  updatePost(@Param('id') id: string, @Body() dto: UpdatePostDto) {
+    return this.adminService.updatePost(id, dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Delete('posts/:id')
+  deletePost(@Param('id') id: string) {
+    return this.adminService.deletePost(id);
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('reports')
+  findAllReports() {
+    return this.adminService.findAllReports();
+  }
+
+  @UseGuards(AdminGuard)
+  @Post('reports')
+  createReport(@Body() dto: CreateReportDto) {
+    return this.adminService.createReport(dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('reports/:id')
+  updateReport(@Param('id') id: string, @Body() dto: Partial<CreateReportDto>) {
+    return this.adminService.updateReport(id, dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Delete('reports/:id')
+  deleteReport(@Param('id') id: string) {
+    return this.adminService.deleteReport(id);
   }
 
   @UseGuards(AdminGuard)

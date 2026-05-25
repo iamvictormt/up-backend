@@ -1,4 +1,4 @@
-import { IsString, IsUUID } from 'class-validator';
+import { IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CreateReportDto {
   @IsString()
@@ -12,4 +12,8 @@ export class CreateReportDto {
 
   @IsString()
   targetType: string;
+
+  @IsOptional()
+  @IsUUID()
+  userId?: string;
 }
