@@ -28,6 +28,12 @@ import { AdminBenefitsService } from './admin-benefit.service';
 import { GrantTrialDto } from './dto/grant-trial.dto';
 import { FindAllProfessionalsDto } from './dto/find-all-professionals.dto';
 import { UpdatePointsLimitDto } from './dto/update-points-limit.dto';
+import { UpdateProfessionalDto } from 'src/professional/dto/update-professional.dto';
+import { UpdatePartnerSupplierDto } from 'src/partner-supplier/dto/update-partner-supplier.dto';
+import { CreateStoreDto } from 'src/store/dto/create-store.dto';
+import { UpdateStoreDto } from 'src/store/dto/update-store.dto';
+import { CreateProductDto } from 'src/product/dto/create-product.dto';
+import { UpdateProductDto } from 'src/product/dto/update-product.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -48,9 +54,72 @@ export class AdminController {
   }
 
   @UseGuards(AdminGuard)
+  @Patch('professionals/:id')
+  updateProfessional(
+    @Param('id') id: string,
+    @Body() dto: UpdateProfessionalDto,
+  ) {
+    return this.adminService.updateProfessional(id, dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('professionals/:id/toggle-verification')
+  toggleProfessionalVerification(@Param('id') id: string) {
+    return this.adminService.toggleProfessionalVerification(id);
+  }
+
+  @UseGuards(AdminGuard)
+  @Delete('professionals/:id')
+  softDeleteProfessional(@Param('id') id: string) {
+    return this.adminService.softDeleteProfessional(id);
+  }
+
+  @UseGuards(AdminGuard)
   @Get('partner-suppliers')
   async findAllPartnerSuppliers() {
     return await this.adminService.findAllPartnerSuppliers();
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('partner-suppliers/:id')
+  async updatePartnerSupplier(
+    @Param('id') id: string,
+    @Body() dto: UpdatePartnerSupplierDto,
+  ) {
+    return await this.adminService.updatePartnerSupplier(id, dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Post('stores')
+  async createStore(@Body() dto: CreateStoreDto) {
+    return await this.adminService.createStore(dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('stores/:id')
+  async updateStore(@Param('id') id: string, @Body() dto: UpdateStoreDto) {
+    return await this.adminService.updateStore(id, dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Post('stores/:storeId/products')
+  async createProduct(
+    @Param('storeId') storeId: string,
+    @Body() dto: CreateProductDto,
+  ) {
+    return await this.adminService.createStoreProduct(storeId, dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('products/:id')
+  async updateProduct(@Param('id') id: string, @Body() dto: UpdateProductDto) {
+    return await this.adminService.updateStoreProduct(id, dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Delete('products/:id')
+  async deleteProduct(@Param('id') id: string) {
+    return await this.adminService.deleteStoreProduct(id);
   }
 
   @UseGuards(AdminGuard)
@@ -154,6 +223,12 @@ export class AdminController {
   @Patch('events/:eventId/toggle')
   async toggleEvent(@Param('eventId') eventId: string) {
     return await this.adminService.toggleEvent(eventId);
+  }
+
+  @UseGuards(AdminGuard)
+  @Delete('events/:eventId')
+  async deleteEvent(@Param('eventId') eventId: string) {
+    return await this.adminService.deleteEvent(eventId);
   }
 
   @UseGuards(AdminGuard)

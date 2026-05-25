@@ -19,6 +19,13 @@ import { UpdateEventDto } from 'src/event/dto/update-event.dto';
 import { PointsService } from 'src/points/points.service';
 import { GrantTrialDto } from './dto/grant-trial.dto';
 import { FindAllProfessionalsDto } from './dto/find-all-professionals.dto';
+import { UpdateProfessionalDto } from 'src/professional/dto/update-professional.dto';
+import { UpdatePartnerSupplierDto } from 'src/partner-supplier/dto/update-partner-supplier.dto';
+import { PartnerType } from '@prisma/client';
+import { CreateStoreDto } from 'src/store/dto/create-store.dto';
+import { UpdateStoreDto } from 'src/store/dto/update-store.dto';
+import { CreateProductDto } from 'src/product/dto/create-product.dto';
+import { UpdateProductDto } from 'src/product/dto/update-product.dto';
 
 @Injectable()
 export class AdminService {
@@ -116,6 +123,87 @@ export class AdminService {
     };
   }
 
+  async updateProfessional(id: string, data: UpdateProfessionalDto) {
+    const professional = await this.prisma.professional.findUnique({
+      where: { id },
+      include: { user: true },
+    });
+
+    if (!professional || professional.user?.isDeleted) {
+      throw new NotFoundException('Profissional não encontrado!');
+    }
+
+    const { profileImage, userId, socialMediaId, ...professionalData } = data;
+
+    return this.prisma.professional.update({
+      where: { id },
+      data: professionalData,
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            profileImage: true,
+            createdAt: true,
+            address: true,
+          },
+        },
+        profession: true,
+        social: true,
+        _count: {
+          select: {
+            eventRegistrations: true,
+            workshops: true,
+            redemptions: true,
+          },
+        },
+      },
+    });
+  }
+
+  async toggleProfessionalVerification(id: string) {
+    const professional = await this.prisma.professional.findUnique({
+      where: { id },
+      include: { user: true },
+    });
+
+    if (!professional || professional.user?.isDeleted) {
+      throw new NotFoundException('Profissional não encontrado!');
+    }
+
+    return this.updateProfessional(id, {
+      verified: !professional.verified,
+    });
+  }
+
+  async softDeleteProfessional(id: string) {
+    const professional = await this.prisma.professional.findUnique({
+      where: { id },
+      include: { user: true },
+    });
+
+    if (!professional) {
+      throw new NotFoundException('Profissional não encontrado!');
+    }
+
+    if (!professional.user) {
+      throw new BadRequestException(
+        'Profissional sem usuário vinculado não pode ser desativado por esta ação.',
+      );
+    }
+
+    const timestamp = Date.now();
+
+    return this.prisma.user.update({
+      where: { id: professional.user.id },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+        email: `deleted_${timestamp}_${professional.user.email}`,
+      },
+    });
+  }
+
   async findAllPartnerSuppliers() {
     return this.prisma.partnerSupplier.findMany({
       where: {
@@ -125,6 +213,17 @@ export class AdminService {
         store: {
           include: {
             address: true,
+            products: {
+              orderBy: [{ featured: 'desc' }, { name: 'asc' }],
+            },
+            events: {
+              include: {
+                address: true,
+              },
+              orderBy: {
+                date: 'desc',
+              },
+            },
             _count: {
               select: {
                 products: true,
@@ -148,6 +247,228 @@ export class AdminService {
         createdAt: 'desc',
       },
     });
+  }
+
+  async updatePartnerSupplier(id: string, data: UpdatePartnerSupplierDto) {
+    const partner = await this.prisma.partnerSupplier.findUnique({
+      where: { id },
+    });
+
+    if (!partner || partner.isDeleted) {
+      throw new NotFoundException('Fornecedor parceiro não encontrado!');
+    }
+
+    const { profileImage, type, ...partnerData } = data;
+
+    return this.prisma.partnerSupplier.update({
+      where: { id },
+      data: {
+        ...partnerData,
+        type: type ? (type.toUpperCase() as PartnerType) : undefined,
+      },
+      include: {
+        store: {
+          include: {
+            address: true,
+            products: {
+              orderBy: [{ featured: 'desc' }, { name: 'asc' }],
+            },
+            events: {
+              include: {
+                address: true,
+              },
+              orderBy: {
+                date: 'desc',
+              },
+            },
+            _count: {
+              select: {
+                products: true,
+                events: true,
+              },
+            },
+          },
+        },
+        subscription: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            profileImage: true,
+            createdAt: true,
+            address: true,
+          },
+        },
+      },
+    });
+  }
+
+  async createStore(dto: CreateStoreDto) {
+    const partner = await this.prisma.partnerSupplier.findUnique({
+      where: { id: dto.partnerId },
+      include: { store: true },
+    });
+
+    if (!partner || partner.isDeleted) {
+      throw new NotFoundException('Fornecedor parceiro não encontrado!');
+    }
+
+    if (partner.store) {
+      throw new BadRequestException('Este lojista já possui uma loja.');
+    }
+
+    return this.prisma.store.create({
+      data: {
+        name: dto.name,
+        description: dto.description,
+        website: dto.website,
+        openingHours: dto.openingHours,
+        logoUrl: dto.logoUrl,
+        partner: {
+          connect: { id: dto.partnerId },
+        },
+        address: {
+          create: {
+            ...dto.address,
+          },
+        },
+      },
+      include: {
+        address: true,
+        products: true,
+        events: {
+          include: {
+            address: true,
+          },
+        },
+        partner: {
+          include: {
+            subscription: true,
+          },
+        },
+      },
+    });
+  }
+
+  async updateStore(id: string, dto: UpdateStoreDto) {
+    const store = await this.prisma.store.findUnique({
+      where: { id },
+      include: {
+        partner: true,
+      },
+    });
+
+    if (!store || store.partner.isDeleted) {
+      throw new NotFoundException('Loja não encontrada!');
+    }
+
+    return this.prisma.store.update({
+      where: { id },
+      data: {
+        name: dto.name,
+        description: dto.description,
+        website: dto.website,
+        openingHours: dto.openingHours,
+        logoUrl: dto.logoUrl,
+        address: dto.address
+          ? {
+              update: {
+                ...dto.address,
+              },
+            }
+          : undefined,
+      },
+      include: {
+        address: true,
+        products: {
+          orderBy: [{ featured: 'desc' }, { name: 'asc' }],
+        },
+        events: {
+          include: {
+            address: true,
+          },
+          orderBy: {
+            date: 'desc',
+          },
+        },
+        partner: {
+          include: {
+            subscription: true,
+          },
+        },
+      },
+    });
+  }
+
+  async createStoreProduct(storeId: string, dto: CreateProductDto) {
+    await this.ensureActiveStore(storeId);
+
+    return this.prisma.product.create({
+      data: {
+        ...dto,
+        storeId,
+      },
+    });
+  }
+
+  async updateStoreProduct(id: string, dto: UpdateProductDto) {
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      include: {
+        store: {
+          include: {
+            partner: true,
+          },
+        },
+      },
+    });
+
+    if (!product || product.store.partner.isDeleted) {
+      throw new NotFoundException('Produto não encontrado!');
+    }
+
+    return this.prisma.product.update({
+      where: { id },
+      data: dto,
+    });
+  }
+
+  async deleteStoreProduct(id: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      include: {
+        store: {
+          include: {
+            partner: true,
+          },
+        },
+      },
+    });
+
+    if (!product || product.store.partner.isDeleted) {
+      throw new NotFoundException('Produto não encontrado!');
+    }
+
+    await this.prisma.product.delete({
+      where: { id },
+    });
+
+    return { message: 'Produto excluído com sucesso' };
+  }
+
+  private async ensureActiveStore(storeId: string) {
+    const store = await this.prisma.store.findUnique({
+      where: { id: storeId },
+      include: {
+        partner: true,
+      },
+    });
+
+    if (!store || store.partner.isDeleted) {
+      throw new NotFoundException('Loja não encontrada!');
+    }
+
+    return store;
   }
 
   async findAllPhysicalSales() {
@@ -684,6 +1005,35 @@ export class AdminService {
     return this.prisma.event.update({
       where: { id: eventId },
       data: { isActive: !event.isActive },
+    });
+  }
+
+  async deleteEvent(eventId: string) {
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+      include: {
+        participants: true,
+      },
+    });
+
+    if (!event) {
+      throw new NotFoundException('Evento não encontrado');
+    }
+
+    if (event.participants.some((participant) => participant.checkedIn)) {
+      throw new BadRequestException(
+        'Não é possível excluir eventos com check-in realizado. Desative o evento para preservar o histórico.',
+      );
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.eventRegistration.deleteMany({
+        where: { eventId },
+      });
+
+      return tx.event.delete({
+        where: { id: eventId },
+      });
     });
   }
 
