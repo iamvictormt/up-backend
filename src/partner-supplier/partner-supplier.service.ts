@@ -9,7 +9,7 @@ import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
 import { UpdatePartnerSupplierDto } from './dto/update-partner-supplier.dto';
 import { MailService } from '../mail/mail.service';
-import { getUsername } from '../ultis';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PartnerSupplierService {
@@ -27,7 +27,9 @@ export class PartnerSupplierService {
       throw new ConflictException('Email já cadastrado.');
     }
 
-    const hashedPassword = await this.userService.hashPassword(userDto.password);
+    const hashedPassword = await this.userService.hashPassword(
+      userDto.password,
+    );
 
     return await this.prisma.$transaction(async (tx) => {
       const partnerSupplier = await tx.partnerSupplier.create({
@@ -74,12 +76,82 @@ export class PartnerSupplierService {
     });
   }
 
-  async findAll(type?: string) {
+  async findAll(
+    type?: string,
+    search?: string,
+    page = 1,
+    limit = 10,
+    state?: string,
+    city?: string,
+  ) {
+    const storeFilter =
+      state || city
+        ? {
+            is: {
+              address: {
+                state: state || undefined,
+                city: city || undefined,
+              },
+            },
+          }
+        : undefined;
+
     return this.prisma.partnerSupplier.findMany({
       where: {
         status: 'APPROVED',
         isDeleted: false,
         type: type ? (type as any) : undefined,
+        store: storeFilter,
+        OR: search
+          ? [
+              {
+                tradeName: {
+                  contains: search,
+                  mode: Prisma.QueryMode.insensitive,
+                },
+              },
+              {
+                companyName: {
+                  contains: search,
+                  mode: Prisma.QueryMode.insensitive,
+                },
+              },
+              {
+                store: {
+                  is: {
+                    name: {
+                      contains: search,
+                      mode: Prisma.QueryMode.insensitive,
+                    },
+                  },
+                },
+              },
+              {
+                store: {
+                  is: {
+                    description: {
+                      contains: search,
+                      mode: Prisma.QueryMode.insensitive,
+                    },
+                  },
+                },
+              },
+              {
+                store: {
+                  is: {
+                    products: {
+                      some: {
+                        name: {
+                          contains: search,
+                          mode: Prisma.QueryMode.insensitive,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            ]
+          : undefined,
       },
       include: {
         store: {
@@ -88,6 +160,8 @@ export class PartnerSupplierService {
           },
         },
       },
+      skip: (page - 1) * limit,
+      take: limit,
     });
   }
 

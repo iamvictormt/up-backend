@@ -2,8 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
-import now = jest.now;
-import { PartnerType, Prisma, Store } from '@prisma/client';
+import { PartnerType, Prisma } from '@prisma/client';
 
 @Injectable()
 export class StoreService {
@@ -124,7 +123,14 @@ export class StoreService {
     });
   }
 
-  async findAll(search?: string, page = 1, limit = 10, type?: PartnerType) {
+  async findAll(
+    search?: string,
+    page = 1,
+    limit = 10,
+    type?: PartnerType,
+    state?: string,
+    city?: string,
+  ) {
     return this.prisma.$queryRaw`
       WITH RankedStores AS (
         SELECT
@@ -163,9 +169,12 @@ export class StoreService {
         ) as row_num
         FROM "Store" s
                INNER JOIN "PartnerSupplier" ps ON s."partnerId" = ps.id
+               INNER JOIN "Address" a ON s."addressId" = a.id
                LEFT JOIN "Subscription" sub ON ps.id = sub."partnerSupplierId"
         WHERE ps."isDeleted" = false
         ${type ? Prisma.sql`AND ps."type" = ${type}::"PartnerType"` : Prisma.empty}
+        ${state ? Prisma.sql`AND a.state = ${state}` : Prisma.empty}
+        ${city ? Prisma.sql`AND a.city = ${city}` : Prisma.empty}
         ${
           search
             ? Prisma.sql`AND (

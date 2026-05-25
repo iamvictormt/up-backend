@@ -35,8 +35,22 @@ export class PartnerSupplierController {
     return await this.partnerSupplierService.update(user.sub, dto);
   }
 
-  @Get() async findAll(@Query('type') type?: string) {
-    return await this.partnerSupplierService.findAll(type);
+  @Get() async findAll(
+    @Query('type') type?: string,
+    @Query('search') search?: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+    @Query('state') state?: string,
+    @Query('city') city?: string,
+  ) {
+    return await this.partnerSupplierService.findAll(
+      type,
+      search,
+      parseInt(page),
+      parseInt(limit),
+      state,
+      city,
+    );
   }
 
   @Get('wellness') async findWellness() {
