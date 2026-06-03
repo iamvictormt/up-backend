@@ -1065,6 +1065,7 @@ export class AdminService {
       'cadastro-aprovado.html',
       {
         username: getUsername(user),
+        platformUrl: process.env.FRONTEND_URL || 'http://localhost:3001',
       },
     );
 
@@ -1465,6 +1466,7 @@ export class AdminService {
       totalUsers,
       totalProfessionals,
       totalPartnerSuppliers,
+      totalWellnessPartners,
       totalEventsThisMonth,
       totalRecommendedProfessionals,
       totalPosts,
@@ -1474,6 +1476,7 @@ export class AdminService {
       totalCommunities,
       totalReports,
       pendingPartnerSuppliers,
+      pendingWellnessPartners,
       pendingBenefitRedemptions,
       postsThisMonth,
     ] = await Promise.all([
@@ -1483,8 +1486,11 @@ export class AdminService {
       this.prisma.user.count({
         where: { professionalId: { not: null }, isDeleted: false },
       }),
-      this.prisma.user.count({
-        where: { partnerSupplierId: { not: null }, isDeleted: false },
+      this.prisma.partnerSupplier.count({
+        where: { type: PartnerType.SUPPLIER, isDeleted: false },
+      }),
+      this.prisma.partnerSupplier.count({
+        where: { type: PartnerType.WELLNESS, isDeleted: false },
       }),
       this.prisma.event.count({
         where: {
@@ -1512,6 +1518,14 @@ export class AdminService {
       this.prisma.report.count(),
       this.prisma.partnerSupplier.count({
         where: {
+          type: PartnerType.SUPPLIER,
+          status: RegistrationStatus.PENDING,
+          isDeleted: false,
+        },
+      }),
+      this.prisma.partnerSupplier.count({
+        where: {
+          type: PartnerType.WELLNESS,
           status: RegistrationStatus.PENDING,
           isDeleted: false,
         },
@@ -1535,6 +1549,7 @@ export class AdminService {
       totalUsers,
       totalProfessionals,
       totalPartnerSuppliers,
+      totalWellnessPartners,
       totalEventsThisMonth,
       totalRecommendedProfessionals,
       totalPosts,
@@ -1544,6 +1559,7 @@ export class AdminService {
       totalCommunities,
       totalReports,
       pendingPartnerSuppliers,
+      pendingWellnessPartners,
       pendingBenefitRedemptions,
       postsThisMonth,
     };

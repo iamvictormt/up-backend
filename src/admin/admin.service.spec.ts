@@ -6,6 +6,10 @@ import { JwtService } from '@nestjs/jwt';
 import { PointsService } from 'src/points/points.service';
 import { NotFoundException } from '@nestjs/common';
 
+jest.mock('@nestjs/jwt', () => ({
+  JwtService: class JwtService {},
+}));
+
 describe('AdminService', () => {
   let service: AdminService;
   let prismaService: PrismaService;
@@ -14,11 +18,8 @@ describe('AdminService', () => {
   beforeEach(async () => {
     const prismaMock: any = {
       $transaction: jest.fn((cb) => cb(prismaMock)),
-      user: {
-        findFirst: jest.fn(),
-        update: jest.fn(),
-      },
       partnerSupplier: {
+        count: jest.fn(),
         findUnique: jest.fn(),
         update: jest.fn(),
       },
@@ -28,6 +29,36 @@ describe('AdminService', () => {
       professional: {
         count: jest.fn(),
         findMany: jest.fn(),
+      },
+      user: {
+        count: jest.fn(),
+        findFirst: jest.fn(),
+        update: jest.fn(),
+      },
+      event: {
+        count: jest.fn(),
+      },
+      recommendedProfessional: {
+        count: jest.fn(),
+      },
+      post: {
+        count: jest.fn(),
+      },
+      physicalSale: {
+        count: jest.fn(),
+        aggregate: jest.fn(),
+      },
+      profession: {
+        count: jest.fn(),
+      },
+      community: {
+        count: jest.fn(),
+      },
+      report: {
+        count: jest.fn(),
+      },
+      benefitRedemption: {
+        count: jest.fn(),
       },
     };
 
@@ -56,6 +87,56 @@ describe('AdminService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('getStatistics', () => {
+    it('separates supplier and wellness partner totals and pending counts', async () => {
+      const prismaMock = prismaService as any;
+
+      prismaMock.user.count.mockResolvedValueOnce(20);
+      prismaMock.professional.count.mockResolvedValueOnce(7);
+      prismaMock.partnerSupplier.count
+        .mockResolvedValueOnce(4)
+        .mockResolvedValueOnce(3)
+        .mockResolvedValueOnce(2)
+        .mockResolvedValueOnce(1);
+      prismaMock.event.count.mockResolvedValueOnce(5);
+      prismaMock.recommendedProfessional.count.mockResolvedValueOnce(6);
+      prismaMock.post.count.mockResolvedValueOnce(8).mockResolvedValueOnce(2);
+      prismaMock.physicalSale.count.mockResolvedValueOnce(9);
+      prismaMock.physicalSale.aggregate.mockResolvedValueOnce({ _sum: { points: 120 } });
+      prismaMock.profession.count.mockResolvedValueOnce(10);
+      prismaMock.community.count.mockResolvedValueOnce(11);
+      prismaMock.report.count.mockResolvedValueOnce(12);
+      prismaMock.benefitRedemption.count.mockResolvedValueOnce(13);
+
+      const result = await service.getStatistics();
+
+      expect(result.totalPartnerSuppliers).toBe(4);
+      expect(result.totalWellnessPartners).toBe(3);
+      expect(result.pendingPartnerSuppliers).toBe(2);
+      expect(result.pendingWellnessPartners).toBe(1);
+      expect(prismaMock.partnerSupplier.count).toHaveBeenCalledWith({
+        where: { type: 'SUPPLIER', isDeleted: false },
+      });
+      expect(prismaMock.partnerSupplier.count).toHaveBeenCalledWith({
+        where: { type: 'WELLNESS', isDeleted: false },
+      });
+      expect(prismaMock.partnerSupplier.count).toHaveBeenCalledWith({
+        where: {
+          type: 'SUPPLIER',
+          status: 'PENDING',
+          isDeleted: false,
+        },
+      });
+      expect(prismaMock.partnerSupplier.count).toHaveBeenCalledWith({
+        where: {
+          type: 'WELLNESS',
+          status: 'PENDING',
+          isDeleted: false,
+        },
+      });
+    });
   });
 
   describe('rejectPartnerSupplier', () => {
