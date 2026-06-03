@@ -43,6 +43,7 @@ describe('PartnerSupplierService', () => {
       expect.objectContaining({
         skip: 6,
         take: 6,
+        orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
         where: expect.objectContaining({
           status: 'APPROVED',
           isDeleted: false,
@@ -57,6 +58,16 @@ describe('PartnerSupplierService', () => {
           }),
           OR: expect.any(Array),
         }),
+        include: {
+          store: {
+            include: {
+              address: true,
+              products: {
+                orderBy: [{ featured: 'desc' }, { name: 'asc' }],
+              },
+            },
+          },
+        },
       }),
     );
   });

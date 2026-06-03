@@ -157,9 +157,13 @@ export class PartnerSupplierService {
         store: {
           include: {
             address: true,
+            products: {
+              orderBy: [{ featured: 'desc' }, { name: 'asc' }],
+            },
           },
         },
       },
+      orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
       skip: (page - 1) * limit,
       take: limit,
     });
