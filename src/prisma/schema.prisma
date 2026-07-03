@@ -72,14 +72,15 @@ model Professional {
 }
 
 model PartnerSupplier {
-  id                String      @id @default(uuid())
+  id                String       @id @default(uuid())
   tradeName         String
-  companyName       String
+  companyName       String?
   document          String
+  documentType      DocumentType @default(CNPJ)
   stateRegistration String?
   contact           String?
-  type              PartnerType @default(SUPPLIER)
-  isVerified        Boolean     @default(false)
+  type              PartnerType  @default(SUPPLIER)
+  isVerified        Boolean      @default(false)
 
   status RegistrationStatus @default(PENDING)
 
@@ -551,6 +552,11 @@ enum RegistrationStatus {
 enum PartnerType {
   SUPPLIER
   WELLNESS
+}
+
+enum DocumentType {
+  CPF
+  CNPJ
 }
 
 model ErrorLog {

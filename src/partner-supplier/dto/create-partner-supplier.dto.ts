@@ -25,4 +25,8 @@ export class CreatePartnerSupplierDto {
   @IsOptional()
   @IsString()
   type?: string;
+
+  @IsOptional()
+  @IsString()
+  documentType?: 'CPF' | 'CNPJ';
 }

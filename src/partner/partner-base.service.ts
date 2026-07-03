@@ -4,46 +4,59 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreatePartnerSupplierDto } from './dto/create-partner-supplier.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
-import { UpdatePartnerSupplierDto } from './dto/update-partner-supplier.dto';
-import { MailService } from '../mail/mail.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, PartnerType, DocumentType } from '@prisma/client';
+
+export interface CreatePartnerData {
+  tradeName: string;
+  companyName?: string;
+  document: string;
+  documentType: DocumentType;
+  stateRegistration?: string;
+  contact?: string;
+  type: PartnerType;
+}
+
+export interface UpdatePartnerData {
+  tradeName?: string;
+  companyName?: string;
+  document?: string;
+  documentType?: DocumentType;
+  stateRegistration?: string;
+  contact?: string;
+}
 
 @Injectable()
-export class PartnerSupplierService {
+export class PartnerBaseService {
   constructor(
     private readonly prisma: PrismaService,
-    private userService: UserService,
-    private mailService: MailService,
+    private readonly userService: UserService,
   ) {}
 
-  async create(dto: CreatePartnerSupplierDto, userDto: CreateUserDto) {
+  async create(data: CreatePartnerData, userDto: CreateUserDto) {
     const emailExists = await this.userService.checkIfEmailExists(
       userDto.email,
     );
     if (emailExists) {
       throw new ConflictException('Email já cadastrado.');
     }
-
     const hashedPassword = await this.userService.hashPassword(
       userDto.password,
     );
 
-    return await this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx) => {
       const partnerSupplier = await tx.partnerSupplier.create({
         data: {
-          tradeName: dto.tradeName,
-          companyName: dto.companyName,
-          document: dto.document,
-          stateRegistration: dto.stateRegistration,
-          contact: dto.contact,
-          type: (dto.type as any) || 'SUPPLIER',
-          documentType: (dto.documentType as any) || 'CNPJ',
+          tradeName: data.tradeName,
+          companyName: data.companyName,
+          document: data.document,
+          documentType: data.documentType,
+          stateRegistration: data.stateRegistration,
+          contact: data.contact,
+          type: data.type,
         },
       });
-
       const user = await this.userService.createUserWithRelation(
         userDto,
         partnerSupplier.id,
@@ -52,34 +65,34 @@ export class PartnerSupplierService {
         tx,
         hashedPassword,
       );
-
       return { partnerSupplier, user };
     });
   }
 
-  async update(userId: string, dto: UpdatePartnerSupplierDto) {
-    const user = await this.userService.findOne(userId);
-
-    if (!user || !user.partnerSupplier) {
-      throw new NotFoundException('Fornecedor parceiro não encontrado!');
-    }
-
+  async update(partnerId: string, data: UpdatePartnerData) {
     return this.prisma.partnerSupplier.update({
-      where: { id: user.partnerSupplier.id },
+      where: { id: partnerId },
       data: {
-        tradeName: dto.tradeName,
-        companyName: dto.companyName,
-        document: dto.document,
-        stateRegistration: dto.stateRegistration,
-        contact: dto.contact,
-        type: dto.type as any,
-        documentType: dto.documentType as any,
+        tradeName: data.tradeName,
+        companyName: data.companyName,
+        document: data.document,
+        documentType: data.documentType,
+        stateRegistration: data.stateRegistration,
+        contact: data.contact,
       },
     });
   }
 
+  async findPartnerIdByUserId(userId: string) {
+    const user = await this.userService.findOne(userId);
+    if (!user || !user.partnerSupplier) {
+      throw new NotFoundException('Parceiro não encontrado!');
+    }
+    return user.partnerSupplier.id;
+  }
+
   async findAll(
-    type?: string,
+    type?: PartnerType,
     search?: string,
     page = 1,
     limit = 10,
@@ -102,7 +115,7 @@ export class PartnerSupplierService {
       where: {
         status: 'APPROVED',
         isDeleted: false,
-        type: type ? (type as any) : undefined,
+        type: type ?? undefined,
         store: storeFilter,
         OR: search
           ? [
@@ -174,30 +187,20 @@ export class PartnerSupplierService {
   async findOne(id: string) {
     return this.prisma.partnerSupplier.findUnique({
       where: { id },
-      include: {
-        store: {
-          include: {
-            address: true,
-          },
-        },
-      },
+      include: { store: { include: { address: true } } },
     });
   }
 
   async findProfessionalIdByUserId(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: {
-        professional: true,
-      },
+      include: { professional: true },
     });
-
     if (!user || !user.professional) {
       throw new NotFoundException(
         'Profissional não encontrado para este usuário.',
       );
     }
-
     return user.professional.id;
   }
 
@@ -206,51 +209,34 @@ export class PartnerSupplierService {
       where: { id: professionalId },
       include: { favoritePartners: { select: { id: true } } },
     });
-
     if (!professional) {
       throw new NotFoundException('Profissional não encontrado');
     }
-
     const isFavorited = professional.favoritePartners.some(
       (p) => p.id === partnerId,
     );
-
-    if (isFavorited) {
-      return this.prisma.professional.update({
-        where: { id: professionalId },
-        data: {
-          favoritePartners: {
-            disconnect: { id: partnerId },
-          },
-        },
-      });
-    } else {
-      return this.prisma.professional.update({
-        where: { id: professionalId },
-        data: {
-          favoritePartners: {
-            connect: { id: partnerId },
-          },
-        },
-      });
-    }
+    return this.prisma.professional.update({
+      where: { id: professionalId },
+      data: {
+        favoritePartners: isFavorited
+          ? { disconnect: { id: partnerId } }
+          : { connect: { id: partnerId } },
+      },
+    });
   }
 
-  async findPending() {
-    return await this.prisma.user.findMany({
+  async findPending(type?: PartnerType) {
+    return this.prisma.user.findMany({
       where: {
         isDeleted: false,
-        partnerSupplierId: {
-          not: null,
-        },
+        partnerSupplierId: { not: null },
         partnerSupplier: {
           status: 'PENDING',
           isDeleted: false,
+          type: type ?? undefined,
         },
       },
-      include: {
-        partnerSupplier: true,
-      },
+      include: { partnerSupplier: true },
     });
   }
 }
