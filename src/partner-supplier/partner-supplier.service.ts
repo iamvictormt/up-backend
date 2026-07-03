@@ -182,58 +182,6 @@ export class PartnerSupplierService {
     });
   }
 
-  async findProfessionalIdByUserId(userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        professional: true,
-      },
-    });
-
-    if (!user || !user.professional) {
-      throw new NotFoundException(
-        'Profissional não encontrado para este usuário.',
-      );
-    }
-
-    return user.professional.id;
-  }
-
-  async toggleFavorite(professionalId: string, partnerId: string) {
-    const professional = await this.prisma.professional.findUnique({
-      where: { id: professionalId },
-      include: { favoritePartners: { select: { id: true } } },
-    });
-
-    if (!professional) {
-      throw new NotFoundException('Profissional não encontrado');
-    }
-
-    const isFavorited = professional.favoritePartners.some(
-      (p) => p.id === partnerId,
-    );
-
-    if (isFavorited) {
-      return this.prisma.professional.update({
-        where: { id: professionalId },
-        data: {
-          favoritePartners: {
-            disconnect: { id: partnerId },
-          },
-        },
-      });
-    } else {
-      return this.prisma.professional.update({
-        where: { id: professionalId },
-        data: {
-          favoritePartners: {
-            connect: { id: partnerId },
-          },
-        },
-      });
-    }
-  }
-
   async findPending() {
     return await this.prisma.user.findMany({
       where: {

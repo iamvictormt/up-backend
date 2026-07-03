@@ -23,6 +23,11 @@ describe('AdminService', () => {
         findUnique: jest.fn(),
         update: jest.fn(),
       },
+      wellness: {
+        count: jest.fn(),
+        findUnique: jest.fn(),
+        update: jest.fn(),
+      },
       subscription: {
         upsert: jest.fn(),
       },
@@ -97,8 +102,9 @@ describe('AdminService', () => {
       prismaMock.professional.count.mockResolvedValueOnce(7);
       prismaMock.partnerSupplier.count
         .mockResolvedValueOnce(4)
+        .mockResolvedValueOnce(2);
+      prismaMock.wellness.count
         .mockResolvedValueOnce(3)
-        .mockResolvedValueOnce(2)
         .mockResolvedValueOnce(1);
       prismaMock.event.count.mockResolvedValueOnce(5);
       prismaMock.recommendedProfessional.count.mockResolvedValueOnce(6);
@@ -119,8 +125,8 @@ describe('AdminService', () => {
       expect(prismaMock.partnerSupplier.count).toHaveBeenCalledWith({
         where: { type: 'SUPPLIER', isDeleted: false },
       });
-      expect(prismaMock.partnerSupplier.count).toHaveBeenCalledWith({
-        where: { type: 'WELLNESS', isDeleted: false },
+      expect(prismaMock.wellness.count).toHaveBeenCalledWith({
+        where: { isDeleted: false },
       });
       expect(prismaMock.partnerSupplier.count).toHaveBeenCalledWith({
         where: {
@@ -129,9 +135,8 @@ describe('AdminService', () => {
           isDeleted: false,
         },
       });
-      expect(prismaMock.partnerSupplier.count).toHaveBeenCalledWith({
+      expect(prismaMock.wellness.count).toHaveBeenCalledWith({
         where: {
-          type: 'WELLNESS',
           status: 'PENDING',
           isDeleted: false,
         },

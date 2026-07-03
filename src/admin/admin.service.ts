@@ -1124,6 +1124,141 @@ export class AdminService {
     });
   }
 
+  // ===== Wellness (entidade própria: aprovação sem plano) =====
+
+  async findAllWellness() {
+    return this.prisma.wellness.findMany({
+      where: { isDeleted: false },
+      include: {
+        services: { orderBy: { name: 'asc' } },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            profileImage: true,
+            createdAt: true,
+            address: true,
+          },
+        },
+      },
+      orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+    });
+  }
+
+  async approveWellness(id: string) {
+    const user = await this.prisma.user.findFirst({
+      where: { wellnessId: id },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Parceiro wellness não encontrado!');
+    }
+
+    await this.mailService.sendMail(
+      user.email,
+      'Cadastro aprovado',
+      'cadastro-aprovado.html',
+      {
+        username: getUsername(user),
+        platformUrl: process.env.FRONTEND_URL || 'http://localhost:3001',
+      },
+    );
+
+    return this.prisma.wellness.update({
+      where: { id },
+      data: { status: 'APPROVED' },
+    });
+  }
+
+  async rejectWellness(id: string, reason: string) {
+    const user = await this.prisma.user.findFirst({
+      where: { wellnessId: id },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Parceiro wellness não encontrado!');
+    }
+
+    await this.mailService.sendMail(
+      user.email,
+      'Cadastro reprovado',
+      'cadastro-reprovado.html',
+      {
+        username: getUsername(user),
+        reason,
+      },
+    );
+
+    return this.prisma.$transaction(async (tx) => {
+      const timestamp = Date.now();
+
+      await tx.user.update({
+        where: { id: user.id },
+        data: {
+          isDeleted: true,
+          deletedAt: new Date(),
+          email: `deleted_${timestamp}_${user.email}`,
+        },
+      });
+
+      return tx.wellness.update({
+        where: { id },
+        data: {
+          status: 'REJECTED',
+          isDeleted: true,
+          deletedAt: new Date(),
+        },
+      });
+    });
+  }
+
+  async softDeleteWellness(id: string) {
+    const wellness = await this.prisma.wellness.findUnique({
+      where: { id },
+      include: { user: true },
+    });
+
+    if (!wellness) {
+      throw new NotFoundException('Parceiro wellness não encontrado!');
+    }
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      const timestamp = Date.now();
+
+      if (wellness.user) {
+        await tx.user.update({
+          where: { id: wellness.user.id },
+          data: {
+            isDeleted: true,
+            deletedAt: new Date(),
+            email: `deleted_${timestamp}_${wellness.user.email}`,
+          },
+        });
+      }
+
+      return tx.wellness.update({
+        where: { id },
+        data: {
+          isDeleted: true,
+          deletedAt: new Date(),
+        },
+      });
+    });
+
+    if (wellness.user) {
+      await this.mailService.sendMail(
+        wellness.user.email,
+        'Conta desativada',
+        'conta-excluida.html',
+        {
+          username: getUsername(wellness.user),
+        },
+      );
+    }
+
+    return result;
+  }
+
   async findAllRecommendedProfessionals() {
     return this.prisma.recommendedProfessional.findMany({
       include: {
@@ -1489,8 +1624,8 @@ export class AdminService {
       this.prisma.partnerSupplier.count({
         where: { type: PartnerType.SUPPLIER, isDeleted: false },
       }),
-      this.prisma.partnerSupplier.count({
-        where: { type: PartnerType.WELLNESS, isDeleted: false },
+      this.prisma.wellness.count({
+        where: { isDeleted: false },
       }),
       this.prisma.event.count({
         where: {
@@ -1523,9 +1658,8 @@ export class AdminService {
           isDeleted: false,
         },
       }),
-      this.prisma.partnerSupplier.count({
+      this.prisma.wellness.count({
         where: {
-          type: PartnerType.WELLNESS,
           status: RegistrationStatus.PENDING,
           isDeleted: false,
         },

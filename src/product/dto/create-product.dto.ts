@@ -9,9 +9,10 @@ export class CreateProductDto {
   @IsString()
   description?: string;
 
-  @IsNotEmpty()
+  // opcional: sem preço = "sob consulta"
+  @IsOptional()
   @IsNumber()
-  price: number;
+  price?: number;
 
   @IsOptional()
   @IsString()

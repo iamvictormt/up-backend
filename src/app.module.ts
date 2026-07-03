@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from './prisma/prisma.module';
 import { PartnerSupplierModule } from './partner-supplier/partner-supplier.module';
+import { WellnessModule } from './wellness/wellness.module';
 import { ProfessionalModule } from './professional/professional.module';
 import { StoreModule } from './store/store.module';
 import { RecommendedProfessionalModule } from './recommended-professional/recommended-professional.module';
@@ -41,6 +42,7 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
       signOptions: { expiresIn: '1h' },
     }),
     PartnerSupplierModule,
+    WellnessModule,
     ProfessionalModule,
     AuthModule,
     UserModule,

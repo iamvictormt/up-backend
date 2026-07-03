@@ -274,6 +274,30 @@ export class AdminController {
   }
 
   @UseGuards(AdminGuard)
+  @Get('wellness')
+  async findAllWellness() {
+    return await this.adminService.findAllWellness();
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('wellness/:id/approve')
+  async approveWellness(@Param('id') id: string) {
+    return await this.adminService.approveWellness(id);
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('wellness/:id/reject')
+  async rejectWellness(@Param('id') id: string, @Body() dto: RejectPartnerDto) {
+    return await this.adminService.rejectWellness(id, dto.reason);
+  }
+
+  @UseGuards(AdminGuard)
+  @Delete('wellness/:id')
+  async softDeleteWellness(@Param('id') id: string) {
+    return await this.adminService.softDeleteWellness(id);
+  }
+
+  @UseGuards(AdminGuard)
   @Get('recommended-professionals')
   async findAllRecommendedProfessionals() {
     return await this.adminService.findAllRecommendedProfessionals();

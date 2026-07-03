@@ -25,6 +25,11 @@ export class CreateStoreDto {
   @IsString()
   logoUrl?: string;
 
+  // texto pré-populado do link de WhatsApp (wa.me/<contato>?text=...)
+  @IsOptional()
+  @IsString()
+  whatsappMessage?: string;
+
   @ValidateNested()
   @Type(() => CreateStoreDto)
   address: CreateAddressDto;

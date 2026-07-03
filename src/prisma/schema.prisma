@@ -22,6 +22,9 @@ model User {
   partnerSupplierId String?          @unique
   partnerSupplier   PartnerSupplier? @relation("UserPartner", fields: [partnerSupplierId], references: [id])
 
+  wellnessId String?   @unique
+  wellness   Wellness? @relation("UserWellness", fields: [wellnessId], references: [id])
+
   loveDecorationId String?         @unique
   loveDecoration   LoveDecoration? @relation("UserLoveDecoration", fields: [loveDecorationId], references: [id])
 
@@ -54,7 +57,7 @@ model Professional {
   points             Int               @default(0)
   phone              String
 
-  favoritePartners PartnerSupplier[] @relation("FavoriteWellness")
+  favoriteWellness Wellness[] @relation("FavoriteWellness")
   socialMediaId    String?           @unique
   social           SocialMedia?      @relation(fields: [socialMediaId], references: [id])
 
@@ -91,11 +94,48 @@ model PartnerSupplier {
   storeId      String?       @unique
   subscription Subscription?
 
-  favoritedBy Professional[] @relation("FavoriteWellness")
-
   pointsLimit          Int            @default(0)
   currentPointsAwarded Int            @default(0)
   physicalSales        PhysicalSale[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Parceiro wellness: entidade simples estilo MEI — perfil aprovável que expõe
+// serviços. Sem plano, sem loja, sem eventos, sem pontos.
+model Wellness {
+  id          String  @id @default(uuid())
+  name        String
+  document    String // CPF
+  contact     String?
+  description String?
+  // texto pré-populado do link de WhatsApp (wa.me/<contato>?text=...)
+  whatsappMessage String?
+
+  status RegistrationStatus @default(PENDING)
+
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
+  user        User?              @relation("UserWellness")
+  services    WellnessOffering[]
+  favoritedBy Professional[]     @relation("FavoriteWellness")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WellnessOffering {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  price       Float? // opcional: sem preço = "sob consulta"
+  duration    String?
+  photoUrl    String?
+
+  wellnessId String
+  wellness   Wellness @relation(fields: [wellnessId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -161,6 +201,8 @@ model Store {
   rating       Float?  @default(0)
   openingHours String?
   logoUrl      String?
+  // texto pré-populado do link de WhatsApp (wa.me/<contato>?text=...)
+  whatsappMessage String?
 
   address   Address @relation(fields: [addressId], references: [id])
   addressId String
@@ -178,7 +220,7 @@ model Product {
   id          String  @id @default(uuid())
   name        String
   description String?
-  price       Float
+  price       Float? // opcional: sem preço = "sob consulta"
   link        String?
   featured    Boolean @default(false)
   promotion   Boolean @default(false)
