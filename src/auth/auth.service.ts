@@ -35,6 +35,7 @@ export class AuthService {
           include: { profession: true },
         },
         loveDecoration: true,
+        wellness: true,
         address: true,
       },
     });
@@ -43,12 +44,11 @@ export class AuthService {
       return null;
     }
 
-    if (user.partnerSupplier) {
-      if (user.partnerSupplier.status === 'PENDING') {
-        throw new ForbiddenException(
-          'Cadastro pendente de aprovação. \nVocê receberá um email assim que o processo for concluído.',
-        );
-      }
+    // wellness precisa ser aceito, mas não tem plano
+    if (user.partnerSupplier?.status === 'PENDING' || user.wellness?.status === 'PENDING') {
+      throw new ForbiddenException(
+        'Cadastro pendente de aprovação. \nVocê receberá um email assim que o processo for concluído.',
+      );
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -70,7 +70,9 @@ export class AuthService {
       ? 'professional'
       : user.partnerSupplierId
         ? 'partnerSupplier'
-        : 'loveDecoration';
+        : user.wellnessId
+          ? 'wellness'
+          : 'loveDecoration';
 
     return {
       access_token: this.jwtService.sign(payload, {

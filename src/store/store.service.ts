@@ -16,6 +16,7 @@ export class StoreService {
         website: dto.website,
         openingHours: dto.openingHours,
         logoUrl: dto.logoUrl,
+        whatsappMessage: dto.whatsappMessage,
         partner: {
           connect: { id: dto.partnerId },
         },
@@ -57,6 +58,7 @@ export class StoreService {
         website: dto.website,
         openingHours: dto.openingHours,
         logoUrl: dto.logoUrl,
+        whatsappMessage: dto.whatsappMessage,
         address: dto.address
           ? {
               update: {

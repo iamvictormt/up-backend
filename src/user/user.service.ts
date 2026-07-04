@@ -27,6 +27,7 @@ export class UserService {
     loveDecorationId?: string,
     tx?: Prisma.TransactionClient,
     preHashedPassword?: string,
+    wellnessId?: string,
   ) {
     const prisma = tx || this.prisma;
     const hashedPassword =
@@ -45,6 +46,7 @@ export class UserService {
         partnerSupplierId,
         professionalId,
         loveDecorationId,
+        wellnessId,
         addressId: address.id,
       },
     });
@@ -118,6 +120,9 @@ export class UserService {
           },
         },
         loveDecoration: true,
+        wellness: {
+          include: { services: true },
+        },
         address: true,
         profileImage: true,
       },

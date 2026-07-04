@@ -19,6 +19,7 @@ async function bootstrap() {
       //'https://up-sistema-admin.vercel.app',
       'http://localhost:3000',
       'http://localhost:3001',
+      'http://localhost:3005',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-skip-loader'],

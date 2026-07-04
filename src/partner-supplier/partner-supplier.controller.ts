@@ -53,21 +53,6 @@ export class PartnerSupplierController {
     );
   }
 
-  @Get('wellness') async findWellness() {
-    return await this.partnerSupplierService.findAll('WELLNESS');
-  }
-
-  @Post(':id/favorite')
-  @UseGuards(JwtAuthGuard)
-  async toggleFavorite(@CurrentUser() user, @Param('id') partnerId: string) {
-    const professionalId =
-      await this.partnerSupplierService.findProfessionalIdByUserId(user.sub);
-    return await this.partnerSupplierService.toggleFavorite(
-      professionalId,
-      partnerId,
-    );
-  }
-
   @Get('pending') async findPending() {
     return await this.partnerSupplierService.findPending();
   }
