@@ -22,5 +22,13 @@ export class CreateWellnessDto {
 
   @IsOptional()
   @IsString()
+  logoUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  openingHours?: string;
+
+  @IsOptional()
+  @IsString()
   profileImage?: string;
 }

@@ -6,6 +6,8 @@ CREATE TABLE "Wellness" (
     "contact" TEXT,
     "description" TEXT,
     "whatsappMessage" TEXT,
+    "logoUrl" TEXT,
+    "openingHours" TEXT,
     "status" "RegistrationStatus" NOT NULL DEFAULT 'PENDING',
     "isDeleted" BOOLEAN NOT NULL DEFAULT false,
     "deletedAt" TIMESTAMP(3),
@@ -55,6 +57,14 @@ SELECT p."id", p."name", p."description", p."price", p."duration", p."photoUrl",
 FROM "Product" p
 JOIN "Store" s ON p."storeId" = s."id"
 WHERE s."partnerId" IN (SELECT "id" FROM "Wellness");
+
+-- Vitrine: aproveitar logo/horário/descrição da antiga loja de wellness
+UPDATE "Wellness" w
+SET "logoUrl" = s."logoUrl",
+    "openingHours" = s."openingHours",
+    "description" = COALESCE(w."description", s."description")
+FROM "Store" s
+WHERE s."partnerId" = w."id";
 
 -- Favoritos: reconstruir _FavoriteWellness apontando pra Wellness
 -- (convenção Prisma: A = Professional, B = Wellness em ordem alfabética)

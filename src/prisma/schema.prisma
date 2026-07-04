@@ -104,11 +104,14 @@ model PartnerSupplier {
 
 model Wellness {
   id          String  @id @default(uuid())
-  name        String
-  document    String // CPF
+  name        String // nome do negócio
+  document    String // CPF do responsável (MEI)
   contact     String?
   description String?
   whatsappMessage String?
+  // vitrine: mesmo formato visual da loja do lojista, sem tabela Store
+  logoUrl      String?
+  openingHours String?
 
   status RegistrationStatus @default(PENDING)
 

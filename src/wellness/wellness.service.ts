@@ -49,6 +49,8 @@ export class WellnessService {
           contact: dto.contact,
           description: dto.description,
           whatsappMessage: dto.whatsappMessage,
+          logoUrl: dto.logoUrl,
+          openingHours: dto.openingHours,
         },
       });
 
@@ -81,6 +83,8 @@ export class WellnessService {
         contact: dto.contact,
         description: dto.description,
         whatsappMessage: dto.whatsappMessage,
+        logoUrl: dto.logoUrl,
+        openingHours: dto.openingHours,
       },
     });
   }
