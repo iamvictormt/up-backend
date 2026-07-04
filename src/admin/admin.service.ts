@@ -14,6 +14,7 @@ import { CreateEventDto } from 'src/event/dto/create-event.dto';
 import { DashboardStatistics } from './types/DashboardStatistics';
 import { RecentActivity } from './types/RecentActivity';
 import { CreateRecommendedProfessionalDto } from 'src/recommended-professional/dto/create-recommended-professional.dto';
+import { UpdateWellnessDto } from 'src/wellness/dto/update-wellness.dto';
 import { UpdateRecommendedProfessionalDto } from 'src/recommended-professional/dto/update-recommended-professional.dto';
 import { UpdateEventDto } from 'src/event/dto/update-event.dto';
 import { PointsService } from 'src/points/points.service';
@@ -1142,6 +1143,37 @@ export class AdminService {
         },
       },
       orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+    });
+  }
+
+  async updateWellness(id: string, data: UpdateWellnessDto) {
+    const wellness = await this.prisma.wellness.findUnique({ where: { id } });
+
+    if (!wellness || wellness.isDeleted) {
+      throw new NotFoundException('Parceiro wellness não encontrado!');
+    }
+
+    if (data.document && data.document.replace(/\D/g, '').length !== 11) {
+      throw new BadRequestException('CPF inválido.');
+    }
+
+    const { profileImage, ...wellnessData } = data;
+
+    return this.prisma.wellness.update({
+      where: { id },
+      data: wellnessData,
+      include: {
+        services: { orderBy: { name: 'asc' } },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            profileImage: true,
+            createdAt: true,
+            address: true,
+          },
+        },
+      },
     });
   }
 

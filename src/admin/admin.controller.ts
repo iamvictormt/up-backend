@@ -14,6 +14,7 @@ import { AdminService } from './admin.service';
 import { AdminGuard } from 'src/auth/admin-auth.guard';
 import { LoginDto } from 'src/auth/dto/login.dto';
 import { RejectPartnerDto } from './dto/reject-partner.dto';
+import { UpdateWellnessDto } from 'src/wellness/dto/update-wellness.dto';
 import { CreateEventDto } from 'src/event/dto/create-event.dto';
 import { DashboardStatistics } from './types/DashboardStatistics';
 import { RecentActivity } from './types/RecentActivity';
@@ -289,6 +290,15 @@ export class AdminController {
   @Patch('wellness/:id/reject')
   async rejectWellness(@Param('id') id: string, @Body() dto: RejectPartnerDto) {
     return await this.adminService.rejectWellness(id, dto.reason);
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('wellness/:id')
+  async updateWellness(
+    @Param('id') id: string,
+    @Body() dto: UpdateWellnessDto,
+  ) {
+    return await this.adminService.updateWellness(id, dto);
   }
 
   @UseGuards(AdminGuard)

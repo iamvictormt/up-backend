@@ -102,15 +102,12 @@ model PartnerSupplier {
   updatedAt DateTime @updatedAt
 }
 
-// Parceiro wellness: entidade simples estilo MEI — perfil aprovável que expõe
-// serviços. Sem plano, sem loja, sem eventos, sem pontos.
 model Wellness {
   id          String  @id @default(uuid())
   name        String
   document    String // CPF
   contact     String?
   description String?
-  // texto pré-populado do link de WhatsApp (wa.me/<contato>?text=...)
   whatsappMessage String?
 
   status RegistrationStatus @default(PENDING)
