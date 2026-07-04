@@ -105,7 +105,7 @@ model PartnerSupplier {
 model Wellness {
   id          String  @id @default(uuid())
   name        String // nome do negócio
-  document    String // CPF do responsável (MEI)
+  document    String // CPF do responsável
   contact     String?
   description String?
   whatsappMessage String?
