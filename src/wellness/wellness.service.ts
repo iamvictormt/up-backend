@@ -8,14 +8,15 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
-import { Prisma } from '@prisma/client';
+import { DocumentType, Prisma } from '@prisma/client';
 import { CreateWellnessDto } from './dto/create-wellness.dto';
 import { UpdateWellnessDto } from './dto/update-wellness.dto';
 import { CreateOfferingDto, UpdateOfferingDto } from './dto/offering.dto';
 
-function isValidCpf(value: string): boolean {
-  // ponytail: só comprimento; dígito verificador se o negócio pedir
-  return (value ?? '').replace(/\D/g, '').length === 11;
+// ponytail: só comprimento por tipo; dígito verificador se o negócio pedir
+function isValidDocument(type: DocumentType, value: string): boolean {
+  const digits = (value ?? '').replace(/\D/g, '');
+  return type === 'CNPJ' ? digits.length === 14 : digits.length === 11;
 }
 
 @Injectable()
@@ -26,8 +27,9 @@ export class WellnessService {
   ) {}
 
   async create(dto: CreateWellnessDto, userDto: CreateUserDto) {
-    if (!isValidCpf(dto.document)) {
-      throw new BadRequestException('CPF inválido.');
+    const documentType = dto.documentType ?? 'CPF';
+    if (!isValidDocument(documentType, dto.document)) {
+      throw new BadRequestException(`${documentType} inválido.`);
     }
 
     const emailExists = await this.userService.checkIfEmailExists(
@@ -46,6 +48,7 @@ export class WellnessService {
         data: {
           name: dto.name,
           document: dto.document,
+          documentType,
           contact: dto.contact,
           description: dto.description,
           whatsappMessage: dto.whatsappMessage,
@@ -70,9 +73,15 @@ export class WellnessService {
 
   async update(userId: string, dto: UpdateWellnessDto) {
     const wellnessId = await this.findWellnessIdByUserId(userId);
+    const current = await this.prisma.wellness.findUnique({
+      where: { id: wellnessId },
+      select: { documentType: true },
+    });
 
-    if (dto.document && !isValidCpf(dto.document)) {
-      throw new BadRequestException('CPF inválido.');
+    // tipo efetivo: o que veio no payload, ou o já salvo
+    const documentType = dto.documentType ?? current?.documentType ?? 'CPF';
+    if (dto.document && !isValidDocument(documentType, dto.document)) {
+      throw new BadRequestException(`${documentType} inválido.`);
     }
 
     return this.prisma.wellness.update({
@@ -80,6 +89,7 @@ export class WellnessService {
       data: {
         name: dto.name,
         document: dto.document,
+        documentType: dto.documentType,
         contact: dto.contact,
         description: dto.description,
         whatsappMessage: dto.whatsappMessage,

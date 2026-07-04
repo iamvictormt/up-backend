@@ -1,11 +1,15 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsIn, IsOptional, IsString } from 'class-validator';
 
 export class CreateWellnessDto {
   @IsString()
   name: string;
 
   @IsString()
-  document: string; // CPF
+  document: string; // CPF ou CNPJ, conforme documentType
+
+  @IsOptional()
+  @IsIn(['CPF', 'CNPJ'])
+  documentType?: 'CPF' | 'CNPJ';
 
   @IsOptional()
   @IsString()

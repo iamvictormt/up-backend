@@ -1,8 +1,15 @@
+-- CreateEnum (se já existir de outra migração, ignore o erro / ajuste)
+DO $$ BEGIN
+  CREATE TYPE "DocumentType" AS ENUM ('CPF', 'CNPJ');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
 -- CreateTable
 CREATE TABLE "Wellness" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "document" TEXT NOT NULL,
+    "documentType" "DocumentType" NOT NULL DEFAULT 'CPF',
     "contact" TEXT,
     "description" TEXT,
     "whatsappMessage" TEXT,
@@ -41,8 +48,14 @@ CREATE UNIQUE INDEX "User_wellnessId_key" ON "User"("wellnessId");
 ALTER TABLE "User" ADD CONSTRAINT "User_wellnessId_fkey" FOREIGN KEY ("wellnessId") REFERENCES "Wellness"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- ===== Data migration: copiar parceiros WELLNESS preservando IDs =====
-INSERT INTO "Wellness" ("id", "name", "document", "contact", "status", "isDeleted", "deletedAt", "createdAt", "updatedAt")
-SELECT "id", COALESCE(NULLIF("companyName", ''), "tradeName"), "document", "contact", "status", "isDeleted", "deletedAt", "createdAt", "updatedAt"
+-- documentType é derivado do documento legado: 14 dígitos = CNPJ, senão CPF.
+INSERT INTO "Wellness" ("id", "name", "document", "documentType", "contact", "status", "isDeleted", "deletedAt", "createdAt", "updatedAt")
+SELECT
+  "id",
+  COALESCE(NULLIF("companyName", ''), "tradeName"),
+  "document",
+  CASE WHEN length(regexp_replace("document", '\D', '', 'g')) = 14 THEN 'CNPJ'::"DocumentType" ELSE 'CPF'::"DocumentType" END,
+  "contact", "status", "isDeleted", "deletedAt", "createdAt", "updatedAt"
 FROM "PartnerSupplier"
 WHERE "type" = 'WELLNESS';
 

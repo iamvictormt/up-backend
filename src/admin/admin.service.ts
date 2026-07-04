@@ -1153,8 +1153,14 @@ export class AdminService {
       throw new NotFoundException('Parceiro wellness não encontrado!');
     }
 
-    if (data.document && data.document.replace(/\D/g, '').length !== 11) {
-      throw new BadRequestException('CPF inválido.');
+    // valida o documento conforme o tipo efetivo (payload ou o já salvo)
+    const documentType = data.documentType ?? wellness.documentType;
+    if (data.document) {
+      const digits = data.document.replace(/\D/g, '');
+      const expected = documentType === 'CNPJ' ? 14 : 11;
+      if (digits.length !== expected) {
+        throw new BadRequestException(`${documentType} inválido.`);
+      }
     }
 
     const { profileImage, ...wellnessData } = data;

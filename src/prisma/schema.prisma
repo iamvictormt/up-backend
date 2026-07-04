@@ -103,10 +103,11 @@ model PartnerSupplier {
 }
 
 model Wellness {
-  id          String  @id @default(uuid())
-  name        String // nome do negócio
-  document    String // CPF do responsável
-  contact     String?
+  id           String       @id @default(uuid())
+  name         String // nome do negócio
+  document     String // CPF do responsável ou CNPJ da empresa
+  documentType DocumentType @default(CPF)
+  contact      String?
   description String?
   whatsappMessage String?
   // vitrine: mesmo formato visual da loja do lojista, sem tabela Store
@@ -593,6 +594,11 @@ enum RegistrationStatus {
 enum PartnerType {
   SUPPLIER
   WELLNESS
+}
+
+enum DocumentType {
+  CPF
+  CNPJ
 }
 
 model ErrorLog {
