@@ -1195,7 +1195,7 @@ export class AdminService {
     await this.mailService.sendMail(
       user.email,
       'Cadastro aprovado',
-      'cadastro-aprovado.html',
+      'cadastro-aprovado-wellness.html',
       {
         username: getUsername(user),
         platformUrl: process.env.FRONTEND_URL || 'http://localhost:3001',
