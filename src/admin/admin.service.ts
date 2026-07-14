@@ -625,6 +625,7 @@ export class AdminService {
   }
 
   async findAllPartnerSuppliers() {
+    await this.expireStaleTrials();
     return this.prisma.partnerSupplier.findMany({
       where: {
         isDeleted: false,
@@ -1152,6 +1153,7 @@ export class AdminService {
   // ===== Wellness (entidade própria: aprovação sem plano) =====
 
   async findAllWellness() {
+    await this.expireStaleTrials();
     return this.prisma.wellness.findMany({
       where: { isDeleted: false },
       include: {
@@ -1829,6 +1831,39 @@ export class AdminService {
   }
 
   // id pode ser de lojista (partnerSupplier) ou de wellness
+  // "Flip preguiçoso": marca como EXPIRED os trials manuais cuja validade já
+  // passou, e registra o evento no histórico. Chamado nas leituras (sem cron).
+  private async expireStaleTrials() {
+    const stale = await this.prisma.subscription.findMany({
+      where: {
+        isManual: true,
+        subscriptionStatus: 'TRIALING',
+        currentPeriodEnd: { lt: new Date() },
+      },
+    });
+
+    for (const sub of stale) {
+      await this.prisma.$transaction([
+        this.prisma.subscription.update({
+          where: { id: sub.id },
+          data: { subscriptionStatus: 'EXPIRED' },
+        }),
+        this.prisma.subscriptionEvent.create({
+          data: {
+            partnerSupplierId: sub.partnerSupplierId,
+            wellnessId: sub.wellnessId,
+            eventType: 'EXPIRED',
+            status: 'EXPIRED',
+            planType: sub.planType,
+            currentPeriodEnd: sub.currentPeriodEnd,
+            source: 'system',
+            note: 'Período gratuito encerrado',
+          },
+        }),
+      ]);
+    }
+  }
+
   // Resolve o dono da assinatura por id (lojista OU wellness).
   private async resolveSubscriptionOwner(id: string) {
     const partner = await this.prisma.partnerSupplier.findUnique({
@@ -1939,10 +1974,13 @@ export class AdminService {
       throw new BadRequestException('Data de validade inválida.');
     }
 
+    // Validade no futuro reativa (TRIALING); no passado, marca expirado.
+    const status = periodEnd.getTime() > Date.now() ? 'TRIALING' : 'EXPIRED';
+
     return this.applySubscription(
       owner,
       {
-        subscriptionStatus: subscription.subscriptionStatus,
+        subscriptionStatus: status,
         planType: (dto.planType ?? subscription.planType).toUpperCase(),
         currentPeriodEnd: periodEnd,
         isManual: true,
