@@ -12,6 +12,7 @@ import { DocumentType, Prisma } from '@prisma/client';
 import { CreateWellnessDto } from './dto/create-wellness.dto';
 import { UpdateWellnessDto } from './dto/update-wellness.dto';
 import { CreateOfferingDto, UpdateOfferingDto } from './dto/offering.dto';
+import { MailService } from '../mail/mail.service';
 
 // ponytail: só comprimento por tipo; dígito verificador se o negócio pedir
 function isValidDocument(type: DocumentType, value: string): boolean {
@@ -24,6 +25,7 @@ export class WellnessService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly userService: UserService,
+    private readonly mailService: MailService,
   ) {}
 
   async create(dto: CreateWellnessDto, userDto: CreateUserDto) {
@@ -68,6 +70,19 @@ export class WellnessService {
       );
 
       return { wellness, user };
+    }).then(async (result) => {
+      // ponytail: falha no e-mail não pode derrubar o cadastro
+      try {
+        await this.mailService.sendMail(
+          result.user.email,
+          'Cadastro recebido — em análise',
+          'cadastro-em-analise.html',
+          { username: result.wellness.name },
+        );
+      } catch (err) {
+        console.error('Falha ao enviar e-mail de cadastro em análise:', err);
+      }
+      return result;
     });
   }
 

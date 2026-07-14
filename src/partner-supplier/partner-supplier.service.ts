@@ -53,6 +53,19 @@ export class PartnerSupplierService {
       );
 
       return { partnerSupplier, user };
+    }).then(async (result) => {
+      // ponytail: falha no e-mail não pode derrubar o cadastro
+      try {
+        await this.mailService.sendMail(
+          result.user.email,
+          'Cadastro recebido — em análise',
+          'cadastro-em-analise.html',
+          { username: result.partnerSupplier.tradeName },
+        );
+      } catch (err) {
+        console.error('Falha ao enviar e-mail de cadastro em análise:', err);
+      }
+      return result;
     });
   }
 
