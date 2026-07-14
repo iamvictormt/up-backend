@@ -89,10 +89,11 @@ model PartnerSupplier {
   isDeleted Boolean   @default(false)
   deletedAt DateTime?
 
-  user         User?         @relation("UserPartner")
-  store        Store?
-  storeId      String?       @unique
-  subscription Subscription?
+  user              User?               @relation("UserPartner")
+  store             Store?
+  storeId           String?             @unique
+  subscription      Subscription?
+  subscriptionEvents SubscriptionEvent[]
 
   pointsLimit          Int            @default(0)
   currentPointsAwarded Int            @default(0)
@@ -119,10 +120,11 @@ model Wellness {
   isDeleted Boolean   @default(false)
   deletedAt DateTime?
 
-  user         User?              @relation("UserWellness")
-  services     WellnessOffering[]
-  favoritedBy  Professional[]     @relation("FavoriteWellness")
-  subscription Subscription?
+  user               User?               @relation("UserWellness")
+  services           WellnessOffering[]
+  favoritedBy        Professional[]      @relation("FavoriteWellness")
+  subscription       Subscription?
+  subscriptionEvents SubscriptionEvent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -501,6 +503,26 @@ model Subscription {
   isManual           Boolean            @default(false)
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
+}
+
+// Log imutável de tudo que acontece com a assinatura de um parceiro.
+// A Subscription é sobrescrita; aqui fica a linha do tempo.
+model SubscriptionEvent {
+  id                String           @id @default(cuid())
+  partnerSupplier   PartnerSupplier? @relation(fields: [partnerSupplierId], references: [id])
+  partnerSupplierId String?
+  wellness          Wellness?        @relation(fields: [wellnessId], references: [id])
+  wellnessId        String?
+  eventType         String // GRANTED | EDITED | EXTENDED | CANCELED | STRIPE_UPDATE
+  status            String // snapshot do subscriptionStatus após o evento
+  planType          String
+  currentPeriodEnd  DateTime
+  source            String           @default("admin") // admin | stripe | system
+  note              String?
+  createdAt         DateTime         @default(now())
+
+  @@index([partnerSupplierId])
+  @@index([wellnessId])
 }
 
 model Benefit {

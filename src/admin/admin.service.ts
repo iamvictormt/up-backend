@@ -1078,20 +1078,26 @@ export class AdminService {
     });
 
     // Acesso padrão pra todos: 3 meses de trial na aprovação, sem escolha de plano.
-    // ponytail: update vazio = não sobrescreve assinatura existente (ex.: Stripe ativa)
-    const trialEnd = new Date();
-    trialEnd.setMonth(trialEnd.getMonth() + 3);
-    await this.prisma.subscription.upsert({
+    // Só cria se ainda não houver assinatura (não sobrescreve Stripe ativa).
+    const existing = await this.prisma.subscription.findUnique({
       where: { partnerSupplierId: id },
-      update: {},
-      create: {
-        partnerSupplierId: id,
-        subscriptionStatus: 'TRIALING',
-        planType: 'TRIAL',
-        currentPeriodEnd: trialEnd,
-        isManual: true,
-      },
     });
+    if (!existing) {
+      const trialEnd = new Date();
+      trialEnd.setMonth(trialEnd.getMonth() + 3);
+      await this.applySubscription(
+        { partnerSupplierId: id },
+        {
+          subscriptionStatus: 'TRIALING',
+          planType: 'TRIAL',
+          currentPeriodEnd: trialEnd,
+          isManual: true,
+        },
+        'GRANTED',
+        'system',
+        'Período gratuito na aprovação',
+      );
+    }
 
     return approved;
   }
@@ -1228,19 +1234,25 @@ export class AdminService {
 
     // Mesmo trial padrão de 3 meses do lojista (wellness é isento de cobrança,
     // mas o período fica visível/gerenciável no admin).
-    const trialEnd = new Date();
-    trialEnd.setMonth(trialEnd.getMonth() + 3);
-    await this.prisma.subscription.upsert({
+    const existing = await this.prisma.subscription.findUnique({
       where: { wellnessId: id },
-      update: {},
-      create: {
-        wellnessId: id,
-        subscriptionStatus: 'TRIALING',
-        planType: 'TRIAL',
-        currentPeriodEnd: trialEnd,
-        isManual: true,
-      },
     });
+    if (!existing) {
+      const trialEnd = new Date();
+      trialEnd.setMonth(trialEnd.getMonth() + 3);
+      await this.applySubscription(
+        { wellnessId: id },
+        {
+          subscriptionStatus: 'TRIALING',
+          planType: 'TRIAL',
+          currentPeriodEnd: trialEnd,
+          isManual: true,
+        },
+        'GRANTED',
+        'system',
+        'Período gratuito na aprovação',
+      );
+    }
 
     return approved;
   }
@@ -1817,23 +1829,62 @@ export class AdminService {
   }
 
   // id pode ser de lojista (partnerSupplier) ou de wellness
-  async grantTrial(id: string, dto: GrantTrialDto) {
+  // Resolve o dono da assinatura por id (lojista OU wellness).
+  private async resolveSubscriptionOwner(id: string) {
     const partner = await this.prisma.partnerSupplier.findUnique({
       where: { id },
       include: { subscription: true },
     });
-    const wellness = partner
-      ? null
-      : await this.prisma.wellness.findUnique({
-          where: { id },
-          include: { subscription: true },
-        });
-
-    if (!partner && !wellness) {
-      throw new NotFoundException('Parceiro não encontrado!');
+    if (partner) {
+      return { owner: { partnerSupplierId: id }, subscription: partner.subscription };
     }
+    const wellness = await this.prisma.wellness.findUnique({
+      where: { id },
+      include: { subscription: true },
+    });
+    if (wellness) {
+      return { owner: { wellnessId: id }, subscription: wellness.subscription };
+    }
+    throw new NotFoundException('Parceiro não encontrado!');
+  }
 
-    const subscription = partner?.subscription ?? wellness?.subscription;
+  // Aplica o estado da assinatura E registra o evento no histórico (atômico).
+  private async applySubscription(
+    owner: { partnerSupplierId: string } | { wellnessId: string },
+    data: {
+      subscriptionStatus: string;
+      planType: string;
+      currentPeriodEnd: Date;
+      isManual: boolean;
+    },
+    eventType: string,
+    source = 'admin',
+    note?: string,
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      const subscription = await tx.subscription.upsert({
+        where: owner as any,
+        update: data as any,
+        create: { ...owner, ...data } as any,
+      });
+      await tx.subscriptionEvent.create({
+        data: {
+          ...owner,
+          eventType,
+          status: data.subscriptionStatus,
+          planType: data.planType,
+          currentPeriodEnd: data.currentPeriodEnd,
+          source,
+          note,
+        },
+      });
+      return subscription;
+    });
+  }
+
+  async grantTrial(id: string, dto: GrantTrialDto) {
+    const { owner, subscription } = await this.resolveSubscriptionOwner(id);
+
     if (
       subscription &&
       subscription.isManual &&
@@ -1854,50 +1905,118 @@ export class AdminService {
       trialEnd.setMonth(trialEnd.getMonth() + dto.duration);
     }
 
-    const owner = partner
-      ? { partnerSupplierId: id }
-      : { wellnessId: id };
+    return this.applySubscription(
+      owner,
+      {
+        subscriptionStatus: 'TRIALING',
+        planType: dto.planType.toUpperCase(),
+        currentPeriodEnd: trialEnd,
+        isManual: true,
+      },
+      'GRANTED',
+    );
+  }
 
-    return this.prisma.subscription.upsert({
-      where: owner as any,
-      update: {
-        subscriptionStatus: 'TRIALING',
-        planType: dto.planType.toUpperCase(),
-        currentPeriodEnd: trialEnd,
+  // Edita plano ativo: muda tipo e/ou validade sem cancelar e reconceder.
+  async editSubscription(
+    id: string,
+    dto: { planType?: string; currentPeriodEnd?: string },
+  ) {
+    const { owner, subscription } = await this.resolveSubscriptionOwner(id);
+    if (!subscription) {
+      throw new NotFoundException('Assinatura não encontrada!');
+    }
+    if (!subscription.isManual) {
+      throw new BadRequestException(
+        'Apenas assinaturas manuais podem ser editadas por aqui.',
+      );
+    }
+
+    const periodEnd = dto.currentPeriodEnd
+      ? new Date(dto.currentPeriodEnd)
+      : subscription.currentPeriodEnd;
+    if (Number.isNaN(periodEnd.getTime())) {
+      throw new BadRequestException('Data de validade inválida.');
+    }
+
+    return this.applySubscription(
+      owner,
+      {
+        subscriptionStatus: subscription.subscriptionStatus,
+        planType: (dto.planType ?? subscription.planType).toUpperCase(),
+        currentPeriodEnd: periodEnd,
         isManual: true,
       },
-      create: {
-        ...owner,
+      'EDITED',
+    );
+  }
+
+  // Estende o período somando meses à validade atual.
+  async extendSubscription(id: string, dto: { months: number }) {
+    const { owner, subscription } = await this.resolveSubscriptionOwner(id);
+    if (!subscription) {
+      throw new NotFoundException('Assinatura não encontrada!');
+    }
+    if (!subscription.isManual) {
+      throw new BadRequestException(
+        'Apenas assinaturas manuais podem ser estendidas por aqui.',
+      );
+    }
+    if (!dto.months || dto.months <= 0) {
+      throw new BadRequestException('Informe um número de meses maior que zero.');
+    }
+
+    // parte do maior entre validade atual e hoje (não "encolher" trial expirado)
+    const base =
+      subscription.currentPeriodEnd > new Date()
+        ? new Date(subscription.currentPeriodEnd)
+        : new Date();
+    base.setMonth(base.getMonth() + dto.months);
+
+    return this.applySubscription(
+      owner,
+      {
         subscriptionStatus: 'TRIALING',
-        planType: dto.planType.toUpperCase(),
-        currentPeriodEnd: trialEnd,
+        planType: subscription.planType,
+        currentPeriodEnd: base,
         isManual: true,
       },
-    });
+      'EXTENDED',
+      'admin',
+      `+${dto.months} mês(es)`,
+    );
   }
 
   // id pode ser de lojista (partnerSupplier) ou de wellness
   async cancelManualSubscription(id: string) {
-    const subscription = await this.prisma.subscription.findFirst({
-      where: { OR: [{ partnerSupplierId: id }, { wellnessId: id }] },
-    });
+    const { owner, subscription } = await this.resolveSubscriptionOwner(id);
 
     if (!subscription) {
       throw new NotFoundException('Assinatura não encontrada!');
     }
-
     if (!subscription.isManual) {
       throw new BadRequestException(
         'Apenas assinaturas manuais podem ser canceladas por aqui.',
       );
     }
 
-    return this.prisma.subscription.update({
-      where: { id: subscription.id },
-      data: {
+    return this.applySubscription(
+      owner,
+      {
         subscriptionStatus: 'CANCELED',
+        planType: subscription.planType,
         currentPeriodEnd: new Date(),
+        isManual: true,
       },
+      'CANCELED',
+    );
+  }
+
+  async getSubscriptionHistory(id: string) {
+    await this.resolveSubscriptionOwner(id); // 404 se não existir
+    return this.prisma.subscriptionEvent.findMany({
+      where: { OR: [{ partnerSupplierId: id }, { wellnessId: id }] },
+      orderBy: { createdAt: 'desc' },
     });
   }
 

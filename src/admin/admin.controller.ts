@@ -458,6 +458,30 @@ export class AdminController {
   }
 
   @UseGuards(AdminGuard)
+  @Patch('subscription/:id/edit')
+  async editSubscription(
+    @Param('id') id: string,
+    @Body() dto: { planType?: string; currentPeriodEnd?: string },
+  ) {
+    return await this.adminService.editSubscription(id, dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('subscription/:id/extend')
+  async extendSubscription(
+    @Param('id') id: string,
+    @Body() dto: { months: number },
+  ) {
+    return await this.adminService.extendSubscription(id, dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('subscription/:id/history')
+  async getSubscriptionHistory(@Param('id') id: string) {
+    return await this.adminService.getSubscriptionHistory(id);
+  }
+
+  @UseGuards(AdminGuard)
   @Delete('partner-supplier/:id')
   async softDeletePartnerSupplier(@Param('id') id: string) {
     return await this.adminService.softDeletePartnerSupplier(id);

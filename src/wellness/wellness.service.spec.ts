@@ -29,7 +29,9 @@ describe('WellnessService', () => {
       hashPassword: jest.fn().mockResolvedValue('hashed'),
       createUserWithRelation: jest.fn().mockResolvedValue({ id: 'u1' }),
     };
-    service = new WellnessService(prisma, userService);
+    service = new WellnessService(prisma, userService, {
+      sendMail: jest.fn().mockResolvedValue(undefined),
+    } as any);
   });
 
   it('creates wellness with valid CPF', async () => {

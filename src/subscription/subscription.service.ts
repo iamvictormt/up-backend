@@ -51,28 +51,43 @@ export class SubscriptionsService {
 
     const partnerSupplier = user.partnerSupplier;
 
-    await this.prisma.subscription.upsert({
-      where: {
-        partnerSupplierId: partnerSupplier.id,
-      },
-      update: {
-        subscriptionId,
-        subscriptionStatus: status.toUpperCase(),
-        planType: getPlanType(plan.amount.toString()),
-        currentPeriodEnd: periodEnd,
-        cancelAtPeriodEnd: cancel_at_period_end ?? false,
-        isManual: false,
-      },
-      create: {
-        partnerSupplierId: partnerSupplier.id,
-        stripeCustomerId,
-        subscriptionId,
-        subscriptionStatus: status.toUpperCase(),
-        planType: getPlanType(plan.amount.toString()),
-        currentPeriodEnd: periodEnd,
-        cancelAtPeriodEnd: cancel_at_period_end ?? false,
-        isManual: false,
-      },
+    const planType = getPlanType(plan.amount.toString());
+    const normalizedStatus = status.toUpperCase();
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.subscription.upsert({
+        where: {
+          partnerSupplierId: partnerSupplier.id,
+        },
+        update: {
+          subscriptionId,
+          subscriptionStatus: normalizedStatus,
+          planType,
+          currentPeriodEnd: periodEnd,
+          cancelAtPeriodEnd: cancel_at_period_end ?? false,
+          isManual: false,
+        },
+        create: {
+          partnerSupplierId: partnerSupplier.id,
+          stripeCustomerId,
+          subscriptionId,
+          subscriptionStatus: normalizedStatus,
+          planType,
+          currentPeriodEnd: periodEnd,
+          cancelAtPeriodEnd: cancel_at_period_end ?? false,
+          isManual: false,
+        },
+      });
+      await tx.subscriptionEvent.create({
+        data: {
+          partnerSupplierId: partnerSupplier.id,
+          eventType: 'STRIPE_UPDATE',
+          status: normalizedStatus,
+          planType,
+          currentPeriodEnd: periodEnd,
+          source: 'stripe',
+        },
+      });
     });
 
     this.logger.log(
