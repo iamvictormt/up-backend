@@ -119,9 +119,10 @@ model Wellness {
   isDeleted Boolean   @default(false)
   deletedAt DateTime?
 
-  user        User?              @relation("UserWellness")
-  services    WellnessOffering[]
-  favoritedBy Professional[]     @relation("FavoriteWellness")
+  user         User?              @relation("UserWellness")
+  services     WellnessOffering[]
+  favoritedBy  Professional[]     @relation("FavoriteWellness")
+  subscription Subscription?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -487,8 +488,10 @@ model PasswordResetCode {
 
 model Subscription {
   id                 String             @id @default(cuid())
-  partnerSupplier    PartnerSupplier    @relation(fields: [partnerSupplierId], references: [id])
-  partnerSupplierId  String             @unique
+  partnerSupplier    PartnerSupplier?   @relation(fields: [partnerSupplierId], references: [id])
+  partnerSupplierId  String?            @unique
+  wellness           Wellness?          @relation(fields: [wellnessId], references: [id])
+  wellnessId         String?            @unique
   stripeCustomerId   String?
   subscriptionId     String?
   subscriptionStatus SubscriptionStatus

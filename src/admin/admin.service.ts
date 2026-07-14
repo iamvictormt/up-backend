@@ -1070,12 +1070,30 @@ export class AdminService {
       },
     );
 
-    return this.prisma.partnerSupplier.update({
+    const approved = await this.prisma.partnerSupplier.update({
       where: { id },
       data: {
         status: 'APPROVED',
       },
     });
+
+    // Acesso padrão pra todos: 3 meses de trial na aprovação, sem escolha de plano.
+    // ponytail: update vazio = não sobrescreve assinatura existente (ex.: Stripe ativa)
+    const trialEnd = new Date();
+    trialEnd.setMonth(trialEnd.getMonth() + 3);
+    await this.prisma.subscription.upsert({
+      where: { partnerSupplierId: id },
+      update: {},
+      create: {
+        partnerSupplierId: id,
+        subscriptionStatus: 'TRIALING',
+        planType: 'TRIAL',
+        currentPeriodEnd: trialEnd,
+        isManual: true,
+      },
+    });
+
+    return approved;
   }
 
   async rejectPartnerSupplier(id: string, reason: string) {
@@ -1131,6 +1149,7 @@ export class AdminService {
     return this.prisma.wellness.findMany({
       where: { isDeleted: false },
       include: {
+        subscription: true,
         services: { orderBy: { name: 'asc' } },
         user: {
           select: {
@@ -1202,10 +1221,28 @@ export class AdminService {
       },
     );
 
-    return this.prisma.wellness.update({
+    const approved = await this.prisma.wellness.update({
       where: { id },
       data: { status: 'APPROVED' },
     });
+
+    // Mesmo trial padrão de 3 meses do lojista (wellness é isento de cobrança,
+    // mas o período fica visível/gerenciável no admin).
+    const trialEnd = new Date();
+    trialEnd.setMonth(trialEnd.getMonth() + 3);
+    await this.prisma.subscription.upsert({
+      where: { wellnessId: id },
+      update: {},
+      create: {
+        wellnessId: id,
+        subscriptionStatus: 'TRIALING',
+        planType: 'TRIAL',
+        currentPeriodEnd: trialEnd,
+        isManual: true,
+      },
+    });
+
+    return approved;
   }
 
   async rejectWellness(id: string, reason: string) {
@@ -1779,23 +1816,32 @@ export class AdminService {
     return activities.slice(0, 5);
   }
 
-  async grantTrial(partnerSupplierId: string, dto: GrantTrialDto) {
+  // id pode ser de lojista (partnerSupplier) ou de wellness
+  async grantTrial(id: string, dto: GrantTrialDto) {
     const partner = await this.prisma.partnerSupplier.findUnique({
-      where: { id: partnerSupplierId },
+      where: { id },
       include: { subscription: true },
     });
+    const wellness = partner
+      ? null
+      : await this.prisma.wellness.findUnique({
+          where: { id },
+          include: { subscription: true },
+        });
 
-    if (!partner) {
-      throw new NotFoundException('Fornecedor parceiro não encontrado!');
+    if (!partner && !wellness) {
+      throw new NotFoundException('Parceiro não encontrado!');
     }
 
+    const subscription = partner?.subscription ?? wellness?.subscription;
     if (
-      partner.subscription &&
-      partner.subscription.isManual &&
-      partner.subscription.subscriptionStatus === 'TRIALING'
+      subscription &&
+      subscription.isManual &&
+      subscription.subscriptionStatus === 'TRIALING' &&
+      subscription.currentPeriodEnd > new Date() // expirado pode receber novo plano
     ) {
       throw new BadRequestException(
-        'Este parceiro já possui um trial manual ativo.',
+        'Este parceiro já possui um plano manual ativo.',
       );
     }
 
@@ -1808,8 +1854,12 @@ export class AdminService {
       trialEnd.setMonth(trialEnd.getMonth() + dto.duration);
     }
 
+    const owner = partner
+      ? { partnerSupplierId: id }
+      : { wellnessId: id };
+
     return this.prisma.subscription.upsert({
-      where: { partnerSupplierId },
+      where: owner as any,
       update: {
         subscriptionStatus: 'TRIALING',
         planType: dto.planType.toUpperCase(),
@@ -1817,7 +1867,7 @@ export class AdminService {
         isManual: true,
       },
       create: {
-        partnerSupplierId,
+        ...owner,
         subscriptionStatus: 'TRIALING',
         planType: dto.planType.toUpperCase(),
         currentPeriodEnd: trialEnd,
@@ -1826,9 +1876,10 @@ export class AdminService {
     });
   }
 
-  async cancelManualSubscription(partnerSupplierId: string) {
-    const subscription = await this.prisma.subscription.findUnique({
-      where: { partnerSupplierId },
+  // id pode ser de lojista (partnerSupplier) ou de wellness
+  async cancelManualSubscription(id: string) {
+    const subscription = await this.prisma.subscription.findFirst({
+      where: { OR: [{ partnerSupplierId: id }, { wellnessId: id }] },
     });
 
     if (!subscription) {
@@ -1842,7 +1893,7 @@ export class AdminService {
     }
 
     return this.prisma.subscription.update({
-      where: { partnerSupplierId },
+      where: { id: subscription.id },
       data: {
         subscriptionStatus: 'CANCELED',
         currentPeriodEnd: new Date(),
