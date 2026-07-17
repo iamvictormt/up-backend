@@ -273,7 +273,7 @@ export class AdminService {
     });
 
     if (!category) {
-      throw new NotFoundException('Ramo não encontrado.');
+      throw new NotFoundException('Categoria não encontrada.');
     }
 
     return this.prisma.storeCategory.update({
@@ -301,12 +301,12 @@ export class AdminService {
     });
 
     if (!category) {
-      throw new NotFoundException('Ramo não encontrado.');
+      throw new NotFoundException('Categoria não encontrada.');
     }
 
     if (category._count.stores > 0) {
       throw new BadRequestException(
-        'Este ramo está em uso. Altere as lojas vinculadas antes de excluir.',
+        'Esta categoria está em uso. Altere as lojas vinculadas antes de excluir.',
       );
     }
 
@@ -821,6 +821,9 @@ export class AdminService {
         partner: {
           connect: { id: dto.partnerId },
         },
+        category: dto.categoryId
+          ? { connect: { id: dto.categoryId } }
+          : undefined,
         address: {
           create: {
             ...dto.address,
@@ -864,6 +867,12 @@ export class AdminService {
         website: dto.website,
         openingHours: dto.openingHours,
         logoUrl: dto.logoUrl,
+        category:
+          dto.categoryId === undefined
+            ? undefined
+            : dto.categoryId
+              ? { connect: { id: dto.categoryId } }
+              : { disconnect: true },
         address: dto.address
           ? {
               update: {

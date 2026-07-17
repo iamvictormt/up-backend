@@ -1,4 +1,4 @@
--- Ramos iniciais de lojistas. Idempotente: rode quantas vezes quiser.
+-- Categorias iniciais de lojistas. Idempotente: rode quantas vezes quiser.
 -- Ajuste/adicione nomes conforme a necessidade real.
 CREATE EXTENSION IF NOT EXISTS pgcrypto;  -- garante gen_random_uuid() em qualquer versão
 

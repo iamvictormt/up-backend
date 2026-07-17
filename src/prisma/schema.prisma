@@ -208,7 +208,7 @@ model Store {
   // texto pré-populado do link de WhatsApp (wa.me/<contato>?text=...)
   whatsappMessage String?
 
-  // ramo do lojista (móveis, tapetes, etc.) — mesmo padrão de Profession
+  // categoria do lojista (móveis, tapetes, etc.) — mesmo padrão de Profession
   category   StoreCategory? @relation(fields: [categoryId], references: [id])
   categoryId String?
 
