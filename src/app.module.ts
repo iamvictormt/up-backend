@@ -24,6 +24,7 @@ import { NotificationModule } from './notification/notification.module';
 import { ReportModule } from './report/report.module';
 import { ProfessionModule } from './profession/profession.module';
 import { StoreCategoryModule } from './store-category/store-category.module';
+import { WellnessCategoryModule } from './wellness-category/wellness-category.module';
 import { StripeWebhookModule } from './stripe-webhook/stripe-webhook.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { StatisticsModule } from './statistics/statistics.module';
@@ -63,6 +64,7 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
     ReportModule,
     ProfessionModule,
     StoreCategoryModule,
+    WellnessCategoryModule,
     StripeWebhookModule,
     SubscriptionModule,
     StatisticsModule,

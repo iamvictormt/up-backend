@@ -31,6 +31,8 @@ import { CreateProfessionDto } from 'src/profession/dto/create-profession.dto';
 import { UpdateProfessionDto } from 'src/profession/dto/update-profession.dto';
 import { CreateStoreCategoryDto } from 'src/store-category/dto/create-store-category.dto';
 import { UpdateStoreCategoryDto } from 'src/store-category/dto/update-store-category.dto';
+import { CreateWellnessCategoryDto } from 'src/wellness-category/dto/create-wellness-category.dto';
+import { UpdateWellnessCategoryDto } from 'src/wellness-category/dto/update-wellness-category.dto';
 import { CreateCommunityDto } from 'src/community/dto/create-community.dto';
 import { UpdateCommunityDto } from 'src/community/dto/update-community.dto';
 import { CreatePostDTO } from 'src/post/dto/create-post.dto';
@@ -311,6 +313,77 @@ export class AdminService {
     }
 
     return this.prisma.storeCategory.delete({ where: { id } });
+  }
+
+  async findAllWellnessCategories() {
+    return this.prisma.wellnessCategory.findMany({
+      include: {
+        _count: {
+          select: { wellnesses: true },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async createWellnessCategory(dto: CreateWellnessCategoryDto) {
+    return this.prisma.wellnessCategory.create({
+      data: {
+        name: dto.name.trim(),
+        description: dto.description?.trim(),
+      },
+      include: {
+        _count: {
+          select: { wellnesses: true },
+        },
+      },
+    });
+  }
+
+  async updateWellnessCategory(id: string, dto: UpdateWellnessCategoryDto) {
+    const category = await this.prisma.wellnessCategory.findUnique({
+      where: { id },
+    });
+
+    if (!category) {
+      throw new NotFoundException('Categoria não encontrada.');
+    }
+
+    return this.prisma.wellnessCategory.update({
+      where: { id },
+      data: {
+        name: dto.name?.trim(),
+        description: dto.description?.trim(),
+      },
+      include: {
+        _count: {
+          select: { wellnesses: true },
+        },
+      },
+    });
+  }
+
+  async deleteWellnessCategory(id: string) {
+    const category = await this.prisma.wellnessCategory.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { wellnesses: true },
+        },
+      },
+    });
+
+    if (!category) {
+      throw new NotFoundException('Categoria não encontrada.');
+    }
+
+    if (category._count.wellnesses > 0) {
+      throw new BadRequestException(
+        'Esta categoria está em uso. Altere os parceiros wellness vinculados antes de excluir.',
+      );
+    }
+
+    return this.prisma.wellnessCategory.delete({ where: { id } });
   }
 
   async findAllCommunities() {
@@ -1272,13 +1345,22 @@ export class AdminService {
       }
     }
 
-    const { profileImage, ...wellnessData } = data;
+    const { profileImage, categoryId, ...wellnessData } = data;
 
     return this.prisma.wellness.update({
       where: { id },
-      data: wellnessData,
+      data: {
+        ...wellnessData,
+        category:
+          categoryId === undefined
+            ? undefined
+            : categoryId
+              ? { connect: { id: categoryId } }
+              : { disconnect: true },
+      },
       include: {
         services: { orderBy: { name: 'asc' } },
+        category: true,
         user: {
           select: {
             id: true,

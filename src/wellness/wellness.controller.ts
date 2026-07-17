@@ -34,8 +34,9 @@ export class WellnessController {
     @Query('limit') limit = '10',
     @Query('state') state?: string,
     @Query('city') city?: string,
+    @Query('category') category?: string,
   ) {
-    return this.service.findAll(search, parseInt(page), parseInt(limit), state, city);
+    return this.service.findAll(search, parseInt(page), parseInt(limit), state, city, category);
   }
 
   @Get('me')

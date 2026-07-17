@@ -39,6 +39,8 @@ import { CreateProfessionDto } from 'src/profession/dto/create-profession.dto';
 import { UpdateProfessionDto } from 'src/profession/dto/update-profession.dto';
 import { CreateStoreCategoryDto } from 'src/store-category/dto/create-store-category.dto';
 import { UpdateStoreCategoryDto } from 'src/store-category/dto/update-store-category.dto';
+import { CreateWellnessCategoryDto } from 'src/wellness-category/dto/create-wellness-category.dto';
+import { UpdateWellnessCategoryDto } from 'src/wellness-category/dto/update-wellness-category.dto';
 import { CreateCommunityDto } from 'src/community/dto/create-community.dto';
 import { UpdateCommunityDto } from 'src/community/dto/update-community.dto';
 import { CreatePostDTO } from 'src/post/dto/create-post.dto';
@@ -124,6 +126,33 @@ export class AdminController {
   @Delete('store-categories/:id')
   deleteStoreCategory(@Param('id') id: string) {
     return this.adminService.deleteStoreCategory(id);
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('wellness-categories')
+  findAllWellnessCategories() {
+    return this.adminService.findAllWellnessCategories();
+  }
+
+  @UseGuards(AdminGuard)
+  @Post('wellness-categories')
+  createWellnessCategory(@Body() dto: CreateWellnessCategoryDto) {
+    return this.adminService.createWellnessCategory(dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('wellness-categories/:id')
+  updateWellnessCategory(
+    @Param('id') id: string,
+    @Body() dto: UpdateWellnessCategoryDto,
+  ) {
+    return this.adminService.updateWellnessCategory(id, dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Delete('wellness-categories/:id')
+  deleteWellnessCategory(@Param('id') id: string) {
+    return this.adminService.deleteWellnessCategory(id);
   }
 
   @UseGuards(AdminGuard)

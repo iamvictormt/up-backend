@@ -34,5 +34,9 @@ export class CreateWellnessDto {
 
   @IsOptional()
   @IsString()
+  categoryId?: string;
+
+  @IsOptional()
+  @IsString()
   profileImage?: string;
 }

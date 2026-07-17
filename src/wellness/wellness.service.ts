@@ -56,6 +56,9 @@ export class WellnessService {
           whatsappMessage: dto.whatsappMessage,
           logoUrl: dto.logoUrl,
           openingHours: dto.openingHours,
+          category: dto.categoryId
+            ? { connect: { id: dto.categoryId } }
+            : undefined,
         },
       });
 
@@ -110,15 +113,29 @@ export class WellnessService {
         whatsappMessage: dto.whatsappMessage,
         logoUrl: dto.logoUrl,
         openingHours: dto.openingHours,
+        category:
+          dto.categoryId === undefined
+            ? undefined
+            : dto.categoryId
+              ? { connect: { id: dto.categoryId } }
+              : { disconnect: true },
       },
     });
   }
 
-  async findAll(search?: string, page = 1, limit = 10, state?: string, city?: string) {
+  async findAll(
+    search?: string,
+    page = 1,
+    limit = 10,
+    state?: string,
+    city?: string,
+    category?: string,
+  ) {
     return this.prisma.wellness.findMany({
       where: {
         status: 'APPROVED',
         isDeleted: false,
+        categoryId: category || undefined,
         user:
           state || city
             ? { address: { state: state || undefined, city: city || undefined } }
@@ -133,6 +150,7 @@ export class WellnessService {
       },
       include: {
         services: { orderBy: { name: 'asc' } },
+        category: true,
         user: { select: { profileImage: true, address: true } },
       },
       orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
@@ -146,6 +164,7 @@ export class WellnessService {
       where: { id },
       include: {
         services: { orderBy: { name: 'asc' } },
+        category: true,
         user: { select: { profileImage: true, address: true } },
       },
     });

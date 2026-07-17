@@ -115,6 +115,10 @@ model Wellness {
   logoUrl         String?
   openingHours    String?
 
+  // categoria do wellness (massagem, yoga, estética, etc.) — mesmo padrão de StoreCategory
+  category   WellnessCategory? @relation(fields: [categoryId], references: [id])
+  categoryId String?
+
   status RegistrationStatus @default(PENDING)
 
   isDeleted Boolean   @default(false)
@@ -489,6 +493,16 @@ model StoreCategory {
   stores    Store[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model WellnessCategory {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+
+  wellnesses Wellness[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 }
 
 model PasswordResetCode {
