@@ -57,9 +57,9 @@ model Professional {
   points             Int               @default(0)
   phone              String
 
-  favoriteWellness Wellness[] @relation("FavoriteWellness")
-  socialMediaId    String?           @unique
-  social           SocialMedia?      @relation(fields: [socialMediaId], references: [id])
+  favoriteWellness Wellness[]   @relation("FavoriteWellness")
+  socialMediaId    String?      @unique
+  social           SocialMedia? @relation(fields: [socialMediaId], references: [id])
 
   user               User?               @relation("UserProfessional")
   workshops          Workshop[]
@@ -89,10 +89,10 @@ model PartnerSupplier {
   isDeleted Boolean   @default(false)
   deletedAt DateTime?
 
-  user              User?               @relation("UserPartner")
-  store             Store?
-  storeId           String?             @unique
-  subscription      Subscription?
+  user               User?               @relation("UserPartner")
+  store              Store?
+  storeId            String?             @unique
+  subscription       Subscription?
   subscriptionEvents SubscriptionEvent[]
 
   pointsLimit          Int            @default(0)
@@ -104,16 +104,16 @@ model PartnerSupplier {
 }
 
 model Wellness {
-  id           String       @id @default(uuid())
-  name         String // nome do negócio
-  document     String // CPF do responsável ou CNPJ da empresa
-  documentType DocumentType @default(CPF)
-  contact      String?
-  description String?
+  id              String       @id @default(uuid())
+  name            String // nome do negócio
+  document        String // CPF do responsável ou CNPJ da empresa
+  documentType    DocumentType @default(CPF)
+  contact         String?
+  description     String?
   whatsappMessage String?
   // vitrine: mesmo formato visual da loja do lojista, sem tabela Store
-  logoUrl      String?
-  openingHours String?
+  logoUrl         String?
+  openingHours    String?
 
   status RegistrationStatus @default(PENDING)
 
@@ -198,15 +198,19 @@ model Address {
 }
 
 model Store {
-  id           String  @id @default(uuid())
-  name         String
-  description  String?
-  website      String?
-  rating       Float?  @default(0)
-  openingHours String?
-  logoUrl      String?
+  id              String  @id @default(uuid())
+  name            String
+  description     String?
+  website         String?
+  rating          Float?  @default(0)
+  openingHours    String?
+  logoUrl         String?
   // texto pré-populado do link de WhatsApp (wa.me/<contato>?text=...)
   whatsappMessage String?
+
+  // ramo do lojista (móveis, tapetes, etc.) — mesmo padrão de Profession
+  category   StoreCategory? @relation(fields: [categoryId], references: [id])
+  categoryId String?
 
   address   Address @relation(fields: [addressId], references: [id])
   addressId String
@@ -475,6 +479,16 @@ model Profession {
   professionals Professional[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+}
+
+model StoreCategory {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+
+  stores    Store[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model PasswordResetCode {

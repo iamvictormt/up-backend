@@ -23,6 +23,10 @@ export class CreateStoreDto {
 
   @IsOptional()
   @IsString()
+  categoryId?: string;
+
+  @IsOptional()
+  @IsString()
   logoUrl?: string;
 
   // texto pré-populado do link de WhatsApp (wa.me/<contato>?text=...)

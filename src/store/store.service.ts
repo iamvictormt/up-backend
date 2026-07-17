@@ -20,6 +20,9 @@ export class StoreService {
         partner: {
           connect: { id: dto.partnerId },
         },
+        category: dto.categoryId
+          ? { connect: { id: dto.categoryId } }
+          : undefined,
         address: {
           create: {
             ...dto.address,
@@ -59,6 +62,12 @@ export class StoreService {
         openingHours: dto.openingHours,
         logoUrl: dto.logoUrl,
         whatsappMessage: dto.whatsappMessage,
+        category:
+          dto.categoryId === undefined
+            ? undefined
+            : dto.categoryId
+              ? { connect: { id: dto.categoryId } }
+              : { disconnect: true },
         address: dto.address
           ? {
               update: {
@@ -99,6 +108,7 @@ export class StoreService {
       where: { id: store.id },
       include: {
         address: true,
+        category: true,
         products: {
           orderBy: [{ featured: 'desc' }, { name: 'asc' }],
         },
@@ -132,6 +142,7 @@ export class StoreService {
     type?: PartnerType,
     state?: string,
     city?: string,
+    category?: string,
   ) {
     return this.prisma.$queryRaw`
       WITH RankedStores AS (
@@ -177,6 +188,7 @@ export class StoreService {
         ${type ? Prisma.sql`AND ps."type" = ${type}::"PartnerType"` : Prisma.empty}
         ${state ? Prisma.sql`AND a.state = ${state}` : Prisma.empty}
         ${city ? Prisma.sql`AND a.city = ${city}` : Prisma.empty}
+        ${category ? Prisma.sql`AND s."categoryId" = ${category}` : Prisma.empty}
         ${
           search
             ? Prisma.sql`AND (
@@ -207,6 +219,7 @@ export class StoreService {
         where: { id: { in: ids } },
         include: {
           address: true,
+          category: true,
           products: {
             orderBy: [{ featured: 'desc' }, { name: 'asc' }],
           },
@@ -235,6 +248,7 @@ export class StoreService {
       where: { id },
       include: {
         address: true,
+        category: true,
         products: {
           orderBy: [{ featured: 'desc' }, { name: 'asc' }],
         },

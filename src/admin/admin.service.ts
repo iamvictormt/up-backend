@@ -29,6 +29,8 @@ import { CreateProductDto } from 'src/product/dto/create-product.dto';
 import { UpdateProductDto } from 'src/product/dto/update-product.dto';
 import { CreateProfessionDto } from 'src/profession/dto/create-profession.dto';
 import { UpdateProfessionDto } from 'src/profession/dto/update-profession.dto';
+import { CreateStoreCategoryDto } from 'src/store-category/dto/create-store-category.dto';
+import { UpdateStoreCategoryDto } from 'src/store-category/dto/update-store-category.dto';
 import { CreateCommunityDto } from 'src/community/dto/create-community.dto';
 import { UpdateCommunityDto } from 'src/community/dto/update-community.dto';
 import { CreatePostDTO } from 'src/post/dto/create-post.dto';
@@ -238,6 +240,77 @@ export class AdminService {
     }
 
     return this.prisma.profession.delete({ where: { id } });
+  }
+
+  async findAllStoreCategories() {
+    return this.prisma.storeCategory.findMany({
+      include: {
+        _count: {
+          select: { stores: true },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async createStoreCategory(dto: CreateStoreCategoryDto) {
+    return this.prisma.storeCategory.create({
+      data: {
+        name: dto.name.trim(),
+        description: dto.description?.trim(),
+      },
+      include: {
+        _count: {
+          select: { stores: true },
+        },
+      },
+    });
+  }
+
+  async updateStoreCategory(id: string, dto: UpdateStoreCategoryDto) {
+    const category = await this.prisma.storeCategory.findUnique({
+      where: { id },
+    });
+
+    if (!category) {
+      throw new NotFoundException('Ramo não encontrado.');
+    }
+
+    return this.prisma.storeCategory.update({
+      where: { id },
+      data: {
+        name: dto.name?.trim(),
+        description: dto.description?.trim(),
+      },
+      include: {
+        _count: {
+          select: { stores: true },
+        },
+      },
+    });
+  }
+
+  async deleteStoreCategory(id: string) {
+    const category = await this.prisma.storeCategory.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { stores: true },
+        },
+      },
+    });
+
+    if (!category) {
+      throw new NotFoundException('Ramo não encontrado.');
+    }
+
+    if (category._count.stores > 0) {
+      throw new BadRequestException(
+        'Este ramo está em uso. Altere as lojas vinculadas antes de excluir.',
+      );
+    }
+
+    return this.prisma.storeCategory.delete({ where: { id } });
   }
 
   async findAllCommunities() {

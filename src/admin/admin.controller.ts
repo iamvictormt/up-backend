@@ -37,6 +37,8 @@ import { CreateProductDto } from 'src/product/dto/create-product.dto';
 import { UpdateProductDto } from 'src/product/dto/update-product.dto';
 import { CreateProfessionDto } from 'src/profession/dto/create-profession.dto';
 import { UpdateProfessionDto } from 'src/profession/dto/update-profession.dto';
+import { CreateStoreCategoryDto } from 'src/store-category/dto/create-store-category.dto';
+import { UpdateStoreCategoryDto } from 'src/store-category/dto/update-store-category.dto';
 import { CreateCommunityDto } from 'src/community/dto/create-community.dto';
 import { UpdateCommunityDto } from 'src/community/dto/update-community.dto';
 import { CreatePostDTO } from 'src/post/dto/create-post.dto';
@@ -95,6 +97,33 @@ export class AdminController {
   @Delete('professions/:id')
   deleteProfession(@Param('id') id: string) {
     return this.adminService.deleteProfession(id);
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('store-categories')
+  findAllStoreCategories() {
+    return this.adminService.findAllStoreCategories();
+  }
+
+  @UseGuards(AdminGuard)
+  @Post('store-categories')
+  createStoreCategory(@Body() dto: CreateStoreCategoryDto) {
+    return this.adminService.createStoreCategory(dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('store-categories/:id')
+  updateStoreCategory(
+    @Param('id') id: string,
+    @Body() dto: UpdateStoreCategoryDto,
+  ) {
+    return this.adminService.updateStoreCategory(id, dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Delete('store-categories/:id')
+  deleteStoreCategory(@Param('id') id: string) {
+    return this.adminService.deleteStoreCategory(id);
   }
 
   @UseGuards(AdminGuard)

@@ -45,6 +45,7 @@ export class StoreController {
     @Query('type') type?: PartnerType,
     @Query('state') state?: string,
     @Query('city') city?: string,
+    @Query('category') category?: string,
   ) {
     const pageNumber = parseInt(page);
     const pageSize = parseInt(limit);
@@ -56,6 +57,7 @@ export class StoreController {
       type,
       state,
       city,
+      category,
     );
   }
 
