@@ -20,7 +20,7 @@ export class MailService {
   }
 
   async sendMail(to: string, subject: string, templateFile: string, replacements?: Record<string, string>) {
-    const filePath = join(process.cwd(), 'src', 'mail', 'templates', templateFile);
+    const filePath = join(__dirname, 'templates', templateFile);
     let html = readFileSync(filePath, 'utf-8');
 
     if (replacements) {
