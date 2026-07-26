@@ -17,6 +17,7 @@ import { CreateRecommendedProfessionalDto } from 'src/recommended-professional/d
 import { UpdateWellnessDto } from 'src/wellness/dto/update-wellness.dto';
 import { UpdateRecommendedProfessionalDto } from 'src/recommended-professional/dto/update-recommended-professional.dto';
 import { UpdateEventDto } from 'src/event/dto/update-event.dto';
+import { EventService } from 'src/event/event.service';
 import { PointsService } from 'src/points/points.service';
 import { GrantTrialDto } from './dto/grant-trial.dto';
 import { FindAllProfessionalsDto } from './dto/find-all-professionals.dto';
@@ -46,6 +47,7 @@ export class AdminService {
     private readonly mailService: MailService,
     private readonly jwtService: JwtService,
     private readonly pointsService: PointsService,
+    private readonly eventService: EventService,
   ) {}
 
   async findAllProfessionals(dto: FindAllProfessionalsDto) {
@@ -1654,41 +1656,8 @@ export class AdminService {
   }
 
   async createEvent(dto: CreateEventDto) {
-    let addressData: any;
-
-    if (dto.address) {
-      addressData = { create: dto.address };
-    } else {
-      const store = await this.prisma.store.findUnique({
-        where: { id: dto.storeId },
-        select: { addressId: true },
-      });
-
-      if (!store) {
-        throw new NotFoundException('Loja não encontrada');
-      }
-
-      addressData = { connect: { id: store.addressId } };
-    }
-
-    return this.prisma.event.create({
-      data: {
-        name: dto.name,
-        description: dto.description,
-        date: new Date(dto.date),
-        type: dto.type,
-        points: dto.points,
-        totalSpots: dto.totalSpots,
-        store: {
-          connect: { id: dto.storeId },
-        },
-        address: addressData,
-      },
-      include: {
-        address: true,
-        store: true,
-      },
-    });
+    // fonte única de verdade: EventService.create
+    return this.eventService.create(dto);
   }
 
   async updateEvent(id: string, data: UpdateEventDto) {

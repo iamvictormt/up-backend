@@ -34,9 +34,9 @@ export class CreateEventDto {
   @IsInt()
   totalSpots: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  storeId: string;
+  storeId?: string;
 
   @IsOptional()
   @ValidateNested()

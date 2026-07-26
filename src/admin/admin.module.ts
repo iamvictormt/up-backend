@@ -8,6 +8,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { MailModule } from 'src/mail/mail.module';
 import { PointsModule } from 'src/points/points.module';
 import { AdminBenefitsService } from './admin-benefit.service';
+import { EventModule } from 'src/event/event.module';
 
 @Module({
   controllers: [AdminController],
@@ -22,6 +23,7 @@ import { AdminBenefitsService } from './admin-benefit.service';
     AuthModule,
     MailModule,
     PointsModule,
+    EventModule,
   ],
 })
 export class AdminModule {}

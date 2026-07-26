@@ -17,7 +17,7 @@ export class EventService {
 
     if (dto.address) {
       addressData = { create: dto.address };
-    } else {
+    } else if (dto.storeId) {
       const store = await this.prisma.store.findUnique({
         where: { id: dto.storeId },
         select: { addressId: true },
@@ -28,20 +28,27 @@ export class EventService {
       }
 
       addressData = { connect: { id: store.addressId } };
+    } else {
+      // evento configurado pelo admin sem loja: endereço é obrigatório
+      throw new BadRequestException(
+        'Informe o endereço do evento quando não houver loja associada',
+      );
     }
 
-    return await this.prisma.event.create({
+    return this.prisma.event.create({
       data: {
         name: dto.name,
         description: dto.description,
-        date: dto.date,
+        date: new Date(dto.date),
         type: dto.type,
         points: dto.points,
         totalSpots: dto.totalSpots,
-        store: {
-          connect: { id: dto.storeId },
-        },
+        ...(dto.storeId ? { store: { connect: { id: dto.storeId } } } : {}),
         address: addressData,
+      },
+      include: {
+        address: true,
+        store: true,
       },
     });
   }

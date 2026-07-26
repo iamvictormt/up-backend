@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { MailService } from 'src/mail/mail.service';
 import { JwtService } from '@nestjs/jwt';
 import { PointsService } from 'src/points/points.service';
+import { EventService } from 'src/event/event.service';
 import { NotFoundException } from '@nestjs/common';
 
 jest.mock('@nestjs/jwt', () => ({
@@ -82,6 +83,7 @@ describe('AdminService', () => {
         },
         { provide: JwtService, useValue: {} },
         { provide: PointsService, useValue: {} },
+        { provide: EventService, useValue: { create: jest.fn() } },
       ],
     }).compile();
 
