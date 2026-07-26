@@ -153,7 +153,7 @@ export class WellnessService {
         category: true,
         user: { select: { profileImage: true, address: true } },
       },
-      orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+      orderBy: [{ name: 'asc' }, { createdAt: 'asc' }],
       skip: (page - 1) * limit,
       take: limit,
     });
