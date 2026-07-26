@@ -1324,7 +1324,7 @@ export class AdminService {
           },
         },
       },
-      orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+      orderBy: { name: 'asc' },
     });
   }
 
