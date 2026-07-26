@@ -8,6 +8,15 @@ describe('PartnerSupplierService', () => {
   let service: PartnerSupplierService;
   let prisma: any;
 
+  const supplier = (
+    name: string,
+    plan?: string,
+    status = 'ACTIVE',
+  ) => ({
+    store: { name },
+    subscription: plan ? { planType: plan, subscriptionStatus: status } : null,
+  });
+
   beforeEach(async () => {
     prisma = {
       partnerSupplier: {
@@ -41,9 +50,6 @@ describe('PartnerSupplierService', () => {
 
     expect(prisma.partnerSupplier.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        skip: 6,
-        take: 6,
-        orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
         where: expect.objectContaining({
           status: 'APPROVED',
           isDeleted: false,
@@ -58,17 +64,47 @@ describe('PartnerSupplierService', () => {
           }),
           OR: expect.any(Array),
         }),
-        include: {
-          store: {
-            include: {
-              address: true,
-              products: {
-                orderBy: [{ featured: 'desc' }, { name: 'asc' }],
-              },
-            },
+        include: expect.objectContaining({
+          subscription: {
+            select: { planType: true, subscriptionStatus: true },
           },
-        },
+        }),
       }),
     );
+  });
+
+  it('orders by plan tier (PREMIUM>GOLD>SILVER>none) then name, and paginates', async () => {
+    prisma.partnerSupplier.findMany.mockResolvedValue([
+      supplier('Bravo', 'SILVER'),
+      supplier('Zulu'), // sem plano
+      supplier('Alfa', 'PREMIUM'),
+      supplier('Charlie', 'GOLD'),
+      supplier('Delta', 'PREMIUM'),
+      supplier('Echo', 'GOLD', 'CANCELED'), // plano cancelado conta como sem plano
+    ]);
+
+    const page1 = await (service.findAll as any)(
+      undefined,
+      undefined,
+      1,
+      4,
+    );
+
+    expect(page1.map((s: any) => s.store.name)).toEqual([
+      'Alfa',
+      'Delta',
+      'Charlie',
+      'Bravo',
+    ]);
+
+    const page2 = await (service.findAll as any)(
+      undefined,
+      undefined,
+      2,
+      4,
+    );
+
+    // sem plano ativo ficam por último, em ordem alfabética
+    expect(page2.map((s: any) => s.store.name)).toEqual(['Echo', 'Zulu']);
   });
 });

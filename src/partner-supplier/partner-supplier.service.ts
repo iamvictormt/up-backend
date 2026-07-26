@@ -109,7 +109,7 @@ export class PartnerSupplierService {
           }
         : undefined;
 
-    return this.prisma.partnerSupplier.findMany({
+    const suppliers = await this.prisma.partnerSupplier.findMany({
       where: {
         status: 'APPROVED',
         isDeleted: false,
@@ -175,11 +175,34 @@ export class PartnerSupplierService {
             },
           },
         },
+        subscription: { select: { planType: true, subscriptionStatus: true } },
       },
-      orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
-      skip: (page - 1) * limit,
-      take: limit,
     });
+
+    // ponytail: ordena por tier de plano (PREMIUM>GOLD>SILVER>sem plano ativo) e
+    // depois por nome, e pagina em memória — planType é string sem ordem de tier
+    // e a lista é paginada, então o orderBy do banco não resolve.
+    // Ceiling: carrega todos os parceiros aprovados do filtro. Se a base crescer
+    // muito, migrar pra uma coluna planRank numérica + orderBy/skip/take no banco.
+    const planRank: Record<string, number> = { PREMIUM: 0, GOLD: 1, SILVER: 2 };
+    const rankOf = (s: (typeof suppliers)[number]) => {
+      const active =
+        s.subscription?.subscriptionStatus === 'ACTIVE' ||
+        s.subscription?.subscriptionStatus === 'TRIALING';
+      if (!active) return 99;
+      return planRank[s.subscription!.planType] ?? 98;
+    };
+
+    suppliers.sort((a, b) => {
+      const diff = rankOf(a) - rankOf(b);
+      if (diff !== 0) return diff;
+      return (a.store?.name ?? '').localeCompare(b.store?.name ?? '', 'pt', {
+        sensitivity: 'base',
+      });
+    });
+
+    const start = (page - 1) * limit;
+    return suppliers.slice(start, start + limit);
   }
 
   async findOne(id: string) {
