@@ -18,6 +18,5 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            cd /home/${{ secrets.EC2_USER }}/nome-da-sua-pasta-do-projeto
             chmod +x deploy.sh
             ./deploy.sh
