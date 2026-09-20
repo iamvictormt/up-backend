@@ -2,16 +2,20 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { randomInt } from 'crypto';
 import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
 import { VerifyResetCodeDto } from './dto/verify-reset-code.dto';
 import { MailService } from '../mail/mail.service';
 import { getUsername } from '../ultis';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+
+const RESET_REQUEST_RESPONSE = {
+  message: 'Se este e-mail estiver cadastrado, você receberá um código.',
+};
 
 @Injectable()
 export class AuthService {
@@ -94,7 +98,9 @@ export class AuthService {
       },
     });
 
-    if (!user) throw new NotFoundException('Usuário não encontrado.');
+    // Resposta idêntica exista ou não a conta: senão o endpoint vira um
+    // verificador de quem é cadastrado na plataforma.
+    if (!user) return RESET_REQUEST_RESPONSE;
 
     const existing = await this.prisma.passwordResetCode.findFirst({
       where: {
@@ -104,22 +110,21 @@ export class AuthService {
       },
     });
 
-    if (existing) {
-      return {
-        message: 'Já foi enviado um código válido. Aguarde até expirar.',
-      };
+    // Reenvia o código ainda válido em vez de emitir outro, para a resposta
+    // neutra continuar verdadeira (o e-mail sai de qualquer jeito).
+    // ponytail: 5 dígitos (90k) porque o template do e-mail tem 5 caixas fixas;
+    // com o throttle de /auth isso basta. Subir para 6 = editar reset-code.html.
+    const code = existing?.code ?? randomInt(10000, 100000).toString();
+
+    if (!existing) {
+      await this.prisma.passwordResetCode.create({
+        data: {
+          code,
+          expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+          userId: user.id,
+        },
+      });
     }
-
-    const code = Math.floor(10000 + Math.random() * 90000).toString();
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
-
-    await this.prisma.passwordResetCode.create({
-      data: {
-        code,
-        expiresAt,
-        userId: user.id,
-      },
-    });
 
     await this.mailService.sendMail(
       user.email,
@@ -135,14 +140,14 @@ export class AuthService {
       },
     );
 
-    return { message: 'Código de recuperação enviado por e-mail.' };
+    return RESET_REQUEST_RESPONSE;
   }
 
   async verifyCode(dto: VerifyResetCodeDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
-    if (!user) throw new NotFoundException('Usuário não encontrado.');
+    if (!user) throw new BadRequestException('Código inválido ou expirado.');
 
     const match = await this.prisma.passwordResetCode.findFirst({
       where: {
@@ -160,11 +165,13 @@ export class AuthService {
 
   async resetPassword(dto: ResetPasswordDto): Promise<boolean> {
     const { email, code, newPassword } = dto;
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user || user.isDeleted) return false;
 
     const stored = await this.prisma.passwordResetCode.findFirst({
       where: {
+        userId: user.id,
         code: code,
         used: false,
         expiresAt: { gt: new Date() },
@@ -173,8 +180,11 @@ export class AuthService {
 
     if (!stored) return false;
 
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
     await this.prisma.user.update({
-      where: { email },
+      where: { id: user.id },
       data: { password: hashedPassword },
     });
 

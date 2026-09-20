@@ -8,6 +8,10 @@ dotenv.config();
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Atrás do nginx/ALB o IP real vem no X-Forwarded-For; sem isso o throttler
+  // conta todo mundo como o mesmo IP (o do proxy) e derruba os limites de /auth.
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+
   app.use('/api/webhook/stripe', raw({ type: 'application/json' }));
   app.use(json());
   app.use(urlencoded({ extended: true }));

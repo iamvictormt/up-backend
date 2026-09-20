@@ -46,6 +46,7 @@ import { UpdateCommunityDto } from 'src/community/dto/update-community.dto';
 import { CreatePostDTO } from 'src/post/dto/create-post.dto';
 import { UpdatePostDto } from 'src/post/dto/update-post.dto';
 import { CreateReportDto } from 'src/report/dto/create-report.dto';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
 @Controller('admin')
 export class AdminController {
@@ -55,6 +56,8 @@ export class AdminController {
   ) {}
 
   @Post('login')
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   adminLogin(@Body() loginDto: LoginDto) {
     return this.adminService.adminLogin(loginDto);
   }

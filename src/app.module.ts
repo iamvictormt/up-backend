@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
@@ -38,6 +39,9 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
 
 @Module({
   imports: [
+    // ponytail: só configura o throttler; o guard é aplicado apenas no AuthController,
+    // para não arriscar limitar o mural/feed sem medir o tráfego real antes.
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 60 }]),
     PrismaModule,
     JwtModule.register({
       secret: process.env.SECRET_KEY || 'default_secret_key',
