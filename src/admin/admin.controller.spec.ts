@@ -9,6 +9,7 @@ import { PointsService } from 'src/points/points.service';
 import { AdminGuard } from 'src/auth/admin-auth.guard';
 import { UserService } from 'src/user/user.service';
 import { RejectPartnerDto } from './dto/reject-partner.dto';
+import { ConexaoPremiadaService } from 'src/conexao-premiada/conexao-premiada.service';
 
 describe('AdminController', () => {
   let controller: AdminController;
@@ -32,6 +33,7 @@ describe('AdminController', () => {
         { provide: JwtService, useValue: {} },
         { provide: PointsService, useValue: {} },
         { provide: UserService, useValue: {} },
+        { provide: ConexaoPremiadaService, useValue: {} },
       ],
     })
     .overrideGuard(AdminGuard)

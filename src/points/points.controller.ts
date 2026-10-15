@@ -14,7 +14,9 @@ export class PointsController {
   async getHistory(
     @CurrentUser() user: any,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
   ) {
-    return this.pointsService.getHistoryByUserEmail(user.email, limit);
+    return this.pointsService.getHistoryByUserEmail(user.email, limit, { from, to });
   }
 }

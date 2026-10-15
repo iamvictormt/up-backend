@@ -45,7 +45,7 @@ describe('PointsController', () => {
 
       const result = await controller.getHistory(mockUser, 20);
 
-      expect(pointsService.getHistoryByUserEmail).toHaveBeenCalledWith('test@example.com', 20);
+      expect(pointsService.getHistoryByUserEmail).toHaveBeenCalledWith('test@example.com', 20, { from: undefined, to: undefined });
       expect(result).toEqual(mockHistory);
     });
   });

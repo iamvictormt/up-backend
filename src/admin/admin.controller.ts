@@ -29,6 +29,8 @@ import { AdminBenefitsService } from './admin-benefit.service';
 import { GrantTrialDto } from './dto/grant-trial.dto';
 import { FindAllProfessionalsDto } from './dto/find-all-professionals.dto';
 import { UpdatePointsLimitDto } from './dto/update-points-limit.dto';
+import { ConexaoPremiadaService } from 'src/conexao-premiada/conexao-premiada.service';
+import { UpdateSaleDto } from 'src/conexao-premiada/dto/update-sale.dto';
 import { UpdateProfessionalDto } from 'src/professional/dto/update-professional.dto';
 import { UpdatePartnerSupplierDto } from 'src/partner-supplier/dto/update-partner-supplier.dto';
 import { CreateStoreDto } from 'src/store/dto/create-store.dto';
@@ -53,6 +55,7 @@ export class AdminController {
   constructor(
     private readonly adminService: AdminService,
     private readonly adminBenefitsService: AdminBenefitsService,
+    private readonly conexaoPremiadaService: ConexaoPremiadaService,
   ) {}
 
   @Post('login')
@@ -303,6 +306,18 @@ export class AdminController {
   @Get('physical-sales')
   async findAllPhysicalSales() {
     return await this.adminService.findAllPhysicalSales();
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('physical-sales/:id')
+  async updatePhysicalSale(@Param('id') id: string, @Body() dto: UpdateSaleDto) {
+    return await this.conexaoPremiadaService.updateSaleAsAdmin(id, dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('physical-sales/:id/cancel')
+  async cancelPhysicalSale(@Param('id') id: string) {
+    return await this.conexaoPremiadaService.cancelSaleAsAdmin(id);
   }
 
   @UseGuards(AdminGuard)

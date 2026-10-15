@@ -62,4 +62,20 @@ describe('PointsService', () => {
       expect(result).toEqual(mockHistory);
     });
   });
+
+  describe('getHistoryInRange', () => {
+    it('filtra pelo período no fuso de Brasília, com o dia final inteiro', async () => {
+      (prisma.pointHistory.findMany as jest.Mock).mockResolvedValue([]);
+
+      await service.getHistoryInRange('prof-1', '2026-01-01', '2026-01-31');
+
+      const where = (prisma.pointHistory.findMany as jest.Mock).mock.calls.at(-1)[0].where;
+      expect(where.createdAt.gte.toISOString()).toBe('2026-01-01T03:00:00.000Z');
+      expect(where.createdAt.lte.toISOString()).toBe('2026-02-01T02:59:59.999Z');
+    });
+
+    it('recusa data inválida', async () => {
+      await expect(service.getHistoryInRange('prof-1', 'ontem')).rejects.toThrow('Data inválida');
+    });
+  });
 });
